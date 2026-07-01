@@ -2,10 +2,12 @@ extends RefCounted
 
 const PACK_1_PATH := "res://content/levels/pack_01_orientation_is_a_trap.json"
 const PACK_2_PATH := "res://content/levels/pack_02_words_are_lying.json"
+const PACK_3_PATH := "res://content/levels/pack_03_move_the_wrong_thing.json"
 const DEFAULT_PACK_PATH := PACK_1_PATH
 const DEFAULT_PACK_PATHS := [
 	PACK_1_PATH,
 	PACK_2_PATH,
+	PACK_3_PATH,
 ]
 const REQUIRED_LEVEL_FIELDS := [
 	"id",
