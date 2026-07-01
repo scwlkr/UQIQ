@@ -531,12 +531,12 @@
       },
       "scoring": {
         "speed_seconds": {
-          "great": 16,
-          "ok": 38
+          "great": 17,
+          "ok": 40
         },
         "action_count": {
           "great": 6,
-          "ok": 10
+          "ok": 11
         },
         "roast_penalty": 5
       },

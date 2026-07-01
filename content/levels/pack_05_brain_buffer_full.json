@@ -344,8 +344,7 @@
       "rules": {
         "accepted_inputs": [
           "beta"
-        ],
-        "placeholder": "second word"
+        ]
       },
       "solution": {
         "answer": "beta",
@@ -486,12 +485,12 @@
       },
       "scoring": {
         "speed_seconds": {
-          "great": 12,
-          "ok": 30
+          "great": 13,
+          "ok": 32
         },
         "action_count": {
           "great": 5,
-          "ok": 9
+          "ok": 10
         },
         "roast_penalty": 5
       },
@@ -526,16 +525,18 @@
       "template": "Memory Flash",
       "challenge_type": "memory challenge",
       "completion_mode": "submit",
-      "prompt": "Flash the tiny roast order. Then repeat it without letting YES act helpful.",
+      "prompt": "Flash the tiny roast order. Then repeat all four without letting YES act helpful.",
       "rules": {
         "flash_items": [
           "NO",
           "YES",
-          "DUR"
+          "DUR",
+          "HUH"
         ],
         "choices": [
           "YES",
           "DUR",
+          "HUH",
           "NO"
         ],
         "flash_seconds": 1,
@@ -545,18 +546,19 @@
         "sequence": [
           "NO",
           "YES",
-          "DUR"
+          "DUR",
+          "HUH"
         ],
-        "explanation": "YES is only second because that is where it appeared in the flash."
+        "explanation": "YES is only second because that is where it appeared in the four-item flash."
       },
       "scoring": {
         "speed_seconds": {
-          "great": 12,
-          "ok": 30
+          "great": 15,
+          "ok": 36
         },
         "action_count": {
-          "great": 5,
-          "ok": 9
+          "great": 6,
+          "ok": 11
         },
         "roast_penalty": 5
       },
@@ -566,7 +568,7 @@
           "You reordered the roast like a menu with trust issues."
         ],
         "delay": [
-          "NO begins this one. YES can wait its tiny turn."
+          "NO begins this one. YES waits, DUR follows, HUH closes."
         ],
         "scorecard": [
           "You kept YES in second place. Confidence is coping quietly."
@@ -581,7 +583,7 @@
           "judge_face_stub"
         ]
       },
-      "uqiq_moment": "The friendliest label is first in the choices but second in the flashed roast order."
+      "uqiq_moment": "The friendliest label is first in the choices but second in a four-item roast order."
     },
     {
       "id": "p05_l50_full_buffer_final",
@@ -619,8 +621,8 @@
       },
       "scoring": {
         "speed_seconds": {
-          "great": 16,
-          "ok": 40
+          "great": 17,
+          "ok": 42
         },
         "action_count": {
           "great": 6,
