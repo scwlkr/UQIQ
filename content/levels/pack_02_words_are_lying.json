@@ -39,7 +39,7 @@
           "The first word is standing at the front like it paid rent."
         ],
         "scorecard": [
-          "You found word one. The sentence is filing a harassment complaint."
+          "You found word one. The sentence is filing a formal complaint."
         ]
       },
       "assets": {
@@ -57,7 +57,7 @@
       "id": "p02_l12_no_means_yes_today",
       "pack_id": "pack_02_words_are_lying",
       "level_number": 12,
-      "title": "No Means Yes Today",
+      "title": "NO Triggers YES",
       "template": "Text Trap",
       "challenge_type": "word puzzle",
       "completion_mode": "submit",
@@ -274,18 +274,20 @@
       "id": "p02_l16_second_word_problem",
       "pack_id": "pack_02_words_are_lying",
       "level_number": 16,
-      "title": "Second Word Problem",
+      "title": "Word Count Problem",
       "template": "Text Trap",
       "challenge_type": "word puzzle",
       "completion_mode": "submit",
-      "prompt": "Type the second word in this prompt.",
+      "prompt": "Type the number of words after the colon: one two three.",
       "rules": {
         "accepted_inputs": [
-          "the"
+          "3",
+          "three"
         ]
       },
       "solution": {
-        "answer": "the"
+        "answer": "3",
+        "explanation": "Only the words after the colon count, so one two three makes the answer 3."
       },
       "scoring": {
         "speed_seconds": {
@@ -300,14 +302,14 @@
       },
       "roasts": {
         "failure": [
-          "You saw SECOND and forgot counting starts before the drama.",
-          "The prompt handed you word two and you audited the wrong syllable."
+          "You argued with the colon and lost to three tiny words.",
+          "The count was three. Your confidence filed the wrong invoice."
         ],
         "delay": [
-          "Count from the start. The second word is not hiding in a vault."
+          "Only count after the colon. The words before it are lobby noise."
         ],
         "scorecard": [
-          "You counted to two. UQIQ celebrates very modest infrastructure."
+          "You counted to three without adopting the whole sentence. Historic restraint."
         ]
       },
       "assets": {
@@ -319,7 +321,7 @@
           "judge_face_stub"
         ]
       },
-      "uqiq_moment": "The answer is the ordinary second word, while the word second itself is just bait."
+      "uqiq_moment": "The colon is the boundary: only one two three count, so the answer is 3."
     },
     {
       "id": "p02_l17_word_only_intruder",
@@ -331,6 +333,7 @@
       "completion_mode": "submit",
       "prompt": "Find the cell that breaks the word-only pattern.",
       "rules": {
+        "columns": 3,
         "cells": [
           {
             "id": "r1c1",
@@ -380,7 +383,8 @@
         ]
       },
       "solution": {
-        "cell_id": "r2c2"
+        "cell_id": "r2c2",
+        "explanation": "404 is the only numbered cell in a grid of word labels."
       },
       "scoring": {
         "speed_seconds": {
@@ -486,14 +490,17 @@
           "NO",
           "TRUE",
           "LIE"
-        ]
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
       },
       "solution": {
         "sequence": [
           "LIE",
           "TRUE",
           "NO"
-        ]
+        ],
+        "explanation": "Recall the original flash order instead of the reversed choice order."
       },
       "scoring": {
         "speed_seconds": {

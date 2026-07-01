@@ -283,7 +283,7 @@
           "judge_face_stub"
         ]
       },
-      "uqiq_moment": "The odd cell is a number shaped like a letter-like decoy in the center."
+      "uqiq_moment": "The center cell is 8, breaking a grid where every row otherwise repeats a letter."
     },
     {
       "id": "p01_l05_blink_tax",
@@ -417,7 +417,7 @@
           "judge_face_stub"
         ]
       },
-      "uqiq_moment": "The physics slice is deterministic: drawing the right ramp proves the Physics Draw path without a full sandbox."
+      "uqiq_moment": "The ball only reaches the cup when the player picks the ramp instead of the flat line or wall."
     },
     {
       "id": "p01_l07_arrow_trial",
