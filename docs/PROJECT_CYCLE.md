@@ -2,6 +2,8 @@
 
 UQIQ is managed through a Roadmap -> PRD -> GitHub Issue -> Next Step loop.
 
+GitHub repo: `https://github.com/scwlkr/UQIQ`
+
 ## Rule
 
 There is always exactly one open GitHub issue labeled `next-step`.
