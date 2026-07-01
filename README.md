@@ -157,6 +157,8 @@ Save `/tmp/uqiq-smoke.log` as the smoke log. Passing means the scripted stabilit
 
 Physical iPhone proof requires Apple signing access, Xcode, and a connected iPhone trusted by macOS.
 
+Current setup/proof status is tracked in [`docs/IOS_TESTING_STATUS.md`](docs/IOS_TESTING_STATUS.md).
+
 Godot/Xcode path:
 
 1. Install Godot iOS export templates for the same Godot 4.x version used locally.
