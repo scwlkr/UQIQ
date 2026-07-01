@@ -129,6 +129,7 @@ godot --headless --path . --script res://scripts/verify_issue_3.gd
 godot --headless --path . --script res://scripts/verify_issue_4.gd
 godot --headless --path . --script res://scripts/verify_issue_5_desktop_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_7_pack_1_smoke.gd
+godot --headless --path . --script res://scripts/verify_issue_8_pack_2_specs.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -136,6 +137,8 @@ godot --headless --path . --script res://scripts/verify_issue_7_pack_1_smoke.gd
 `verify_issue_5_desktop_smoke.gd` is the scripted desktop smoke/stability check. It boots the main scene with a clean test save, completes Levels 1-6, checks Score Roastcards, replay, Dur Token recovery, save/load, and repeated replay cycles.
 
 `verify_issue_7_pack_1_smoke.gd` is the Pack 1 smoke check. It boots the main scene with a clean test save, completes Levels 1-10 from the Level List through Score Roastcards, checks Level 10 replay/Best Attempt behavior, spends and recovers a Dur Token after Level 6, and verifies save/load plus app-restart persistence.
+
+`verify_issue_8_pack_2_specs.gd` is the Pack 2 specs-only check for `content/levels/pack_02_words_are_lying.json`. It validates Pack 2 Level Specs against `docs/LEVEL_SPEC.md`; it does not make Pack 2 playable in the Level List. Gameplay support belongs in a follow-up issue if needed.
 
 ## Desktop Smoke
 
