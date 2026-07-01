@@ -30,3 +30,7 @@ Example path:
 ```text
 content/levels/pack_01_orientation_is_a_trap.json
 ```
+
+## Solution Visibility
+
+Solutions are stored plainly in JSON for v1.0. UQIQ is offline and not competitive, so hiding solutions adds complexity without meaningful launch value.
