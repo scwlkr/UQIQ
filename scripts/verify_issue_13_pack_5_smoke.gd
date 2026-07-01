@@ -4,11 +4,12 @@ const LevelLoaderScript := preload("res://scripts/level_loader.gd")
 const LocalProfileScript := preload("res://scripts/local_profile.gd")
 const MainScene := preload("res://scenes/Main.tscn")
 
-const TEST_SAVE_PATH := "user://issue_12_pack_4_smoke_profile.json"
+const TEST_SAVE_PATH := "user://issue_13_pack_5_smoke_profile.json"
 const PACK_1_ID := "pack_01_orientation_is_a_trap"
 const PACK_2_ID := "pack_02_words_are_lying"
 const PACK_3_ID := "pack_03_move_the_wrong_thing"
 const PACK_4_ID := "pack_04_pattern_crimes"
+const PACK_5_ID := "pack_05_brain_buffer_full"
 const FIRST_LEVEL_NUMBER := 1
 const PACK_2_FIRST_LEVEL := 11
 const PACK_2_LAST_LEVEL := 20
@@ -16,12 +17,15 @@ const PACK_3_FIRST_LEVEL := 21
 const PACK_3_LAST_LEVEL := 30
 const PACK_4_FIRST_LEVEL := 31
 const PACK_4_LAST_LEVEL := 40
-const TOTAL_LEVEL_COUNT := 40
+const PACK_5_FIRST_LEVEL := 41
+const PACK_5_LAST_LEVEL := 50
+const TOTAL_LEVEL_COUNT := 50
 const EXPECTED_PACK_IDS := [
 	PACK_1_ID,
 	PACK_2_ID,
 	PACK_3_ID,
 	PACK_4_ID,
+	PACK_5_ID,
 ]
 const SUPPORTED_TEMPLATES := [
 	"Tap Logic",
@@ -39,10 +43,12 @@ var _all_levels: Array[Dictionary] = []
 var _pack_2_levels: Array[Dictionary] = []
 var _pack_3_levels: Array[Dictionary] = []
 var _pack_4_levels: Array[Dictionary] = []
+var _pack_5_levels: Array[Dictionary] = []
 var _completion_count := 0
 var _pack_2_completion_count := 0
 var _pack_3_completion_count := 0
 var _pack_4_completion_count := 0
+var _pack_5_completion_count := 0
 var _replay_count := 0
 var _scorecard_count := 0
 var _save_load_count := 0
@@ -100,26 +106,37 @@ func _initialize() -> void:
 	_assert_pack_4_profile_state("Pack 4 completion")
 	if _failed:
 		return
-	_assert_save_load_state("Pack 4 completion", _all_levels)
+	_assert_save_load_state("Pack 4 completion", _levels_between(FIRST_LEVEL_NUMBER, PACK_4_LAST_LEVEL))
 	if _failed:
 		return
 
-	_run_level_40_replay_best_attempt_checks()
+	_run_pack_5_completion_flow()
 	if _failed:
 		return
-	_assert_save_load_state("Level 40 replay", _all_levels)
+	_assert_pack_5_profile_state("Pack 5 completion")
+	if _failed:
+		return
+	_assert_save_load_state("Pack 5 completion", _all_levels)
+	if _failed:
+		return
+
+	_run_level_50_replay_best_attempt_checks()
+	if _failed:
+		return
+	_assert_save_load_state("Level 50 replay", _all_levels)
 	if _failed:
 		return
 	_assert_restart_state()
 	if _failed:
 		return
 
-	print("Issue #12 Pack 4 smoke passed: %d Level List rows, %d completion(s), %d Pack 2 completion(s), %d Pack 3 completion(s), %d Pack 4 completion(s), %d replay(s), %d Score Roastcard(s), %d save/load check(s), %d restart check(s), %d Dur spend(s), %d Dur recovery event(s)." % [
+	print("Issue #13 Pack 5 smoke passed: %d Level List rows, %d completion(s), %d Pack 2 completion(s), %d Pack 3 completion(s), %d Pack 4 completion(s), %d Pack 5 completion(s), %d replay(s), %d Score Roastcard(s), %d save/load check(s), %d restart check(s), %d Dur spend(s), %d Dur recovery event(s)." % [
 		TOTAL_LEVEL_COUNT,
 		_completion_count,
 		_pack_2_completion_count,
 		_pack_3_completion_count,
 		_pack_4_completion_count,
+		_pack_5_completion_count,
 		_replay_count,
 		_scorecard_count,
 		_save_load_count,
@@ -162,8 +179,9 @@ func _load_combined_levels() -> void:
 	_pack_2_levels = []
 	_pack_3_levels = []
 	_pack_4_levels = []
+	_pack_5_levels = []
 	var packs := _packs(loaded)
-	if not _require(packs.size() >= EXPECTED_PACK_IDS.size(), "Issue #12 smoke should load at least the first 4 Pack metadata entries."):
+	if not _require(packs.size() == EXPECTED_PACK_IDS.size(), "Issue #13 smoke should load exactly 5 Pack metadata entries."):
 		return
 	for index in range(EXPECTED_PACK_IDS.size()):
 		var pack := _dictionary_from(packs[index])
@@ -176,7 +194,7 @@ func _load_combined_levels() -> void:
 		if not _require(int(pack.get("last_level_number", 0)) == expected_last_level, "Pack metadata %d should end at Level %d." % [index + 1, expected_last_level]):
 			return
 
-	for level_number in range(FIRST_LEVEL_NUMBER, PACK_4_LAST_LEVEL + 1):
+	for level_number in range(FIRST_LEVEL_NUMBER, PACK_5_LAST_LEVEL + 1):
 		var level := loader.find_level_by_number(loaded, level_number)
 		if not _require(not level.is_empty(), "Level %d was not found in its Pack Level File." % level_number):
 			return
@@ -188,19 +206,23 @@ func _load_combined_levels() -> void:
 			_pack_2_levels.append(level)
 		elif level_number >= PACK_3_FIRST_LEVEL and level_number <= PACK_3_LAST_LEVEL:
 			_pack_3_levels.append(level)
-		elif level_number >= PACK_4_FIRST_LEVEL:
+		elif level_number >= PACK_4_FIRST_LEVEL and level_number <= PACK_4_LAST_LEVEL:
 			_pack_4_levels.append(level)
+		elif level_number >= PACK_5_FIRST_LEVEL:
+			_pack_5_levels.append(level)
 
-	if not _require(_all_levels.size() == TOTAL_LEVEL_COUNT, "Issue #12 smoke should load exactly %d Level Specs." % TOTAL_LEVEL_COUNT):
+	if not _require(_all_levels.size() == TOTAL_LEVEL_COUNT, "Issue #13 smoke should load exactly %d Level Specs." % TOTAL_LEVEL_COUNT):
 		return
-	if not _require(_pack_2_levels.size() == 10, "Issue #12 smoke should load exactly 10 Pack 2 Level Specs."):
+	if not _require(_pack_2_levels.size() == 10, "Issue #13 smoke should load exactly 10 Pack 2 Level Specs."):
 		return
-	if not _require(_pack_3_levels.size() == 10, "Issue #12 smoke should load exactly 10 Pack 3 Level Specs."):
+	if not _require(_pack_3_levels.size() == 10, "Issue #13 smoke should load exactly 10 Pack 3 Level Specs."):
 		return
-	if not _require(_pack_4_levels.size() == 10, "Issue #12 smoke should load exactly 10 Pack 4 Level Specs."):
+	if not _require(_pack_4_levels.size() == 10, "Issue #13 smoke should load exactly 10 Pack 4 Level Specs."):
+		return
+	if not _require(_pack_5_levels.size() == 10, "Issue #13 smoke should load exactly 10 Pack 5 Level Specs."):
 		return
 
-	if not _require(int(loaded.get("level_count", 0)) >= TOTAL_LEVEL_COUNT, "Combined pack metadata should include at least Levels 1-40."):
+	if not _require(int(loaded.get("level_count", 0)) == TOTAL_LEVEL_COUNT, "Combined pack metadata should report 50 Level Specs."):
 		return
 
 	_combined_pack = loaded
@@ -214,23 +236,25 @@ func _inject_combined_pack() -> void:
 
 
 func _assert_clean_profile() -> void:
-	if not _require(_profile.current_uqiq_score() == LocalProfileScript.DEFAULT_UQIQ_SCORE, "Clean Pack 4 smoke profile should start at UQIQ 100."):
+	if not _require(_profile.current_uqiq_score() == LocalProfileScript.DEFAULT_UQIQ_SCORE, "Clean Pack 5 smoke profile should start at UQIQ 100."):
 		return
-	if not _require(_profile.dur_tokens() == LocalProfileScript.MAX_DUR_TOKENS, "Clean Pack 4 smoke profile should start with 3 Dur Tokens."):
+	if not _require(_profile.dur_tokens() == LocalProfileScript.MAX_DUR_TOKENS, "Clean Pack 5 smoke profile should start with 3 Dur Tokens."):
 		return
-	if not _require(_profile.is_level_unlocked(1), "Clean Pack 4 smoke profile should start with Level 1 unlocked."):
+	if not _require(_profile.is_level_unlocked(1), "Clean Pack 5 smoke profile should start with Level 1 unlocked."):
 		return
-	if not _require(not _profile.is_level_unlocked(2), "Clean Pack 4 smoke profile should start with Level 2 locked."):
+	if not _require(not _profile.is_level_unlocked(2), "Clean Pack 5 smoke profile should start with Level 2 locked."):
 		return
-	if not _require(not _profile.is_level_unlocked(PACK_3_FIRST_LEVEL), "Clean Pack 4 smoke profile should start with Level 21 locked."):
+	if not _require(not _profile.is_level_unlocked(PACK_3_FIRST_LEVEL), "Clean Pack 5 smoke profile should start with Level 21 locked."):
 		return
-	if not _require(not _profile.is_level_unlocked(PACK_4_FIRST_LEVEL), "Clean Pack 4 smoke profile should start with Level 31 locked."):
+	if not _require(not _profile.is_level_unlocked(PACK_4_FIRST_LEVEL), "Clean Pack 5 smoke profile should start with Level 31 locked."):
+		return
+	if not _require(not _profile.is_level_unlocked(PACK_5_FIRST_LEVEL), "Clean Pack 5 smoke profile should start with Level 41 locked."):
 		return
 
 
 func _assert_level_list_exposes_all_levels() -> void:
 	_main.call("_show_level_list")
-	for pack_number in range(1, 5):
+	for pack_number in range(1, 6):
 		var first_level_number := ((pack_number - 1) * 10) + 1
 		var last_level_number := first_level_number + 9
 		if not _require(_screen_has_label_with("Pack %d:" % pack_number, "Levels %02d-%02d" % [first_level_number, last_level_number]), "Level List should render a Pack %d heading for Levels %02d-%02d." % [pack_number, first_level_number, last_level_number]):
@@ -238,8 +262,10 @@ func _assert_level_list_exposes_all_levels() -> void:
 
 	if not _require(_screen_has_label_with("Pack 4:", "Pattern Crimes"), "Level List should render Pack 4 as Pattern Crimes."):
 		return
+	if not _require(_screen_has_label_with("Pack 5:", "Brain Buffer Full"), "Level List should render Pack 5 as Brain Buffer Full."):
+		return
 
-	for level_number in range(FIRST_LEVEL_NUMBER, PACK_4_LAST_LEVEL + 1):
+	for level_number in range(FIRST_LEVEL_NUMBER, PACK_5_LAST_LEVEL + 1):
 		var row := _find_level_row(level_number)
 		if not _require(row != null, "Level List should render a row for Level %d." % level_number):
 			return
@@ -377,6 +403,16 @@ func _run_pack_4_completion_flow() -> void:
 			if _failed:
 				return
 
+		if level_number == PACK_4_LAST_LEVEL:
+			if not _require(not _profile.is_level_unlocked(PACK_5_FIRST_LEVEL), "Level 41 should stay locked before completing or DUR'ing Level 40."):
+				return
+			_spend_dur_from_level_list(level, "DUR'ing Level 40 should unlock Level 41.", PACK_5_FIRST_LEVEL)
+			if _failed:
+				return
+			_assert_reload_preserves_dur_state(level, "Level 40 DUR unlock")
+			if _failed:
+				return
+
 		_start_level_from_list(level)
 		if _failed:
 			return
@@ -391,18 +427,48 @@ func _run_pack_4_completion_flow() -> void:
 			if not _require(_profile.is_level_unlocked(level_number + 1), "Completing or DUR'ing Level %d should unlock Level %d." % [level_number, level_number + 1]):
 				return
 		else:
-			if not _require(int(_profile.data.get("unlocked_level", 0)) >= PACK_4_LAST_LEVEL + 1, "Completing Level 40 should advance Local Profile beyond Pack 4."):
+			if not _require(_profile.is_level_unlocked(PACK_5_FIRST_LEVEL), "Completing recovered Level 40 should keep Level 41 unlocked."):
 				return
 
 
-func _run_level_40_replay_best_attempt_checks() -> void:
-	var level := _level_by_number(PACK_4_LAST_LEVEL)
+func _run_pack_5_completion_flow() -> void:
+	for level in _pack_5_levels:
+		var level_number := int(level.get("level_number", 0))
+
+		if level_number == 44:
+			_spend_dur_from_level_list(level, "DUR'ing Pack 5 Level 44 should unlock Level 45.", 45)
+			if _failed:
+				return
+			_assert_reload_preserves_dur_state(level, "Pack 5 Level 44 DUR spend")
+			if _failed:
+				return
+
+		_start_level_from_list(level)
+		if _failed:
+			return
+
+		var was_durd: bool = _profile.is_level_durd(str(level.get("id", "")))
+		_complete_with_scorecard(level, true, false, was_durd)
+		if _failed:
+			return
+		_pack_5_completion_count += 1
+
+		if level_number < PACK_5_LAST_LEVEL:
+			if not _require(_profile.is_level_unlocked(level_number + 1), "Completing or DUR'ing Level %d should unlock Level %d." % [level_number, level_number + 1]):
+				return
+		else:
+			if not _require(int(_profile.data.get("unlocked_level", 0)) >= PACK_5_LAST_LEVEL + 1, "Completing Level 50 should advance Local Profile beyond Pack 5."):
+				return
+
+
+func _run_level_50_replay_best_attempt_checks() -> void:
+	var level := _level_by_number(PACK_5_LAST_LEVEL)
 	var level_id := str(level.get("id", ""))
 
 	var first_best: Dictionary = _profile.get_best_attempt(level_id)
-	if not _require(not first_best.is_empty(), "Level 40 should have a Best Attempt before replay."):
+	if not _require(not first_best.is_empty(), "Level 50 should have a Best Attempt before replay."):
 		return
-	if not _require(int(first_best.get("roast_count", -1)) > 0, "Initial Level 40 completion should include Roast usage so replay can improve it."):
+	if not _require(int(first_best.get("roast_count", -1)) > 0, "Initial Level 50 completion should include Roast usage so replay can improve it."):
 		return
 
 	_start_level_from_list(level)
@@ -412,9 +478,9 @@ func _run_level_40_replay_best_attempt_checks() -> void:
 	if _failed:
 		return
 	var better_best: Dictionary = _profile.get_best_attempt(level_id)
-	if not _require(int(better_best.get("roast_count", -1)) == 0, "Better Level 40 replay should improve Best Attempt Roast count."):
+	if not _require(int(better_best.get("roast_count", -1)) == 0, "Better Level 50 replay should improve Best Attempt Roast count."):
 		return
-	if not _require(int(better_best.get("action_count", 9999)) <= int(first_best.get("action_count", 9999)), "Better Level 40 replay should keep or improve Best Attempt action count."):
+	if not _require(int(better_best.get("action_count", 9999)) <= int(first_best.get("action_count", 9999)), "Better Level 50 replay should keep or improve Best Attempt action count."):
 		return
 
 	_start_level_from_list(level)
@@ -430,9 +496,9 @@ func _run_level_40_replay_best_attempt_checks() -> void:
 	if _failed:
 		return
 	var kept_best: Dictionary = _profile.get_best_attempt(level_id)
-	if not _require(int(kept_best.get("roast_count", -1)) == 0, "Worse Level 40 replay should keep the improved Best Attempt Roast count."):
+	if not _require(int(kept_best.get("roast_count", -1)) == 0, "Worse Level 50 replay should keep the improved Best Attempt Roast count."):
 		return
-	if not _require(int(kept_best.get("action_count", 9999)) == int(better_best.get("action_count", 9999)), "Worse Level 40 replay should keep the improved Best Attempt action count."):
+	if not _require(int(kept_best.get("action_count", 9999)) == int(better_best.get("action_count", 9999)), "Worse Level 50 replay should keep the improved Best Attempt action count."):
 		return
 
 
@@ -518,6 +584,9 @@ func _complete_with_scorecard(level: Dictionary, use_roast: bool, replay: bool, 
 		return
 	if not _require(completed_attempt.has("score_delta"), "Attempt Metrics should record score_delta for %s." % level_id):
 		return
+	if use_roast:
+		if not _require(int(completed_attempt.get("roast_count", 0)) > 0, "Attempt Metrics should record Roast usage for %s." % level_id):
+			return
 
 	var score_result: Dictionary = _profile.get_score_result(level_id)
 	if not _require(not score_result.is_empty(), "Score result should persist for %s." % level_id):
@@ -528,6 +597,8 @@ func _complete_with_scorecard(level: Dictionary, use_roast: bool, replay: bool, 
 		if not _require(int(score_result.get("score_after", score_before)) != score_before, "Completing %s should change UQIQ Score." % level_id):
 			return
 	if not _require(int(score_result.get("action_count", 0)) == int(completed_attempt.get("action_count", 0)), "Score result should preserve action_count for %s." % level_id):
+		return
+	if not _require(int(score_result.get("roast_count", 0)) == int(completed_attempt.get("roast_count", 0)), "Score result should preserve Roast count for %s." % level_id):
 		return
 	if not _require(not _dictionary_from(_main.get("_last_score_result")).is_empty(), "Main scene should keep the last Score Roastcard result for %s." % level_id):
 		return
@@ -575,7 +646,7 @@ func _complete_level_by_template(level: Dictionary) -> void:
 			_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
 			_main.call("_handle_physics_release")
 		_:
-			if not _require(false, "Unsupported Level Template in Pack 4 smoke: %s" % str(level.get("template", ""))):
+			if not _require(false, "Unsupported Level Template in Pack 5 smoke: %s" % str(level.get("template", ""))):
 				return
 
 
@@ -642,11 +713,11 @@ func _assert_restart_state() -> void:
 		return
 	_restart_count += 1
 
-	if not _require(_profile.current_uqiq_score() == expected_score, "App restart should preserve UQIQ Score after Pack 4."):
+	if not _require(_profile.current_uqiq_score() == expected_score, "App restart should preserve UQIQ Score after Pack 5."):
 		return
-	if not _require(_profile.dur_tokens() == expected_tokens, "App restart should preserve Dur Tokens after Pack 4."):
+	if not _require(_profile.dur_tokens() == expected_tokens, "App restart should preserve Dur Tokens after Pack 5."):
 		return
-	if not _require(int(_profile.data.get("unlocked_level", 0)) == expected_unlocked, "App restart should preserve Level 40 unlock progress."):
+	if not _require(int(_profile.data.get("unlocked_level", 0)) == expected_unlocked, "App restart should preserve Level 50 unlock progress."):
 		return
 	_assert_pack_2_profile_state("app restart")
 	if _failed:
@@ -655,6 +726,9 @@ func _assert_restart_state() -> void:
 	if _failed:
 		return
 	_assert_pack_4_profile_state("app restart")
+	if _failed:
+		return
+	_assert_pack_5_profile_state("app restart")
 
 
 func _assert_pack_3_profile_state(context: String) -> void:
@@ -684,6 +758,21 @@ func _assert_pack_4_profile_state(context: String) -> void:
 	if not _require(_profile.dur_tokens() == LocalProfileScript.MAX_DUR_TOKENS, "%s should preserve recovered Dur Token state." % context):
 		return
 	if not _require(int(_profile.data.get("unlocked_level", 0)) >= PACK_4_LAST_LEVEL + 1, "%s should preserve progress beyond Level 40." % context):
+		return
+
+
+func _assert_pack_5_profile_state(context: String) -> void:
+	for level in _pack_5_levels:
+		var level_id := str(level.get("id", ""))
+		if not _require(_profile.is_level_completed(level_id), "%s should preserve Pack 5 completion for %s." % [context, level_id]):
+			return
+		if not _require(not _profile.get_best_attempt(level_id).is_empty(), "%s should preserve Best Attempt for %s." % [context, level_id]):
+			return
+		if not _require(not _profile.get_score_result(level_id).is_empty(), "%s should preserve score result for %s." % [context, level_id]):
+			return
+	if not _require(_profile.dur_tokens() == LocalProfileScript.MAX_DUR_TOKENS, "%s should preserve recovered Dur Token state." % context):
+		return
+	if not _require(int(_profile.data.get("unlocked_level", 0)) >= PACK_5_LAST_LEVEL + 1, "%s should preserve progress beyond Level 50." % context):
 		return
 
 
@@ -722,7 +811,7 @@ func _level_by_number(level_number: int) -> Dictionary:
 		if int(level.get("level_number", 0)) == level_number:
 			return level
 
-	_require(false, "Level %d should be loaded for Issue #12 smoke." % level_number)
+	_require(false, "Level %d should be loaded for Issue #13 smoke." % level_number)
 	return {}
 
 
