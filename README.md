@@ -128,11 +128,14 @@ godot --headless --path . --script res://scripts/verify_local_profile.gd
 godot --headless --path . --script res://scripts/verify_issue_3.gd
 godot --headless --path . --script res://scripts/verify_issue_4.gd
 godot --headless --path . --script res://scripts/verify_issue_5_desktop_smoke.gd
+godot --headless --path . --script res://scripts/verify_issue_7_pack_1_smoke.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
 
 `verify_issue_5_desktop_smoke.gd` is the scripted desktop smoke/stability check. It boots the main scene with a clean test save, completes Levels 1-6, checks Score Roastcards, replay, Dur Token recovery, save/load, and repeated replay cycles.
+
+`verify_issue_7_pack_1_smoke.gd` is the Pack 1 smoke check. It boots the main scene with a clean test save, completes Levels 1-10 from the Level List through Score Roastcards, checks Level 10 replay/Best Attempt behavior, spends and recovers a Dur Token after Level 6, and verifies save/load plus app-restart persistence.
 
 ## Desktop Smoke
 
