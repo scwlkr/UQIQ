@@ -74,3 +74,19 @@ The app can use IQ language as part of the joke, but it should never claim to be
 Early concept phase.
 
 This repo is for building the first playable version of UQIQ.
+
+## Run the Godot Skeleton
+
+Requirements:
+
+* Godot 4.x
+
+Open/run:
+
+1. Open Godot 4.x.
+2. Click **Import**.
+3. Select this repo's `project.godot`.
+4. Open the imported project.
+5. Press **Run Project**.
+
+The boot skeleton starts at the Level List, loads Pack 1 from `content/levels/pack_01_orientation_is_a_trap.json`, opens Level 1, and routes completion to a Score Roastcard stub.

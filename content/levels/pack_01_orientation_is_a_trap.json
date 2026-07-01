@@ -1,0 +1,518 @@
+{
+  "pack_id": "pack_01_orientation_is_a_trap",
+  "pack_title": "Orientation Is a Trap",
+  "levels": [
+    {
+      "id": "p01_l01_wrong_button",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 1,
+      "title": "The Wrong Button",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the correct button. Try not to make this a whole personality.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "correct_button",
+            "label": "CORRECT",
+            "role": "decoy"
+          },
+          {
+            "id": "wrong_button",
+            "label": "WRONG",
+            "role": "correct"
+          }
+        ],
+        "feedback_on_wrong_tap": "Nope. The label was loud, not right."
+      },
+      "solution": {
+        "target_id": "wrong_button",
+        "explanation": "The prompt asks for the correct button, and the correct button is the one labeled WRONG."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 5,
+          "ok": 15
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "You trusted a button label. Historic dingleberry behavior.",
+          "The button said correct and your brain saluted."
+        ],
+        "delay": [
+          "The answer is waiting. Your courage is still buffering."
+        ],
+        "scorecard": [
+          "You beat Level 1. The app is legally required to pretend this is progress."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "two_large_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The correct answer is the button labeled WRONG."
+    },
+    {
+      "id": "p01_l02_turn_it_up",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 2,
+      "title": "Turn It Up",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "stub",
+            "label": "STUB",
+            "role": "correct"
+          }
+        ]
+      },
+      "solution": {
+        "target_id": "stub",
+        "explanation": "Future Tap Logic Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 5,
+          "ok": 15
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l03_read_the_room",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 3,
+      "title": "Read the Room",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "accepted_inputs": [
+          "stub"
+        ]
+      },
+      "solution": {
+        "answer": "stub",
+        "explanation": "Future Text Trap Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l04_fake_north",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 4,
+      "title": "Fake North",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "grid_size": [
+          2,
+          2
+        ],
+        "correct_cell": "stub"
+      },
+      "solution": {
+        "cell": "stub",
+        "explanation": "Future Pattern Grid Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l05_touch_grass",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 5,
+      "title": "Touch Grass",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "draggable_id": "stub",
+        "target_id": "stub_target"
+      },
+      "solution": {
+        "drop_target_id": "stub_target",
+        "explanation": "Future Drag Logic Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l06_blink_tax",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 6,
+      "title": "Blink Tax",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "flash_items": [
+          "stub"
+        ],
+        "flash_seconds": 1
+      },
+      "solution": {
+        "sequence": [
+          "stub"
+        ],
+        "explanation": "Future Memory Flash Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l07_arrow_trial",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 7,
+      "title": "Arrow Trial",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "stub",
+            "label": "STUB",
+            "role": "correct"
+          }
+        ]
+      },
+      "solution": {
+        "target_id": "stub",
+        "explanation": "Future Tap Logic Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l08_tiny_loud",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 8,
+      "title": "Tiny Loud",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "stub",
+            "label": "STUB",
+            "role": "correct"
+          }
+        ]
+      },
+      "solution": {
+        "target_id": "stub",
+        "explanation": "Future Tap Logic Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l09_no_rotate",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 9,
+      "title": "No Rotate",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "accepted_inputs": [
+          "stub"
+        ]
+      },
+      "solution": {
+        "answer": "stub",
+        "explanation": "Future Text Trap Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    },
+    {
+      "id": "p01_l10_finally_sideways",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 10,
+      "title": "Finally Sideways",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Placeholder Level Spec for the boot skeleton.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "stub",
+            "label": "STUB",
+            "role": "correct"
+          }
+        ]
+      },
+      "solution": {
+        "target_id": "stub",
+        "explanation": "Future Tap Logic Level."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 0
+      },
+      "roasts": {
+        "failure": [
+          "Future failure line."
+        ],
+        "delay": [
+          "Future delay line."
+        ],
+        "scorecard": [
+          "Future scorecard line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stub"
+        ]
+      },
+      "uqiq_moment": "Placeholder twist for Pack 1."
+    }
+  ]
+}
