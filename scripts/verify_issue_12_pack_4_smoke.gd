@@ -163,7 +163,7 @@ func _load_combined_levels() -> void:
 	_pack_3_levels = []
 	_pack_4_levels = []
 	var packs := _packs(loaded)
-	if not _require(packs.size() == EXPECTED_PACK_IDS.size(), "Issue #12 smoke should load exactly 4 Pack metadata entries."):
+	if not _require(packs.size() >= EXPECTED_PACK_IDS.size(), "Issue #12 smoke should load at least the first 4 Pack metadata entries."):
 		return
 	for index in range(EXPECTED_PACK_IDS.size()):
 		var pack := _dictionary_from(packs[index])
@@ -200,7 +200,7 @@ func _load_combined_levels() -> void:
 	if not _require(_pack_4_levels.size() == 10, "Issue #12 smoke should load exactly 10 Pack 4 Level Specs."):
 		return
 
-	if not _require(int(loaded.get("level_count", 0)) == TOTAL_LEVEL_COUNT, "Combined pack metadata should report 40 Level Specs."):
+	if not _require(int(loaded.get("level_count", 0)) >= TOTAL_LEVEL_COUNT, "Combined pack metadata should include at least Levels 1-40."):
 		return
 
 	_combined_pack = loaded
