@@ -5,6 +5,7 @@ const PACK_2_PATH := "res://content/levels/pack_02_words_are_lying.json"
 const PACK_3_PATH := "res://content/levels/pack_03_move_the_wrong_thing.json"
 const PACK_4_PATH := "res://content/levels/pack_04_pattern_crimes.json"
 const PACK_5_PATH := "res://content/levels/pack_05_brain_buffer_full.json"
+const PACK_6_PATH := "res://content/levels/pack_06_gravity_is_fake.json"
 const DEFAULT_PACK_PATH := PACK_1_PATH
 const DEFAULT_PACK_PATHS := [
 	PACK_1_PATH,
@@ -12,6 +13,7 @@ const DEFAULT_PACK_PATHS := [
 	PACK_3_PATH,
 	PACK_4_PATH,
 	PACK_5_PATH,
+	PACK_6_PATH,
 ]
 const REQUIRED_LEVEL_FIELDS := [
 	"id",
