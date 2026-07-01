@@ -9,6 +9,7 @@ Ship UQIQ v1.0 as a free, phone-only, portrait iOS game with 60 curated offline 
 1. **Planning Docs**
    - Maintain `CONTEXT.md` as the domain glossary.
    - Record hard-to-reverse decisions in `docs/adr/`.
+   - Manage work through `docs/PROJECT_CYCLE.md`: Roadmap -> PRD -> GitHub Issue -> Next Step.
    - Define the Level Spec format using one JSON Pack Level File per Level Pack.
    - Keep required Level Spec fields in `docs/LEVEL_SPEC.md`.
 
