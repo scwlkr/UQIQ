@@ -22,7 +22,6 @@ const SUPPORTED_LEVEL_TEMPLATES := [
 	"Memory Flash",
 	"Physics Draw",
 ]
-const PACK_2_PATH := "res://content/levels/pack_02_words_are_lying.json"
 
 var _loader := LevelLoaderScript.new()
 var _profile := LocalProfileScript.new()
@@ -100,7 +99,7 @@ func _load_level_pack_set() -> Dictionary:
 
 
 func _load_fallback_pack_set() -> Dictionary:
-	var paths := [LevelLoaderScript.DEFAULT_PACK_PATH, PACK_2_PATH]
+	var paths := LevelLoaderScript.DEFAULT_PACK_PATHS
 	var packs := []
 	var levels := []
 	var source_paths: Array[String] = []

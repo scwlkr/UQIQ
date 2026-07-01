@@ -89,7 +89,7 @@ Open/run:
 4. Open the imported project.
 5. Press **Run Project**.
 
-The boot skeleton starts at the Level List, loads Pack 1 and Pack 2 from `content/levels/`, opens unlocked Levels, and routes completion to a Score Roastcard stub.
+The boot skeleton starts at the Level List, loads the default Pack Level Files from `content/levels/`, opens unlocked Levels, and routes completion to a Score Roastcard stub.
 
 Headless import/run checks:
 
@@ -131,6 +131,8 @@ godot --headless --path . --script res://scripts/verify_issue_5_desktop_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_7_pack_1_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_8_pack_2_specs.gd
 godot --headless --path . --script res://scripts/verify_issue_10_pack_2_smoke.gd
+godot --headless --path . --script res://scripts/verify_issue_11_pack_3_specs.gd
+godot --headless --path . --script res://scripts/verify_issue_11_pack_3_smoke.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -139,9 +141,13 @@ godot --headless --path . --script res://scripts/verify_issue_10_pack_2_smoke.gd
 
 `verify_issue_7_pack_1_smoke.gd` is the Pack 1 smoke check. It boots the main scene with a clean test save, completes Levels 1-10 from the Level List through Score Roastcards, checks Level 10 replay/Best Attempt behavior, spends and recovers a Dur Token after Level 6, and verifies save/load plus app-restart persistence.
 
-`verify_issue_8_pack_2_specs.gd` is the Pack 2 specs-only check for `content/levels/pack_02_words_are_lying.json`. It validates Pack 2 Level Specs against `docs/LEVEL_SPEC.md`; it does not make Pack 2 playable in the Level List. Gameplay support belongs in a follow-up issue if needed.
+`verify_issue_8_pack_2_specs.gd` is the Pack 2 specs-only check for `content/levels/pack_02_words_are_lying.json`. It validates Pack 2 Level Specs against `docs/LEVEL_SPEC.md`; Pack 2 playability is covered by `verify_issue_10_pack_2_smoke.gd`.
 
 `verify_issue_10_pack_2_smoke.gd` is the Pack 2 playable smoke check. It boots the expanded Level List, completes Levels 11-20 through Score Roastcards, and checks persistence plus Dur Token behavior.
+
+`verify_issue_11_pack_3_specs.gd` is the Pack 3 specs-only check for `content/levels/pack_03_move_the_wrong_thing.json`. It validates the 10 `Move the Wrong Thing` Level Specs for Levels 21-30 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
+
+`verify_issue_11_pack_3_smoke.gd` is the Pack 3 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3 grouping, completes Levels 21-30 through Score Roastcards, and checks linear unlock, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 30-Level progression.
 
 ## Desktop Smoke
 
