@@ -75,7 +75,7 @@ Early concept phase.
 
 This repo is for building the first playable version of UQIQ.
 
-## Run the Godot Skeleton
+## Run Locally
 
 Requirements:
 
@@ -91,7 +91,14 @@ Open/run:
 
 The boot skeleton starts at the Level List, loads Pack 1 from `content/levels/pack_01_orientation_is_a_trap.json`, opens Level 1, and routes completion to a Score Roastcard stub.
 
-## Local Profile Save Data
+Headless import/run checks:
+
+```sh
+godot --headless --path . --editor --quit
+godot --headless --path . --quit-after 2
+```
+
+## Local Save Reset
 
 Runtime progress is stored locally at:
 
@@ -105,8 +112,61 @@ Godot maps that to the app user-data folder. On macOS development builds, the us
 ~/Library/Application Support/Godot/app_userdata/UQIQ/uqiq_local_profile_v1.json
 ```
 
-Reset local progress during development:
+Reset local progress before a clean vertical-slice run:
 
 ```sh
 rm -f "$HOME/Library/Application Support/Godot/app_userdata/UQIQ/uqiq_local_profile_v1.json"
 ```
+
+## Vertical Slice Verification
+
+Run from a clean save:
+
+```sh
+rm -f "$HOME/Library/Application Support/Godot/app_userdata/UQIQ/uqiq_local_profile_v1.json"
+godot --headless --path . --script res://scripts/verify_local_profile.gd
+godot --headless --path . --script res://scripts/verify_issue_3.gd
+godot --headless --path . --script res://scripts/verify_issue_4.gd
+godot --headless --path . --script res://scripts/verify_issue_5_desktop_smoke.gd
+```
+
+`verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
+
+`verify_issue_5_desktop_smoke.gd` is the scripted desktop smoke/stability check. It boots the main scene with a clean test save, completes Levels 1-6, checks Score Roastcards, replay, Dur Token recovery, save/load, and repeated replay cycles.
+
+## Desktop Smoke
+
+Manual smoke:
+
+1. Reset the local save.
+2. Run the project in desktop Godot.
+3. Play Levels 1-6 end to end.
+4. Replay one completed Level.
+5. Spend a Dur Token on an unlocked incomplete Level, then complete that DUR'D Level and confirm the token returns.
+6. Keep the app open for 10 minutes and confirm no crash.
+
+Scripted stability equivalent:
+
+```sh
+godot --headless --path . --script res://scripts/verify_issue_5_desktop_smoke.gd | tee /tmp/uqiq-smoke.log
+```
+
+Save `/tmp/uqiq-smoke.log` as the smoke log. Passing means the scripted stability flow completed with no crash or error.
+
+## iOS Export / Physical iPhone Proof
+
+Physical iPhone proof requires Apple signing access, Xcode, and a connected iPhone trusted by macOS.
+
+Godot/Xcode path:
+
+1. Install Godot iOS export templates for the same Godot 4.x version used locally.
+2. Open Godot, import `project.godot`, then open **Project > Export**.
+3. Use the committed **iOS** export preset in `export_presets.cfg`.
+4. Set Apple signing team, provisioning profile, and required icons/placeholders in the preset.
+5. Export the iOS project.
+6. Open the exported project in Xcode.
+7. Select the physical iPhone as the run destination.
+8. Confirm signing resolves cleanly, then build/install/run.
+9. On device, reset/reinstall if needed, then complete the six-Level smoke path and confirm save/load after app restart.
+
+If signing, Apple Developer access, Xcode setup, or physical device access is unavailable, do not mark iPhone proof complete. Open/link a blocked GitHub issue with the exact missing Apple account, signing, device, or Xcode step needed.
