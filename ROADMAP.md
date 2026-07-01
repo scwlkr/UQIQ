@@ -9,7 +9,7 @@ Ship UQIQ v1.0 as a free, phone-only, portrait iOS game with 60 curated offline 
 1. **Planning Docs**
    - Maintain `CONTEXT.md` as the domain glossary.
    - Record hard-to-reverse decisions in `docs/adr/`.
-   - Define the Level Spec format.
+   - Define the Level Spec format using one JSON Pack Level File per Level Pack.
 
 2. **Godot Project Boot**
    - Create a Godot 4.x project.

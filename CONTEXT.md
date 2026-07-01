@@ -16,6 +16,10 @@ _Avoid_: Level script, puzzle doc, content row
 Level Specs and supporting content stored in the app repo and shipped inside the app binary for v1.0.
 _Avoid_: CMS content, remote levels, spreadsheet source of truth
 
+**Pack Level File**:
+One JSON source file for a Level Pack containing that pack's 10 Level Specs.
+_Avoid_: Single giant level file, per-level file, Godot resource source
+
 **Level Template**:
 A reusable playable structure that multiple Levels can share, such as a tap-order puzzle, drag-object puzzle, memory reveal puzzle, or timing puzzle. v1.0 should use about six Level Templates rather than treating every Level as a one-off.
 _Avoid_: Level engine, mechanic engine, custom level script
