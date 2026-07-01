@@ -1,0 +1,848 @@
+{
+  "pack_id": "pack_03_move_the_wrong_thing",
+  "pack_title": "Move the Wrong Thing",
+  "levels": [
+    {
+      "id": "p03_l21_wrong_wins",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 21,
+      "title": "Wrong Wins",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move WRONG into the Winner Box. RIGHT can watch quietly.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "tile_right",
+            "label": "RIGHT",
+            "role": "decoy"
+          },
+          {
+            "id": "tile_wrong",
+            "label": "WRONG",
+            "role": "correct"
+          },
+          {
+            "id": "tile_loud",
+            "label": "LOUD",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "winner_box",
+            "label": "Winner Box",
+            "role": "correct"
+          },
+          {
+            "id": "obvious_box",
+            "label": "Obvious Box",
+            "role": "decoy"
+          },
+          {
+            "id": "parking_box",
+            "label": "Parking Box",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "tile_wrong",
+        "drop_target_id": "winner_box",
+        "explanation": "The Pack title says to move the wrong thing, so WRONG belongs in the winning spot."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "RIGHT was bait with a nametag. You shook its hand anyway.",
+          "You moved confidence instead of correctness. Tiny executive behavior."
+        ],
+        "delay": [
+          "The Pack title is pointing at WRONG so hard it needs a wrist brace."
+        ],
+        "scorecard": [
+          "You crowned WRONG. The Winner Box is pretending this was a hiring decision."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "word_tiles",
+          "three_drop_zones",
+          "winner_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The first Pack 3 win comes from moving the tile labeled WRONG into the Winner Box."
+    },
+    {
+      "id": "p03_l22_do_not_move",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 22,
+      "title": "Do Not Move",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move DO NOT MOVE into Done. The label is trying to manage you.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "tile_move_me",
+            "label": "MOVE ME",
+            "role": "decoy"
+          },
+          {
+            "id": "tile_do_not_move",
+            "label": "DO NOT MOVE",
+            "role": "correct"
+          },
+          {
+            "id": "tile_done",
+            "label": "DONE",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "done_box",
+            "label": "Done",
+            "role": "correct"
+          },
+          {
+            "id": "time_out_box",
+            "label": "Time Out",
+            "role": "decoy"
+          },
+          {
+            "id": "comfort_mat",
+            "label": "Comfort Mat",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "tile_do_not_move",
+        "drop_target_id": "done_box",
+        "explanation": "The object forbids movement, which makes it the exact wrong thing to move."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You obeyed a tile with clipboard energy. Dingleberry compliance detected.",
+          "MOVE ME shouted and your finger joined the obvious parade."
+        ],
+        "delay": [
+          "The tile begging not to move is basically wearing a spotlight."
+        ],
+        "scorecard": [
+          "You moved the forbidden tile. Authority has requested a smaller chair."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "command_tiles",
+          "done_drop_zone",
+          "warning_label",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The only way to obey the prompt is to disobey the DO NOT MOVE label."
+    },
+    {
+      "id": "p03_l23_arrow_betrayal",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 23,
+      "title": "Arrow Betrayal",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move the arrow pointing away from GOAL onto GOAL.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "arrow_to_goal",
+            "label": "TO GOAL",
+            "role": "decoy"
+          },
+          {
+            "id": "arrow_away",
+            "label": "AWAY",
+            "role": "correct"
+          },
+          {
+            "id": "arrow_spin",
+            "label": "SPIN",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "goal_box",
+            "label": "GOAL",
+            "role": "correct"
+          },
+          {
+            "id": "arrow_jail",
+            "label": "Arrow Jail",
+            "role": "decoy"
+          },
+          {
+            "id": "nowhere_box",
+            "label": "Nowhere",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "arrow_away",
+        "drop_target_id": "goal_box",
+        "explanation": "The prompt asks for the arrow pointing away, then tells the player to put it on GOAL."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 24
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "The friendly arrow sold you a cardboard victory.",
+          "You followed the sign instead of the sentence. Hot breath navigation."
+        ],
+        "delay": [
+          "Pick the one that says AWAY, then give it a promotion to GOAL."
+        ],
+        "scorecard": [
+          "You dragged AWAY to GOAL. Directional logic is filing paperwork."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "arrow_tiles",
+          "goal_drop_zone",
+          "direction_markers",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The arrow that points away from the destination is the object that belongs on the destination."
+    },
+    {
+      "id": "p03_l24_first_slot_last",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 24,
+      "title": "First Slot, Last Tile",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move LAST into the First Slot. FIRST is being too eager.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "tile_first",
+            "label": "FIRST",
+            "role": "decoy"
+          },
+          {
+            "id": "tile_last",
+            "label": "LAST",
+            "role": "correct"
+          },
+          {
+            "id": "tile_middle",
+            "label": "MIDDLE",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "first_slot",
+            "label": "First Slot",
+            "role": "correct"
+          },
+          {
+            "id": "last_slot",
+            "label": "Last Slot",
+            "role": "decoy"
+          },
+          {
+            "id": "shelf_slot",
+            "label": "Shelf",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "tile_last",
+        "drop_target_id": "first_slot",
+        "explanation": "LAST is the requested object, and First Slot is the requested destination."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "FIRST winked and you folded like a wet receipt.",
+          "You gave LAST the Last Slot. Beautifully literal, tragically wrong."
+        ],
+        "delay": [
+          "The prompt says LAST, then First Slot. It even used capital letters for your tiny parade."
+        ],
+        "scorecard": [
+          "You put LAST first. The line has collapsed into management training."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "order_tiles",
+          "slot_stack",
+          "first_slot_marker",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The last tile wins only when it is placed first."
+    },
+    {
+      "id": "p03_l25_sticker_mutiny",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 25,
+      "title": "Sticker Mutiny",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the tile that refuses the MOVE command.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "MOVE",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "MOVE",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "MOVE",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "MOVE",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "STAY",
+            "role": "correct"
+          },
+          {
+            "id": "r2c3",
+            "label": "MOVE",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "MOVE",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "MOVE",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "MOVE",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c2",
+        "explanation": "STAY is the only tile that breaks the movement pattern."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You selected a MOVE tile in the anti-move lineup. Boldly decorative.",
+          "The pattern was eight elbows pointing at STAY and you applauded a decoy."
+        ],
+        "delay": [
+          "Eight tiles say MOVE. One tile is refusing the group project."
+        ],
+        "scorecard": [
+          "You found STAY in a crowd of MOVE. Rebellion has been alphabetized."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "command_tiles",
+          "selected_cell_outline",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A Pack about moving makes the correct answer the one tile that refuses to move."
+    },
+    {
+      "id": "p03_l26_key_is_not_invited",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 26,
+      "title": "Key Is Not Invited",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Unlock the door by moving LOCKED onto the Door Label. The key is just flexing.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "tile_key",
+            "label": "KEY",
+            "role": "decoy"
+          },
+          {
+            "id": "tile_locked",
+            "label": "LOCKED",
+            "role": "correct"
+          },
+          {
+            "id": "tile_open",
+            "label": "OPEN",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "door_label",
+            "label": "Door Label",
+            "role": "correct"
+          },
+          {
+            "id": "keyhole",
+            "label": "Keyhole",
+            "role": "decoy"
+          },
+          {
+            "id": "drawer",
+            "label": "Drawer",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "tile_locked",
+        "drop_target_id": "door_label",
+        "explanation": "The prompt asks to change the label state, not use the obvious key."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 11,
+          "ok": 26
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 6
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You trusted the key because it dressed for the job.",
+          "The key was scenery with an ego. You gave it a promotion."
+        ],
+        "delay": [
+          "Try changing the label instead of making tiny lock theater."
+        ],
+        "scorecard": [
+          "You moved LOCKED, not KEY. The door opened out of embarrassment."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "door_panel",
+          "label_tiles",
+          "key_decoy",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The key is a decoy; the correct move is dragging the word LOCKED onto the Door Label."
+    },
+    {
+      "id": "p03_l27_fail_upward",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 27,
+      "title": "Fail Upward",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move FAIL into the Pass Slot. PASS already passed the vibe check.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "tile_pass",
+            "label": "PASS",
+            "role": "decoy"
+          },
+          {
+            "id": "tile_fail",
+            "label": "FAIL",
+            "role": "correct"
+          },
+          {
+            "id": "tile_maybe",
+            "label": "MAYBE",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "pass_slot",
+            "label": "Pass Slot",
+            "role": "correct"
+          },
+          {
+            "id": "fail_slot",
+            "label": "Fail Slot",
+            "role": "decoy"
+          },
+          {
+            "id": "applause_box",
+            "label": "Applause Box",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "tile_fail",
+        "drop_target_id": "pass_slot",
+        "explanation": "The Level asks for FAIL to be moved into the Pass Slot."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "PASS was already pass-shaped. You solved a closed door.",
+          "FAIL needed the promotion, and you sent it to storage."
+        ],
+        "delay": [
+          "The Level title is trying to whisper career advice to FAIL."
+        ],
+        "scorecard": [
+          "You let FAIL pass. Standards have left wearing tiny sunglasses."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "status_tiles",
+          "pass_fail_slots",
+          "stamp_badges",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The failing tile is the only tile that can complete the Pass Slot."
+    },
+    {
+      "id": "p03_l28_moving_day_flash",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 28,
+      "title": "Moving Day Flash",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the move order, hide it, then repeat the exact order. The wrong item is in the middle.",
+      "rules": {
+        "flash_items": [
+          "BOX",
+          "WRONG",
+          "GOAL"
+        ],
+        "choices": [
+          "GOAL",
+          "BOX",
+          "WRONG"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "BOX",
+          "WRONG",
+          "GOAL"
+        ],
+        "explanation": "Repeat the flashed order, not the shuffled choices."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 9
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You packed the order in a suitcase made of soup.",
+          "The sequence flashed once and your attention changed the locks."
+        ],
+        "delay": [
+          "Flash it once, then rebuild BOX, WRONG, GOAL before confidence expires."
+        ],
+        "scorecard": [
+          "You remembered where WRONG belonged. Storage fees have been waived."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "flash_cards",
+          "choice_buttons",
+          "moving_box_icon",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The drag-themed Pack briefly becomes a memory test where WRONG is a position in the sequence."
+    },
+    {
+      "id": "p03_l29_full_box_empty",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 29,
+      "title": "Full Box, Empty Tile",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move EMPTY into the Full Box. FULL is already bragging.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "tile_full",
+            "label": "FULL",
+            "role": "decoy"
+          },
+          {
+            "id": "tile_empty",
+            "label": "EMPTY",
+            "role": "correct"
+          },
+          {
+            "id": "tile_normal",
+            "label": "NORMAL",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "full_box",
+            "label": "Full Box",
+            "role": "correct"
+          },
+          {
+            "id": "empty_box",
+            "label": "Empty Box",
+            "role": "decoy"
+          },
+          {
+            "id": "sorting_bin",
+            "label": "Sorting Bin",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "tile_empty",
+        "drop_target_id": "full_box",
+        "explanation": "EMPTY is the wrong-feeling object, and the Full Box is the requested destination."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You put FULL in the Full Box. Symmetry is not a personality.",
+          "EMPTY had one weird job and you left it on the curb."
+        ],
+        "delay": [
+          "The Full Box does not need more FULL. It needs nonsense."
+        ],
+        "scorecard": [
+          "You filled the Full Box with EMPTY. Logic is wearing a paper hat."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "box_tiles",
+          "full_empty_bins",
+          "capacity_meter",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The Full Box is completed by the EMPTY tile, not the tile labeled FULL."
+    },
+    {
+      "id": "p03_l30_crown_the_mistake",
+      "pack_id": "pack_03_move_the_wrong_thing",
+      "level_number": 30,
+      "title": "Crown the Mistake",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move MISTAKE onto the Crown. End the Pack with confidence pointed backward.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "tile_masterplan",
+            "label": "MASTERPLAN",
+            "role": "decoy"
+          },
+          {
+            "id": "tile_mistake",
+            "label": "MISTAKE",
+            "role": "correct"
+          },
+          {
+            "id": "tile_safe_pick",
+            "label": "SAFE PICK",
+            "role": "decoy"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "crown",
+            "label": "Crown",
+            "role": "correct"
+          },
+          {
+            "id": "trophy_shelf",
+            "label": "Trophy Shelf",
+            "role": "decoy"
+          },
+          {
+            "id": "quiet_corner",
+            "label": "Quiet Corner",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "tap_select_then_drop"
+      },
+      "solution": {
+        "object_id": "tile_mistake",
+        "drop_target_id": "crown",
+        "explanation": "The Pack finale asks for MISTAKE to be crowned, so the safe-looking choices are decoys."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You crowned the safe pick. The Crown rejected your spreadsheet energy.",
+          "MASTERPLAN arrived overdressed and still lost to the obvious mistake."
+        ],
+        "delay": [
+          "The Crown wants the thing your instincts are trying to hide."
+        ],
+        "scorecard": [
+          "You crowned MISTAKE. Pack 3 ends with nonsense wearing formalwear."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "finale_tiles",
+          "crown_drop_zone",
+          "confetti_rectangles",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The Pack finale rewards crowning MISTAKE instead of the safe or impressive labels."
+    }
+  ]
+}
