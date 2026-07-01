@@ -247,3 +247,11 @@ _Avoid_: Ad-supported launch, paid launch, launch IAP
 **Anonymous Level Event**:
 A privacy-light gameplay event that records Level activity without player identity, such as started, completed, failed, DUR'D, or Roast used.
 _Avoid_: User analytics, tracking, profile event
+
+**Goal Manager**:
+The agent role for a long-running `/goal` loop. It manages the Roadmap -> PRD -> GitHub Issue -> Next Step cycle, delegates coding/content/review work when useful, verifies proof, commits often, and advances the issue queue without doing large implementation work itself.
+_Avoid_: Implementation agent, passive planner, one-shot assistant
+
+**Necessary Blocker**:
+The only valid stop condition for a long-running `/goal` loop: something scwlkr must personally do, approve, grant access for, or decide before the project can keep advancing.
+_Avoid_: Routine test failure, missing local investigation, agent inconvenience
