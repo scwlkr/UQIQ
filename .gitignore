@@ -16,3 +16,4 @@ exports/
 
 # Agents
 AGENTS.md
+.agent-board/
