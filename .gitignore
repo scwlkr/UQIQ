@@ -13,3 +13,6 @@ exports/
 
 # macOS
 .DS_Store
+
+# Agents
+AGENTS.md
