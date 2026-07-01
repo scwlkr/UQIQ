@@ -137,6 +137,8 @@ godot --headless --path . --script res://scripts/verify_issue_12_pack_4_specs.gd
 godot --headless --path . --script res://scripts/verify_issue_12_pack_4_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_13_pack_5_specs.gd
 godot --headless --path . --script res://scripts/verify_issue_13_pack_5_smoke.gd
+godot --headless --path . --script res://scripts/verify_issue_16_pack_6_specs.gd
+godot --headless --path . --script res://scripts/verify_issue_16_pack_6_smoke.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -160,6 +162,10 @@ godot --headless --path . --script res://scripts/verify_issue_13_pack_5_smoke.gd
 `verify_issue_13_pack_5_specs.gd` is the Pack 5 specs-only check for `content/levels/pack_05_brain_buffer_full.json`. It validates the 10 `Brain Buffer Full` Level Specs for Levels 41-50 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
 
 `verify_issue_13_pack_5_smoke.gd` is the Pack 5 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3/4/5 grouping, completes Levels 41-50 through Score Roastcards, and checks linear unlock, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 50-Level progression.
+
+`verify_issue_16_pack_6_specs.gd` is the Pack 6 specs-only check for `content/levels/pack_06_gravity_is_fake.json`. It validates the 10 `Gravity Is Fake` Level Specs for Levels 51-60 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
+
+`verify_issue_16_pack_6_smoke.gd` is the Pack 6 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3/4/5/6 grouping, completes Levels 51-60 through Score Roastcards, and checks Level 50 to Level 51 unlock, linear unlock through Level 60, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 60-Level progression.
 
 ## Desktop Smoke
 
