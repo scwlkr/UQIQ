@@ -1,0 +1,914 @@
+{
+  "pack_id": "pack_04_pattern_crimes",
+  "pack_title": "Pattern Crimes",
+  "levels": [
+    {
+      "id": "p04_l31_prime_suspect",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 31,
+      "title": "Prime Suspect",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the fake prime in the witness grid.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "2",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "3",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "5",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "7",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "9",
+            "role": "correct"
+          },
+          {
+            "id": "r2c3",
+            "label": "11",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "13",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "17",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "19",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c2",
+        "explanation": "Nine is the only composite number hiding in a grid of primes."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You arrested an actual prime. Math court is already laughing.",
+          "The fake wore a square number badge and you still questioned a witness."
+        ],
+        "delay": [
+          "Nine is doing composite crimes in the center like a tiny fraud boss."
+        ],
+        "scorecard": [
+          "You caught 9 pretending to be prime. The number line filed charges."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "number_tiles",
+          "suspect_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The first Pattern Crimes win is exposing 9 as the only non-prime suspect."
+    },
+    {
+      "id": "p04_l32_diagonal_alibi",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 32,
+      "title": "Diagonal Alibi",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the angle that breaks the diagonal alibi.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "45",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "45",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "45",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "45",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "90",
+            "role": "correct"
+          },
+          {
+            "id": "r2c3",
+            "label": "45",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "45",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "45",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "45",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c2",
+        "explanation": "Every other tile claims the same diagonal angle; 90 is the right-angle witness."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You picked a matching angle. Pattern jail is very roomy today.",
+          "The right angle confessed and you interrogated a diagonal."
+        ],
+        "delay": [
+          "Eight tiles are leaning. One is standing there at 90 like a stiff little snitch."
+        ],
+        "scorecard": [
+          "You found the right angle. Geometry stopped fake-coughing."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "angle_tiles",
+          "diagonal_markers",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A grid full of diagonal 45-degree claims is broken by one stubborn 90-degree tile."
+    },
+    {
+      "id": "p04_l33_row_forgery",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 33,
+      "title": "Row Forgery",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Each row repeats one case file. Find the forged file.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "B",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "B",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c3",
+            "label": "8",
+            "role": "correct"
+          },
+          {
+            "id": "r3c1",
+            "label": "C",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "C",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "C",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c3",
+        "explanation": "Rows A and C repeat cleanly; the B row has an 8 forged into the third slot."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You accused a normal row. The file cabinet wants distance.",
+          "The 8 was wearing a fake B costume and you waved at a decoy."
+        ],
+        "delay": [
+          "The B row has one number doing alphabet cosplay."
+        ],
+        "scorecard": [
+          "You found the forged 8. The alphabet audit is less ashamed."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "case_file_tiles",
+          "forgery_stamp",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The forged case file is a number pretending to belong in a repeated letter row."
+    },
+    {
+      "id": "p04_l34_sequence_fraud",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 34,
+      "title": "Sequence Fraud",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the number that lies about the even sequence.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "2",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "4",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "6",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "8",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "10",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c3",
+            "label": "13",
+            "role": "correct"
+          },
+          {
+            "id": "r3c1",
+            "label": "14",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "16",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "18",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c3",
+        "explanation": "The sequence is even numbers; 13 is the odd fraud wedged between 10 and 14."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 24
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You selected an even number in the even-number lineup. Revolutionary nothing.",
+          "Thirteen broke into the sequence and you blamed the doorman."
+        ],
+        "delay": [
+          "Count by twos. Then notice the one number that showed up wearing odd shoes."
+        ],
+        "scorecard": [
+          "You caught 13 committing sequence fraud. Arithmetic can unclench."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "number_tiles",
+          "evidence_outline",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The familiar even-number sequence is interrupted by 13 hiding in plain sight."
+    },
+    {
+      "id": "p04_l35_repeat_offender",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 35,
+      "title": "Repeat Offender",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the pattern that broke parole.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "target_abab_left",
+            "label": "ABAB",
+            "role": "decoy"
+          },
+          {
+            "id": "target_aabb",
+            "label": "AABB",
+            "role": "correct"
+          },
+          {
+            "id": "target_abab_right",
+            "label": "ABAB",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "That pattern is still behaving. Try the one with the clumped alibi."
+      },
+      "solution": {
+        "target_id": "target_aabb",
+        "explanation": "ABAB repeats cleanly; AABB breaks the alternating pattern."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You tapped the innocent repeat. The pattern lawyer thanks you for nothing.",
+          "ABAB was behaving twice and you still tackled it."
+        ],
+        "delay": [
+          "One target stops alternating and starts loitering in pairs."
+        ],
+        "scorecard": [
+          "You tapped AABB. Alternation filed a tiny restraining order."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "pattern_buttons",
+          "parole_stamp",
+          "tap_target_states",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The Pack briefly turns the grid crime into a tap lineup where AABB is the repeat offender."
+    },
+    {
+      "id": "p04_l36_mirror_perjury",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 36,
+      "title": "Mirror Perjury",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the word that fails the mirror testimony.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "TOOT",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "NOON",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "LEVEL",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "RADAR",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "CHAIR",
+            "role": "correct"
+          },
+          {
+            "id": "r2c3",
+            "label": "CIVIC",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "ROTOR",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "KAYAK",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "REFER",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c2",
+        "explanation": "Every word except CHAIR reads the same forward and backward."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 28
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 6
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You accused a palindrome. It can defend itself backward too.",
+          "The mirror words were clean and you still threw a chair at grammar."
+        ],
+        "delay": [
+          "Read them backward. CHAIR falls over immediately."
+        ],
+        "scorecard": [
+          "You exposed CHAIR. The mirror is no longer taking statements."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "word_tiles",
+          "mirror_line",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The only non-palindrome is an ordinary chair sitting among words that mirror themselves."
+    },
+    {
+      "id": "p04_l37_shape_racket",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 37,
+      "title": "Shape Racket",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the shape word with too many letters.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "BOX",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "DOT",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "ARC",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "HEX",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "LINE",
+            "role": "correct"
+          },
+          {
+            "id": "r2c3",
+            "label": "RAY",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "OVL",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "CIR",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "SQE",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c2",
+        "explanation": "Every other label is three letters; LINE is the four-letter shape word breaking the count."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 11,
+          "ok": 26
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 6
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You selected a three-letter tile. Counting to four remains on the roadmap of your soul.",
+          "The long label was waving and you subpoenaed a tiny abbreviation."
+        ],
+        "delay": [
+          "Most labels are three letters. LINE brought extra baggage."
+        ],
+        "scorecard": [
+          "You found LINE stretching the pattern. The grid hates tall paperwork."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "shape_word_tiles",
+          "letter_count_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The culprit is not a weird shape; it is the only shape word with four letters."
+    },
+    {
+      "id": "p04_l38_crime_scene_flash",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 38,
+      "title": "Crime Scene Flash",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Memorize the evidence order before the grid hides it.",
+      "rules": {
+        "flash_items": [
+          "GRID",
+          "FAKE",
+          "CELL"
+        ],
+        "choices": [
+          "CELL",
+          "GRID",
+          "FAKE"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "GRID",
+          "FAKE",
+          "CELL"
+        ],
+        "explanation": "Repeat the flashed evidence order, not the shuffled choice order."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 9
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "The evidence flashed once and your memory left the jurisdiction.",
+          "You rearranged the crime scene like a very confident intern."
+        ],
+        "delay": [
+          "GRID, FAKE, CELL. The evidence is not playing jazz."
+        ],
+        "scorecard": [
+          "You rebuilt the evidence order. The flash witness stopped sweating."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "flash_cards",
+          "evidence_tiles",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A Pattern Grid Pack briefly becomes a memory lineup where the correct order is the evidence itself."
+    },
+    {
+      "id": "p04_l39_column_snitch",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 39,
+      "title": "Column Snitch",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Each column keeps one letter. Find the snitch.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "B",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "C",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "B",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c3",
+            "label": "C",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "C",
+            "role": "correct"
+          },
+          {
+            "id": "r3c3",
+            "label": "C",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r3c2",
+        "explanation": "The middle column should stay B; the bottom middle cell snitches by showing C."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 11,
+          "ok": 26
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 6
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You blamed a loyal column tile. It will remember this during sentencing.",
+          "The B column got betrayed and you questioned the paperwork."
+        ],
+        "delay": [
+          "Look down the middle. One C is trespassing in B territory."
+        ],
+        "scorecard": [
+          "You found the column snitch. B can go back to being boring."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "column_highlights",
+          "snitch_marker",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The repeated column pattern is broken by one C hiding inside the B column."
+    },
+    {
+      "id": "p04_l40_coordinate_perp_walk",
+      "pack_id": "pack_04_pattern_crimes",
+      "level_number": 40,
+      "title": "Coordinate Perp Walk",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the coordinate that falsified its row.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "1A",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "1B",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "1C",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "2A",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "2B",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c3",
+            "label": "2C",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "3A",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "4B",
+            "role": "correct"
+          },
+          {
+            "id": "r3c3",
+            "label": "3C",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r3c2",
+        "explanation": "The third row should start with 3 in every coordinate; 4B falsifies the row."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 28
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 6
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You perp-walked a clean coordinate. The grid has requested a smarter detective.",
+          "The row number was lying in one place and you searched the honest tiles."
+        ],
+        "delay": [
+          "Rows 1 and 2 know their numbers. Row 3 has one tile doing tax fraud."
+        ],
+        "scorecard": [
+          "You caught 4B in row 3. The coordinate system looks mildly relieved."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "coordinate_tiles",
+          "finale_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The Pack finale catches a coordinate lying about its own row number instead of its column letter."
+    }
+  ]
+}
