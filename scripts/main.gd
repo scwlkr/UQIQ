@@ -26,6 +26,11 @@ var _last_completed_attempt := {}
 var _last_score_result := {}
 var _level_list_notice := ""
 var _feedback_label: Label
+var _text_input: LineEdit
+var _selected_drag_id := ""
+var _selected_pattern_cell := ""
+var _memory_input: Array[String] = []
+var _physics_choice := ""
 
 
 func _ready() -> void:
@@ -80,7 +85,7 @@ func _show_level_list() -> void:
 
 		var dur_button := _make_button("DUR", COLOR_ORANGE, Vector2(76, 58))
 		dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-		dur_button.disabled = not _profile.can_spend_dur_token(level)
+		dur_button.disabled = not _is_vertical_slice_level(level) or not _profile.can_spend_dur_token(level)
 		dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
 		row.add_child(dur_button)
 
@@ -93,6 +98,11 @@ func _show_play_screen(level: Dictionary) -> void:
 	_last_completed_attempt = {}
 	_last_score_result = {}
 	_level_list_notice = ""
+	_text_input = null
+	_selected_drag_id = ""
+	_selected_pattern_cell = ""
+	_memory_input = []
+	_physics_choice = ""
 
 	var root := _make_screen(COLOR_PANEL)
 
@@ -145,24 +155,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	stage_box.add_theme_constant_override("separation", 14)
 	stage.add_child(stage_box)
 
-	_add_label(stage_box, "Tap Logic", 24, COLOR_INK)
-
-	var rules = level.get("rules", {})
-	var targets = []
-	if typeof(rules) == TYPE_DICTIONARY:
-		targets = rules.get("tap_targets", [])
-
-	if typeof(targets) == TYPE_ARRAY:
-		for target in targets:
-			if typeof(target) != TYPE_DICTIONARY:
-				continue
-
-			var target_button := _make_button(str(target.get("label", "Tap")), _target_color(target))
-			target_button.pressed.connect(Callable(self, "_handle_tap_target").bind(str(target.get("id", ""))))
-			stage_box.add_child(target_button)
-
-	_feedback_label = _new_label("Choose carefully.", 18, COLOR_INK)
-	stage_box.add_child(_feedback_label)
+	_render_level_stage(stage_box, level)
 
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -187,6 +180,125 @@ func _handle_tap_target(target_id: String) -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Nope. Your finger has executive dysfunction.")
+
+
+func _handle_drag_select(object_id: String) -> void:
+	_tap_count += 1
+	_selected_drag_id = object_id
+	_feedback_label.text = "Holding %s. Now move it somewhere questionable." % object_id
+
+
+func _handle_drag_drop(drop_target_id: String) -> void:
+	_tap_count += 1
+
+	var solution = _current_level.get("solution", {})
+	var winning_object := ""
+	var winning_target := ""
+	if typeof(solution) == TYPE_DICTIONARY:
+		winning_object = str(solution.get("object_id", ""))
+		winning_target = str(solution.get("drop_target_id", ""))
+
+	if _selected_drag_id == winning_object and drop_target_id == winning_target:
+		_complete_current_level()
+		return
+
+	_feedback_label.text = _first_roast("failure", "Wrong thing, wrong place. Somehow both.")
+
+
+func _handle_text_submit() -> void:
+	_tap_count += 1
+
+	var answer := ""
+	if _text_input != null:
+		answer = _normalize_answer(_text_input.text)
+
+	var rules := _rules()
+	var accepted = rules.get("accepted_inputs", [])
+	if typeof(accepted) == TYPE_ARRAY:
+		for accepted_answer in accepted:
+			if answer == _normalize_answer(str(accepted_answer)):
+				_complete_current_level()
+				return
+
+	var solution := _solution()
+	if answer == _normalize_answer(str(solution.get("answer", ""))):
+		_complete_current_level()
+		return
+
+	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
+
+
+func _handle_text_submitted(_submitted_text: String) -> void:
+	_handle_text_submit()
+
+
+func _handle_pattern_cell(cell_id: String) -> void:
+	_tap_count += 1
+	_selected_pattern_cell = cell_id
+	_feedback_label.text = "Selected %s. Submit it if your pattern organs agree." % cell_id
+
+
+func _handle_pattern_submit() -> void:
+	_tap_count += 1
+
+	var solution := _solution()
+	if _selected_pattern_cell == str(solution.get("cell_id", "")):
+		_complete_current_level()
+		return
+
+	_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
+
+
+func _handle_memory_flash(show_sequence: bool) -> void:
+	_tap_count += 1
+
+	var rules := _rules()
+	var sequence = rules.get("flash_items", [])
+	if show_sequence and typeof(sequence) == TYPE_ARRAY:
+		_feedback_label.text = "Flash: %s" % "  ".join(_string_array(sequence))
+	else:
+		_feedback_label.text = "Hidden. Choose the sequence before your brain files bankruptcy."
+
+
+func _handle_memory_choice(item_id: String) -> void:
+	_tap_count += 1
+	_memory_input.append(item_id)
+	_feedback_label.text = "Input: %s" % "  ".join(_memory_input)
+
+
+func _handle_memory_clear() -> void:
+	_tap_count += 1
+	_memory_input = []
+	_feedback_label.text = "Cleared. That was probably wise."
+
+
+func _handle_memory_submit() -> void:
+	_tap_count += 1
+
+	var solution := _solution()
+	var sequence = solution.get("sequence", [])
+	if typeof(sequence) == TYPE_ARRAY and _memory_input == _string_array(sequence):
+		_complete_current_level()
+		return
+
+	_feedback_label.text = _first_roast("failure", "Memory failed. The pixels had one job and so did you.")
+
+
+func _handle_physics_draw(draw_id: String) -> void:
+	_tap_count += 1
+	_physics_choice = draw_id
+	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % draw_id
+
+
+func _handle_physics_release() -> void:
+	_tap_count += 1
+
+	var solution := _solution()
+	if _physics_choice == str(solution.get("draw_id", "")):
+		_complete_current_level()
+		return
+
+	_feedback_label.text = _first_roast("failure", "The ball saw your line and requested a different universe.")
 
 
 func _handle_roast_action() -> void:
@@ -321,6 +433,172 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	return button
 
 
+func _render_level_stage(stage_box: VBoxContainer, level: Dictionary) -> void:
+	var template := str(level.get("template", ""))
+	_add_label(stage_box, template, 24, COLOR_INK)
+
+	match template:
+		"Tap Logic":
+			_render_tap_logic(stage_box)
+		"Drag Logic":
+			_render_drag_logic(stage_box)
+		"Text Trap":
+			_render_text_trap(stage_box)
+		"Pattern Grid":
+			_render_pattern_grid(stage_box)
+		"Memory Flash":
+			_render_memory_flash(stage_box)
+		"Physics Draw":
+			_render_physics_draw(stage_box)
+		_:
+			_add_label(stage_box, "Future template. Your brilliance has been postponed.", 18, COLOR_INK)
+			_add_feedback(stage_box, "Return later when this Level stops being imaginary.")
+
+
+func _render_tap_logic(stage_box: VBoxContainer) -> void:
+	var targets = _rules().get("tap_targets", [])
+	if typeof(targets) == TYPE_ARRAY:
+		for target in targets:
+			if typeof(target) != TYPE_DICTIONARY:
+				continue
+
+			var target_button := _make_button(str(target.get("label", "Tap")), _target_color(target))
+			target_button.pressed.connect(Callable(self, "_handle_tap_target").bind(str(target.get("id", ""))))
+			stage_box.add_child(target_button)
+
+	_add_feedback(stage_box, "Choose carefully.")
+
+
+func _render_drag_logic(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, "Pick the object, then pick where to drop it.", 17, COLOR_INK)
+
+	var objects = _rules().get("draggable_objects", [])
+	if typeof(objects) == TYPE_ARRAY:
+		for object in objects:
+			if typeof(object) != TYPE_DICTIONARY:
+				continue
+
+			var object_button := _make_button("Move: %s" % str(object.get("label", "Object")), _target_color(object))
+			object_button.pressed.connect(Callable(self, "_handle_drag_select").bind(str(object.get("id", ""))))
+			stage_box.add_child(object_button)
+
+	var targets = _rules().get("drop_targets", [])
+	if typeof(targets) == TYPE_ARRAY:
+		for target in targets:
+			if typeof(target) != TYPE_DICTIONARY:
+				continue
+
+			var target_button := _make_button("Drop on: %s" % str(target.get("label", "Target")), COLOR_PANEL_ALT)
+			target_button.pressed.connect(Callable(self, "_handle_drag_drop").bind(str(target.get("id", ""))))
+			stage_box.add_child(target_button)
+
+	_add_feedback(stage_box, "Move the wrong thing into the right place.")
+
+
+func _render_text_trap(stage_box: VBoxContainer) -> void:
+	_text_input = LineEdit.new()
+	_text_input.placeholder_text = str(_rules().get("placeholder", "type answer"))
+	_text_input.custom_minimum_size = Vector2(0, 56)
+	_text_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_text_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_text_input.add_theme_font_size_override("font_size", 22)
+	_text_input.text_submitted.connect(Callable(self, "_handle_text_submitted"))
+	stage_box.add_child(_text_input)
+
+	var submit_button := _make_button("Submit", COLOR_GREEN)
+	submit_button.pressed.connect(Callable(self, "_handle_text_submit"))
+	stage_box.add_child(submit_button)
+
+	_add_feedback(stage_box, "Type the answer the prompt deserves, not the one it asked for.")
+
+
+func _render_pattern_grid(stage_box: VBoxContainer) -> void:
+	var grid := GridContainer.new()
+	grid.columns = int(_rules().get("columns", 3))
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	stage_box.add_child(grid)
+
+	var cells = _rules().get("cells", [])
+	if typeof(cells) == TYPE_ARRAY:
+		for cell in cells:
+			if typeof(cell) != TYPE_DICTIONARY:
+				continue
+
+			var cell_button := _make_button(str(cell.get("label", "?")), _target_color(cell), Vector2(86, 58))
+			cell_button.pressed.connect(Callable(self, "_handle_pattern_cell").bind(str(cell.get("id", ""))))
+			grid.add_child(cell_button)
+
+	var submit_button := _make_button("Submit Pattern", COLOR_GREEN)
+	submit_button.pressed.connect(Callable(self, "_handle_pattern_submit"))
+	stage_box.add_child(submit_button)
+
+	_add_feedback(stage_box, "Find the cell that breaks the pattern.")
+
+
+func _render_memory_flash(stage_box: VBoxContainer) -> void:
+	var flash_row := HBoxContainer.new()
+	flash_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	flash_row.add_theme_constant_override("separation", 8)
+	stage_box.add_child(flash_row)
+
+	var show_button := _make_button("Flash", COLOR_YELLOW)
+	show_button.pressed.connect(Callable(self, "_handle_memory_flash").bind(true))
+	flash_row.add_child(show_button)
+
+	var hide_button := _make_button("Hide", COLOR_PANEL_ALT)
+	hide_button.pressed.connect(Callable(self, "_handle_memory_flash").bind(false))
+	flash_row.add_child(hide_button)
+
+	var choices = _rules().get("choices", [])
+	if typeof(choices) == TYPE_ARRAY:
+		for choice in choices:
+			var choice_button := _make_button(str(choice), COLOR_BLUE, Vector2(0, 52))
+			choice_button.pressed.connect(Callable(self, "_handle_memory_choice").bind(str(choice)))
+			stage_box.add_child(choice_button)
+
+	var actions := HBoxContainer.new()
+	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_theme_constant_override("separation", 8)
+	stage_box.add_child(actions)
+
+	var clear_button := _make_button("Clear", COLOR_ORANGE)
+	clear_button.pressed.connect(Callable(self, "_handle_memory_clear"))
+	actions.add_child(clear_button)
+
+	var submit_button := _make_button("Submit", COLOR_GREEN)
+	submit_button.pressed.connect(Callable(self, "_handle_memory_submit"))
+	actions.add_child(submit_button)
+
+	_add_feedback(stage_box, "Flash it, hide it, then rebuild the sequence.")
+
+
+func _render_physics_draw(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
+
+	var options = _rules().get("draw_options", [])
+	if typeof(options) == TYPE_ARRAY:
+		for option in options:
+			if typeof(option) != TYPE_DICTIONARY:
+				continue
+
+			var option_button := _make_button("Draw: %s" % str(option.get("label", "Line")), _target_color(option))
+			option_button.pressed.connect(Callable(self, "_handle_physics_draw").bind(str(option.get("id", ""))))
+			stage_box.add_child(option_button)
+
+	var release_button := _make_button("Release Ball", COLOR_GREEN)
+	release_button.pressed.connect(Callable(self, "_handle_physics_release"))
+	stage_box.add_child(release_button)
+
+	_add_feedback(stage_box, "No physics sandbox yet. This deterministic line check is the slice.")
+
+
+func _add_feedback(stage_box: VBoxContainer, text: String) -> void:
+	_feedback_label = _new_label(text, 18, COLOR_INK)
+	stage_box.add_child(_feedback_label)
+
+
 func _flat_box(color: Color, radius: int) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
 	box.bg_color = color
@@ -374,16 +652,22 @@ func _add_profile_status(parent: Node) -> void:
 
 func _is_level_playable(level: Dictionary) -> bool:
 	var level_number := int(level.get("level_number", 0))
-	return _profile.is_level_unlocked(level_number) and _has_tap_targets(level)
+	return _profile.is_level_unlocked(level_number) and _is_vertical_slice_level(level)
 
 
-func _has_tap_targets(level: Dictionary) -> bool:
-	var rules = level.get("rules", {})
-	if typeof(rules) != TYPE_DICTIONARY:
+func _is_vertical_slice_level(level: Dictionary) -> bool:
+	var level_number := int(level.get("level_number", 0))
+	if level_number < 1 or level_number > 6:
 		return false
 
-	var targets = rules.get("tap_targets", [])
-	return typeof(targets) == TYPE_ARRAY and not targets.is_empty()
+	return [
+		"Tap Logic",
+		"Drag Logic",
+		"Text Trap",
+		"Pattern Grid",
+		"Memory Flash",
+		"Physics Draw",
+	].has(str(level.get("template", "")))
 
 
 func _level_state_text(level: Dictionary) -> String:
@@ -402,10 +686,10 @@ func _level_state_text(level: Dictionary) -> String:
 	if not _profile.is_level_unlocked(level_number):
 		return "locked"
 
-	if _has_tap_targets(level):
+	if _is_vertical_slice_level(level):
 		return "playable"
 
-	return "available - future template"
+	return "future placeholder"
 
 
 func _level_button_color(level: Dictionary) -> Color:
@@ -416,11 +700,36 @@ func _level_button_color(level: Dictionary) -> Color:
 		return COLOR_GREEN
 	if _profile.is_level_durd(level_id):
 		return COLOR_ORANGE
-	if _profile.is_level_unlocked(level_number) and _has_tap_targets(level):
+	if _profile.is_level_unlocked(level_number) and _is_vertical_slice_level(level):
 		return COLOR_BLUE
 	if _profile.is_level_unlocked(level_number):
 		return COLOR_PANEL_ALT
 	return Color(0.22, 0.23, 0.25)
+
+
+func _rules() -> Dictionary:
+	var rules = _current_level.get("rules", {})
+	if typeof(rules) == TYPE_DICTIONARY:
+		return rules
+	return {}
+
+
+func _solution() -> Dictionary:
+	var solution = _current_level.get("solution", {})
+	if typeof(solution) == TYPE_DICTIONARY:
+		return solution
+	return {}
+
+
+func _normalize_answer(answer: String) -> String:
+	return answer.strip_edges().to_lower()
+
+
+func _string_array(values: Array) -> Array[String]:
+	var strings: Array[String] = []
+	for value in values:
+		strings.append(str(value))
+	return strings
 
 
 func _first_roast(kind: String, fallback: String) -> String:
