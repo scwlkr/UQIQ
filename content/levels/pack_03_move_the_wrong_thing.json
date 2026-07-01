@@ -447,7 +447,7 @@
       "template": "Drag Logic",
       "challenge_type": "logic trap",
       "completion_mode": "auto_complete_on_correct_drop",
-      "prompt": "Unlock the door by moving LOCKED onto the Door Label. The key is just flexing.",
+      "prompt": "Fix the door label by moving LOCKED onto the Door Label. The key is just flexing.",
       "rules": {
         "draggable_objects": [
           {
@@ -510,7 +510,7 @@
           "Try changing the label instead of making tiny lock theater."
         ],
         "scorecard": [
-          "You moved LOCKED, not KEY. The door opened out of embarrassment."
+          "You moved LOCKED, not KEY. The door label stopped asking for tiny theater."
         ]
       },
       "assets": {

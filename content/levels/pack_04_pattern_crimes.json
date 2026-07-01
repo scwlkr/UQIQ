@@ -123,8 +123,8 @@
           },
           {
             "id": "r1c3",
-            "label": "45",
-            "role": "decoy"
+            "label": "90",
+            "role": "correct"
           },
           {
             "id": "r2c1",
@@ -133,8 +133,8 @@
           },
           {
             "id": "r2c2",
-            "label": "90",
-            "role": "correct"
+            "label": "45",
+            "role": "decoy"
           },
           {
             "id": "r2c3",
@@ -159,7 +159,7 @@
         ]
       },
       "solution": {
-        "cell_id": "r2c2",
+        "cell_id": "r1c3",
         "explanation": "Every other tile claims the same diagonal angle; 90 is the right-angle witness."
       },
       "scoring": {
@@ -588,8 +588,8 @@
           },
           {
             "id": "r2c2",
-            "label": "LINE",
-            "role": "correct"
+            "label": "ORB",
+            "role": "decoy"
           },
           {
             "id": "r2c3",
@@ -598,23 +598,23 @@
           },
           {
             "id": "r3c1",
-            "label": "OVL",
+            "label": "BAR",
             "role": "decoy"
           },
           {
             "id": "r3c2",
-            "label": "CIR",
+            "label": "ROD",
             "role": "decoy"
           },
           {
             "id": "r3c3",
-            "label": "SQE",
-            "role": "decoy"
+            "label": "LINE",
+            "role": "correct"
           }
         ]
       },
       "solution": {
-        "cell_id": "r2c2",
+        "cell_id": "r3c3",
         "explanation": "Every other label is three letters; LINE is the four-letter shape word breaking the count."
       },
       "scoring": {
@@ -631,7 +631,7 @@
       "roasts": {
         "failure": [
           "You selected a three-letter tile. Counting to four remains on the roadmap of your soul.",
-          "The long label was waving and you subpoenaed a tiny abbreviation."
+          "The long label was waving and you subpoenaed a tiny decoy."
         ],
         "delay": [
           "Most labels are three letters. LINE brought extra baggage."
