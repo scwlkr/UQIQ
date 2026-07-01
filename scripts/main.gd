@@ -22,10 +22,12 @@ const SUPPORTED_LEVEL_TEMPLATES := [
 	"Memory Flash",
 	"Physics Draw",
 ]
+const PACK_2_PATH := "res://content/levels/pack_02_words_are_lying.json"
 
 var _loader := LevelLoaderScript.new()
 var _profile := LocalProfileScript.new()
 var _pack := {}
+var _packs: Array = []
 var _current_level := {}
 var _tap_count := 0
 var _roast_count := 0
@@ -42,7 +44,8 @@ var _physics_choice := ""
 
 
 func _ready() -> void:
-	_pack = _loader.load_pack()
+	_pack = _load_level_pack_set()
+	_packs = _pack_groups_from_pack_set(_pack)
 	_profile.load_or_create()
 	_show_level_list()
 
@@ -51,15 +54,13 @@ func _show_level_list() -> void:
 	var root := _make_screen(COLOR_INK)
 
 	_add_label(root, "UQIQ", 44, COLOR_YELLOW)
-	_add_label(root, "Pack 1: Orientation Is a Trap", 20, COLOR_TEXT)
 
-	if _pack.is_empty():
+	var packs := _visible_packs()
+	if packs.is_empty():
 		_add_status(root, _loader.last_error, COLOR_RED)
 		return
 
-	var source_path := str(_pack.get("source_path", LevelLoaderScript.DEFAULT_PACK_PATH))
-	var levels: Array = _pack.get("levels", [])
-	_add_status(root, "Loaded %d Level Specs from %s" % [levels.size(), source_path], COLOR_GREEN)
+	_add_status(root, "Loaded %d Level Specs from %d Packs" % [_loaded_level_count(packs), packs.size()], COLOR_GREEN)
 	_add_profile_status(root)
 	if not _level_list_notice.is_empty():
 		_add_status(root, _level_list_notice, COLOR_YELLOW)
@@ -73,29 +74,197 @@ func _show_level_list() -> void:
 	list.add_theme_constant_override("separation", 10)
 	scroll.add_child(list)
 
+	for pack in packs:
+		if typeof(pack) != TYPE_DICTIONARY:
+			continue
+
+		_add_pack_heading(list, pack)
+		var levels: Array = pack.get("levels", [])
+		for level in levels:
+			if typeof(level) != TYPE_DICTIONARY:
+				continue
+
+			_add_level_row(list, level)
+
+
+func _load_level_pack_set() -> Dictionary:
+	if _loader.has_method("load_default_packs"):
+		var loaded = _loader.call("load_default_packs")
+		if typeof(loaded) == TYPE_DICTIONARY:
+			return loaded
+
+		_loader.last_error = "load_default_packs() did not return a Level Pack dictionary."
+		return {}
+
+	return _load_fallback_pack_set()
+
+
+func _load_fallback_pack_set() -> Dictionary:
+	var paths := [LevelLoaderScript.DEFAULT_PACK_PATH, PACK_2_PATH]
+	var packs := []
+	var levels := []
+	var source_paths: Array[String] = []
+	for path in paths:
+		var pack := _loader.load_pack(path)
+		if pack.is_empty():
+			return {}
+
+		var pack_levels: Array = pack.get("levels", [])
+		packs.append(_pack_metadata(pack, path, pack_levels))
+		source_paths.append(path)
+		for level in pack_levels:
+			levels.append(level)
+
+	return {
+		"pack_id": "local_packs",
+		"pack_title": "Local Level Packs",
+		"packs": packs,
+		"levels": levels,
+		"level_count": levels.size(),
+		"source_path": ", ".join(source_paths),
+		"source_paths": source_paths,
+	}
+
+
+func _pack_metadata(pack: Dictionary, source_path: String, levels: Array) -> Dictionary:
+	var first_level_number := 0
+	var last_level_number := 0
 	for level in levels:
 		if typeof(level) != TYPE_DICTIONARY:
 			continue
 
 		var level_number := int(level.get("level_number", 0))
-		var title := str(level.get("title", "Untitled"))
-		var is_playable := _is_level_playable(level)
-		var button_text := "%02d  %s  |  %s" % [level_number, title, _level_state_text(level)]
-		var row := HBoxContainer.new()
-		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_theme_constant_override("separation", 8)
-		list.add_child(row)
+		if first_level_number == 0 or level_number < first_level_number:
+			first_level_number = level_number
+		if level_number > last_level_number:
+			last_level_number = level_number
 
-		var button := _make_button(button_text, _level_button_color(level))
-		button.disabled = not is_playable
-		button.pressed.connect(Callable(self, "_show_play_screen").bind(level))
-		row.add_child(button)
+	return {
+		"pack_id": str(pack.get("pack_id", "")),
+		"pack_title": str(pack.get("pack_title", "")),
+		"source_path": source_path,
+		"level_count": levels.size(),
+		"first_level_number": first_level_number,
+		"last_level_number": last_level_number,
+	}
 
-		var dur_button := _make_button("DUR", COLOR_ORANGE, Vector2(76, 58))
-		dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-		dur_button.disabled = not _is_supported_playable_level_spec(level) or not _profile.can_spend_dur_token(level)
-		dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
-		row.add_child(dur_button)
+
+func _pack_groups_from_pack_set(pack_set: Dictionary) -> Array:
+	if pack_set.is_empty():
+		return []
+
+	var pack_metadata = pack_set.get("packs", [])
+	if typeof(pack_metadata) != TYPE_ARRAY or pack_metadata.is_empty():
+		return [pack_set]
+
+	var levels = pack_set.get("levels", [])
+	if typeof(levels) != TYPE_ARRAY:
+		return []
+
+	var groups := []
+	for metadata in pack_metadata:
+		if typeof(metadata) != TYPE_DICTIONARY:
+			continue
+
+		var first_level_number := int(metadata.get("first_level_number", 0))
+		var last_level_number := int(metadata.get("last_level_number", 0))
+		var group: Dictionary = metadata.duplicate(true)
+		var group_levels := []
+		for level in levels:
+			if typeof(level) != TYPE_DICTIONARY:
+				continue
+
+			var level_number := int(level.get("level_number", 0))
+			if level_number >= first_level_number and level_number <= last_level_number:
+				group_levels.append(level)
+
+		group["levels"] = group_levels
+		groups.append(group)
+
+	return groups
+
+
+func _visible_packs() -> Array:
+	if not _packs.is_empty():
+		return _packs
+	if not _pack.is_empty():
+		return _pack_groups_from_pack_set(_pack)
+	return []
+
+
+func _loaded_level_count(packs: Array) -> int:
+	var count := 0
+	for pack in packs:
+		if typeof(pack) != TYPE_DICTIONARY:
+			continue
+
+		var levels = pack.get("levels", [])
+		if typeof(levels) == TYPE_ARRAY:
+			count += levels.size()
+
+	return count
+
+
+func _add_pack_heading(parent: Node, pack: Dictionary) -> void:
+	var heading := _new_label(_pack_heading_text(pack), 20, COLOR_TEXT)
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	parent.add_child(heading)
+
+	var source_path := str(pack.get("source_path", ""))
+	if not source_path.is_empty():
+		var source_label := _new_label(source_path, 13, COLOR_MUTED)
+		source_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		parent.add_child(source_label)
+
+
+func _pack_heading_text(pack: Dictionary) -> String:
+	var levels = pack.get("levels", [])
+	var first_level_number := 0
+	var last_level_number := 0
+	if typeof(levels) == TYPE_ARRAY and not levels.is_empty():
+		for level in levels:
+			if typeof(level) != TYPE_DICTIONARY:
+				continue
+
+			var level_number := int(level.get("level_number", 0))
+			if level_number <= 0:
+				continue
+
+			if first_level_number == 0 or level_number < first_level_number:
+				first_level_number = level_number
+			if level_number > last_level_number:
+				last_level_number = level_number
+
+	var pack_number := 1
+	if first_level_number > 0:
+		pack_number = int((first_level_number - 1) / 10) + 1
+
+	var title := str(pack.get("pack_title", "Untitled Pack"))
+	if first_level_number > 0 and last_level_number >= first_level_number:
+		return "Pack %d: %s | Levels %02d-%02d" % [pack_number, title, first_level_number, last_level_number]
+	return "Pack %d: %s" % [pack_number, title]
+
+
+func _add_level_row(parent: Node, level: Dictionary) -> void:
+	var level_number := int(level.get("level_number", 0))
+	var title := str(level.get("title", "Untitled"))
+	var is_playable := _is_level_playable(level)
+	var button_text := "%02d  %s  |  %s" % [level_number, title, _level_state_text(level)]
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 8)
+	parent.add_child(row)
+
+	var button := _make_button(button_text, _level_button_color(level))
+	button.disabled = not is_playable
+	button.pressed.connect(Callable(self, "_show_play_screen").bind(level))
+	row.add_child(button)
+
+	var dur_button := _make_button("DUR", COLOR_ORANGE, Vector2(76, 58))
+	dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	dur_button.disabled = not _is_supported_playable_level_spec(level) or not _profile.can_spend_dur_token(level)
+	dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
+	row.add_child(dur_button)
 
 
 func _show_play_screen(level: Dictionary) -> void:
