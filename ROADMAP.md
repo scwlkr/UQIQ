@@ -16,6 +16,7 @@ Ship UQIQ v1.0 as a free, phone-only, portrait iOS game with 60 curated offline 
    - Create a Godot 4.x project.
    - Set portrait phone-only layout constraints.
    - Build the Flat Vector Style system, Judge Face, Play Screen, Level List, and Local Profile save path.
+   - First build sequence: load a fake Pack Level File, route Level List to Play Screen to Score Roastcard, then implement one simple Tap Logic Level.
 
 3. **Vertical Slice**
    - Build one playable Level for each Level Template: Tap Logic, Drag Logic, Text Trap, Pattern Grid, Memory Flash, and Physics Draw.
