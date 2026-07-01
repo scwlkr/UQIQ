@@ -27,7 +27,6 @@ func _initialize() -> void:
 		levels.append(level)
 
 	_require(_templates_match_vertical_slice(levels), "Levels 1-6 should be one playable Level per required template.")
-	_require(_future_placeholders_are_not_playable_specs(pack), "Levels 7-10 should remain future placeholders.")
 	for level in levels:
 		_require(_level_has_template_solution(level), "Level %d has incomplete template rules." % int(level.get("level_number", 0)))
 		_require(_level_has_roasts(level), "Level %d should have all Roast buckets." % int(level.get("level_number", 0)))
@@ -68,7 +67,7 @@ func _initialize() -> void:
 
 	score_before = profile.current_uqiq_score()
 	_complete_and_assert(profile, levels[5], 2, 1, score_before)
-	_require(profile.is_level_unlocked(7), "Completing Level 6 should unlock Level 7 as a visible future placeholder.")
+	_require(profile.is_level_unlocked(7), "Completing Level 6 should unlock Level 7.")
 
 	var final_score := profile.current_uqiq_score()
 	var final_tokens := profile.dur_tokens()
@@ -111,22 +110,6 @@ func _templates_match_vertical_slice(levels: Array[Dictionary]) -> bool:
 
 	for index in range(REQUIRED_TEMPLATES.size()):
 		if str(levels[index].get("template", "")) != str(REQUIRED_TEMPLATES[index]):
-			return false
-
-	return true
-
-
-func _future_placeholders_are_not_playable_specs(pack: Dictionary) -> bool:
-	for level_number in range(7, 11):
-		var level := LevelLoaderScript.new().find_level_by_number(pack, level_number)
-		if level.is_empty():
-			return false
-
-		var rules = level.get("rules", {})
-		if typeof(rules) != TYPE_DICTIONARY or not bool(rules.get("future_placeholder", false)):
-			return false
-
-		if str(level.get("completion_mode", "")) != "future_placeholder":
 			return false
 
 	return true
