@@ -14,6 +14,14 @@ const COLOR_BLUE := Color(0.12, 0.58, 0.92)
 const COLOR_ORANGE := Color(0.96, 0.43, 0.13)
 const COLOR_TEXT := Color(0.98, 0.98, 0.96)
 const COLOR_MUTED := Color(0.73, 0.75, 0.76)
+const SUPPORTED_LEVEL_TEMPLATES := [
+	"Tap Logic",
+	"Drag Logic",
+	"Text Trap",
+	"Pattern Grid",
+	"Memory Flash",
+	"Physics Draw",
+]
 
 var _loader := LevelLoaderScript.new()
 var _profile := LocalProfileScript.new()
@@ -85,7 +93,7 @@ func _show_level_list() -> void:
 
 		var dur_button := _make_button("DUR", COLOR_ORANGE, Vector2(76, 58))
 		dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-		dur_button.disabled = not _is_vertical_slice_level(level) or not _profile.can_spend_dur_token(level)
+		dur_button.disabled = not _is_supported_playable_level_spec(level) or not _profile.can_spend_dur_token(level)
 		dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
 		row.add_child(dur_button)
 
@@ -652,22 +660,18 @@ func _add_profile_status(parent: Node) -> void:
 
 func _is_level_playable(level: Dictionary) -> bool:
 	var level_number := int(level.get("level_number", 0))
-	return _profile.is_level_unlocked(level_number) and _is_vertical_slice_level(level)
+	return _profile.is_level_unlocked(level_number) and _is_supported_playable_level_spec(level)
 
 
-func _is_vertical_slice_level(level: Dictionary) -> bool:
-	var level_number := int(level.get("level_number", 0))
-	if level_number < 1 or level_number > 6:
+func _is_supported_playable_level_spec(level: Dictionary) -> bool:
+	if not SUPPORTED_LEVEL_TEMPLATES.has(str(level.get("template", ""))):
 		return false
 
-	return [
-		"Tap Logic",
-		"Drag Logic",
-		"Text Trap",
-		"Pattern Grid",
-		"Memory Flash",
-		"Physics Draw",
-	].has(str(level.get("template", "")))
+	var rules = level.get("rules", {})
+	if typeof(rules) == TYPE_DICTIONARY and bool(rules.get("future_placeholder", false)):
+		return false
+
+	return true
 
 
 func _level_state_text(level: Dictionary) -> String:
@@ -686,7 +690,7 @@ func _level_state_text(level: Dictionary) -> String:
 	if not _profile.is_level_unlocked(level_number):
 		return "locked"
 
-	if _is_vertical_slice_level(level):
+	if _is_supported_playable_level_spec(level):
 		return "playable"
 
 	return "future placeholder"
@@ -700,7 +704,7 @@ func _level_button_color(level: Dictionary) -> Color:
 		return COLOR_GREEN
 	if _profile.is_level_durd(level_id):
 		return COLOR_ORANGE
-	if _profile.is_level_unlocked(level_number) and _is_vertical_slice_level(level):
+	if _profile.is_level_unlocked(level_number) and _is_supported_playable_level_spec(level):
 		return COLOR_BLUE
 	if _profile.is_level_unlocked(level_number):
 		return COLOR_PANEL_ALT
