@@ -1,0 +1,15 @@
+# Godot
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# Builds
+builds/
+exports/
+*.apk
+*.aab
+*.ipa
+
+# macOS
+.DS_Store
