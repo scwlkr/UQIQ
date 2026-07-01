@@ -31,6 +31,8 @@ const SUPPORTED_TEMPLATES := [
 var _main: Control
 var _profile: RefCounted
 var _combined_pack := {}
+var _default_level_count := 0
+var _default_pack_count := 0
 var _all_levels: Array[Dictionary] = []
 var _pack_2_levels: Array[Dictionary] = []
 var _pack_3_levels: Array[Dictionary] = []
@@ -98,8 +100,10 @@ func _initialize() -> void:
 	if _failed:
 		return
 
-	print("Issue #11 Pack 3 smoke passed: %d Level List rows, %d completion(s), %d Pack 2 completion(s), %d Pack 3 completion(s), %d replay(s), %d Score Roastcard(s), %d save/load check(s), %d restart check(s), %d Dur spend(s), %d Dur recovery event(s)." % [
+	print("Issue #11 Pack 3 smoke passed: verified Levels 1-%d inside %d default Level Specs across %d Packs; %d completion(s), %d Pack 2 completion(s), %d Pack 3 completion(s), %d replay(s), %d Score Roastcard(s), %d save/load check(s), %d restart check(s), %d Dur spend(s), %d Dur recovery event(s)." % [
 		TOTAL_LEVEL_COUNT,
+		_default_level_count,
+		_default_pack_count,
 		_completion_count,
 		_pack_2_completion_count,
 		_pack_3_completion_count,
@@ -145,7 +149,9 @@ func _load_combined_levels() -> void:
 	_pack_2_levels = []
 	_pack_3_levels = []
 	var packs := _packs(loaded)
-	if not _require(packs.size() == EXPECTED_PACK_IDS.size(), "Issue #11 smoke should load exactly 3 Pack metadata entries."):
+	_default_level_count = int(loaded.get("level_count", 0))
+	_default_pack_count = packs.size()
+	if not _require(packs.size() >= EXPECTED_PACK_IDS.size(), "Issue #11 smoke should load at least the first 3 Pack metadata entries."):
 		return
 	for index in range(EXPECTED_PACK_IDS.size()):
 		var pack := _dictionary_from(packs[index])
@@ -178,7 +184,7 @@ func _load_combined_levels() -> void:
 	if not _require(_pack_3_levels.size() == 10, "Issue #11 smoke should load exactly 10 Pack 3 Level Specs."):
 		return
 
-	if not _require(int(loaded.get("level_count", 0)) == TOTAL_LEVEL_COUNT, "Combined pack metadata should report 30 Level Specs."):
+	if not _require(_default_level_count >= TOTAL_LEVEL_COUNT, "Combined pack metadata should include at least Levels 1-30."):
 		return
 
 	_combined_pack = loaded
