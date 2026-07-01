@@ -1,6 +1,7 @@
 extends Control
 
 const LevelLoaderScript := preload("res://scripts/level_loader.gd")
+const LocalProfileScript := preload("res://scripts/local_profile.gd")
 
 const COLOR_INK := Color(0.06, 0.07, 0.09)
 const COLOR_PAPER := Color(0.97, 0.95, 0.86)
@@ -14,14 +15,17 @@ const COLOR_TEXT := Color(0.98, 0.98, 0.96)
 const COLOR_MUTED := Color(0.73, 0.75, 0.76)
 
 var _loader := LevelLoaderScript.new()
+var _profile := LocalProfileScript.new()
 var _pack := {}
 var _current_level := {}
 var _tap_count := 0
+var _last_best_attempt := {}
 var _feedback_label: Label
 
 
 func _ready() -> void:
 	_pack = _loader.load_pack()
+	_profile.load_or_create()
 	_show_level_list()
 
 
@@ -38,6 +42,7 @@ func _show_level_list() -> void:
 	var source_path := str(_pack.get("source_path", LevelLoaderScript.DEFAULT_PACK_PATH))
 	var levels: Array = _pack.get("levels", [])
 	_add_status(root, "Loaded %d Level Specs from %s" % [levels.size(), source_path], COLOR_GREEN)
+	_add_profile_status(root)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -54,12 +59,9 @@ func _show_level_list() -> void:
 
 		var level_number := int(level.get("level_number", 0))
 		var title := str(level.get("title", "Untitled"))
-		var is_playable := level_number == 1
-		var button_text := "%02d  %s" % [level_number, title]
-		if not is_playable:
-			button_text += "  - later"
-
-		var button := _make_button(button_text, COLOR_PANEL_ALT)
+		var is_playable := _is_level_playable(level)
+		var button_text := "%02d  %s  |  %s" % [level_number, title, _level_state_text(level)]
+		var button := _make_button(button_text, _level_button_color(level))
 		button.disabled = not is_playable
 		button.pressed.connect(Callable(self, "_show_play_screen").bind(level))
 		list.add_child(button)
@@ -68,6 +70,7 @@ func _show_level_list() -> void:
 func _show_play_screen(level: Dictionary) -> void:
 	_current_level = level
 	_tap_count = 0
+	_last_best_attempt = {}
 
 	var root := _make_screen(COLOR_PANEL)
 
@@ -140,10 +143,15 @@ func _handle_tap_target(target_id: String) -> void:
 		winning_target = str(solution.get("target_id", ""))
 
 	if target_id == winning_target:
-		_show_score_roastcard()
+		_complete_current_level()
 		return
 
 	_feedback_label.text = _first_roast("failure", "Nope. Your finger has executive dysfunction.")
+
+
+func _complete_current_level() -> void:
+	_last_best_attempt = _profile.record_completed_attempt(_current_level, _tap_count)
+	_show_score_roastcard()
 
 
 func _show_score_roastcard() -> void:
@@ -152,6 +160,12 @@ func _show_score_roastcard() -> void:
 	_add_label(root, "Score Roastcard", 38, COLOR_YELLOW)
 	_add_label(root, str(_current_level.get("title", "Level complete")), 24, COLOR_TEXT)
 	_add_status(root, "Completed in %d tap(s)" % _tap_count, COLOR_GREEN)
+	if not _last_best_attempt.is_empty():
+		_add_status(root, "Best Attempt: %d tap(s)" % int(_last_best_attempt.get("action_count", _tap_count)), COLOR_GREEN)
+	if not _profile.last_error.is_empty():
+		_add_status(root, _profile.last_error, COLOR_RED)
+	else:
+		_add_status(root, "Saved. Level %02d unlocked." % int(_profile.data.get("unlocked_level", 1)), COLOR_GREEN)
 
 	var card := PanelContainer.new()
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -266,6 +280,60 @@ func _target_color(target: Dictionary) -> Color:
 	if role == "decoy":
 		return COLOR_BLUE
 	return COLOR_PANEL_ALT
+
+
+func _add_profile_status(parent: Node) -> void:
+	if not _profile.last_error.is_empty():
+		_add_status(parent, _profile.last_error, COLOR_RED)
+		return
+
+	_add_status(parent, "Local Profile: Level %02d unlocked" % int(_profile.data.get("unlocked_level", 1)), COLOR_MUTED)
+
+
+func _is_level_playable(level: Dictionary) -> bool:
+	var level_number := int(level.get("level_number", 0))
+	return _profile.is_level_unlocked(level_number) and _has_tap_targets(level)
+
+
+func _has_tap_targets(level: Dictionary) -> bool:
+	var rules = level.get("rules", {})
+	if typeof(rules) != TYPE_DICTIONARY:
+		return false
+
+	var targets = rules.get("tap_targets", [])
+	return typeof(targets) == TYPE_ARRAY and not targets.is_empty()
+
+
+func _level_state_text(level: Dictionary) -> String:
+	var level_id := str(level.get("id", ""))
+	var level_number := int(level.get("level_number", 0))
+
+	if _profile.is_level_completed(level_id):
+		var best_attempt := _profile.get_best_attempt(level_id)
+		if not best_attempt.is_empty():
+			return "completed - replay | best %d tap(s)" % int(best_attempt.get("action_count", 0))
+		return "completed - replay"
+
+	if not _profile.is_level_unlocked(level_number):
+		return "locked"
+
+	if _has_tap_targets(level):
+		return "playable"
+
+	return "available - future template"
+
+
+func _level_button_color(level: Dictionary) -> Color:
+	var level_id := str(level.get("id", ""))
+	var level_number := int(level.get("level_number", 0))
+
+	if _profile.is_level_completed(level_id):
+		return COLOR_GREEN
+	if _profile.is_level_unlocked(level_number) and _has_tap_targets(level):
+		return COLOR_BLUE
+	if _profile.is_level_unlocked(level_number):
+		return COLOR_PANEL_ALT
+	return Color(0.22, 0.23, 0.25)
 
 
 func _first_roast(kind: String, fallback: String) -> String:

@@ -90,3 +90,23 @@ Open/run:
 5. Press **Run Project**.
 
 The boot skeleton starts at the Level List, loads Pack 1 from `content/levels/pack_01_orientation_is_a_trap.json`, opens Level 1, and routes completion to a Score Roastcard stub.
+
+## Local Profile Save Data
+
+Runtime progress is stored locally at:
+
+```text
+user://uqiq_local_profile_v1.json
+```
+
+Godot maps that to the app user-data folder. On macOS development builds, the usual path is:
+
+```text
+~/Library/Application Support/Godot/app_userdata/UQIQ/uqiq_local_profile_v1.json
+```
+
+Reset local progress during development:
+
+```sh
+rm -f "$HOME/Library/Application Support/Godot/app_userdata/UQIQ/uqiq_local_profile_v1.json"
+```
