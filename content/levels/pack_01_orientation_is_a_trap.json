@@ -426,14 +426,31 @@
       "title": "Arrow Trial",
       "template": "Tap Logic",
       "challenge_type": "logic trap",
-      "completion_mode": "future_placeholder",
-      "prompt": "Future Pack 1 Level placeholder.",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the arrow that refuses the obvious direction.",
       "rules": {
-        "future_placeholder": true
+        "tap_targets": [
+          {
+            "id": "arrow_right",
+            "label": "RIGHT ARROW",
+            "role": "decoy"
+          },
+          {
+            "id": "arrow_left",
+            "label": "LEFT ARROW",
+            "role": "correct"
+          },
+          {
+            "id": "arrow_up",
+            "label": "UP ARROW",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "You followed the crowd arrow. Tiny parade, wrong street."
       },
       "solution": {
-        "target_id": "",
-        "explanation": "Future Tap Logic Level."
+        "target_id": "arrow_left",
+        "explanation": "The prompt asks for the arrow refusing the obvious direction, so LEFT is correct."
       },
       "scoring": {
         "speed_seconds": {
@@ -442,28 +459,30 @@
         },
         "action_count": {
           "great": 1,
-          "ok": 3
+          "ok": 4
         },
         "roast_penalty": 5
       },
       "roasts": {
         "failure": [
-          "Future failure line."
+          "You picked the popular arrow. Very brave group project energy.",
+          "The obvious direction got your vote. Democracy wept softly."
         ],
         "delay": [
-          "Future delay line."
+          "One arrow is refusing the room. Let that tiny rebel cook."
         ],
         "scorecard": [
-          "Future scorecard line."
+          "You discovered left after meeting right. Cartography is shaken."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "future_placeholder"
+          "three_large_arrow_buttons",
+          "judge_face_stub"
         ]
       },
-      "uqiq_moment": "Future Pack 1 twist."
+      "uqiq_moment": "The correct arrow is LEFT because it refuses the obvious rightward answer."
     },
     {
       "id": "p01_l08_tiny_loud",
@@ -472,44 +491,64 @@
       "title": "Tiny Loud",
       "template": "Tap Logic",
       "challenge_type": "logic trap",
-      "completion_mode": "future_placeholder",
-      "prompt": "Future Pack 1 Level placeholder.",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the quiet answer. The loud one is doing unpaid theater.",
       "rules": {
-        "future_placeholder": true
+        "tap_targets": [
+          {
+            "id": "loud_wrong",
+            "label": "LOUD IMPORTANT ANSWER",
+            "role": "decoy"
+          },
+          {
+            "id": "tiny_correct",
+            "label": "tiny answer",
+            "role": "correct"
+          },
+          {
+            "id": "medium_wrong",
+            "label": "Medium Confidence",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "Volume is not wisdom. It is just noise wearing shoes."
       },
       "solution": {
-        "target_id": "",
-        "explanation": "Future Tap Logic Level."
+        "target_id": "tiny_correct",
+        "explanation": "The quiet answer is the button labeled tiny answer, not the loud decoy."
       },
       "scoring": {
         "speed_seconds": {
-          "great": 7,
-          "ok": 18
+          "great": 6,
+          "ok": 16
         },
         "action_count": {
           "great": 1,
-          "ok": 3
+          "ok": 4
         },
         "roast_penalty": 5
       },
       "roasts": {
         "failure": [
-          "Future failure line."
+          "You trusted the loud rectangle. Classic hot breath scholarship.",
+          "The shouty button waved a flag and your finger joined the parade."
         ],
         "delay": [
-          "Future delay line."
+          "Tiny does not mean hidden. It means stop letting labels yell at you."
         ],
         "scorecard": [
-          "Future scorecard line."
+          "You found the small answer. The loud one is filing a complaint."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "future_placeholder"
+          "loud_decoy_button",
+          "tiny_answer_button",
+          "judge_face_stub"
         ]
       },
-      "uqiq_moment": "Future Pack 1 twist."
+      "uqiq_moment": "The quiet lowercase answer beats the loud important-looking decoy."
     },
     {
       "id": "p01_l09_no_rotate",
@@ -518,14 +557,18 @@
       "title": "No Rotate",
       "template": "Text Trap",
       "challenge_type": "word puzzle",
-      "completion_mode": "future_placeholder",
-      "prompt": "Future Pack 1 Level placeholder.",
+      "completion_mode": "submit",
+      "prompt": "Do not rotate the phone. Type the direction it is already facing.",
       "rules": {
-        "future_placeholder": true
+        "placeholder": "one word, no gymnastics",
+        "accepted_inputs": [
+          "portrait"
+        ],
+        "case_sensitive": false
       },
       "solution": {
-        "answer": "",
-        "explanation": "Future Text Trap Level."
+        "answer": "portrait",
+        "explanation": "The app is portrait-first, so the phone is already facing portrait."
       },
       "scoring": {
         "speed_seconds": {
@@ -540,22 +583,26 @@
       },
       "roasts": {
         "failure": [
-          "Future failure line."
+          "You tried to out-rotate a portrait app. Outstanding furniture behavior.",
+          "The phone stayed still. Your confidence did a cartwheel."
         ],
         "delay": [
-          "Future delay line."
+          "It is already the answer. The screen is practically pointing at itself."
         ],
         "scorecard": [
-          "Future scorecard line."
+          "You obeyed the no-rotate sign. This counts as discipline somehow."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "future_placeholder"
+          "single_line_input",
+          "portrait_phone_frame",
+          "submit_button",
+          "judge_face_stub"
         ]
       },
-      "uqiq_moment": "Future Pack 1 twist."
+      "uqiq_moment": "The answer is the current portrait orientation, not a physical rotation."
     },
     {
       "id": "p01_l10_finally_sideways",
@@ -564,14 +611,31 @@
       "title": "Finally Sideways",
       "template": "Tap Logic",
       "challenge_type": "logic trap",
-      "completion_mode": "future_placeholder",
-      "prompt": "Future Pack 1 Level placeholder.",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Fine. Tap SIDEWAYS. Do not turn the phone into a whole event.",
       "rules": {
-        "future_placeholder": true
+        "tap_targets": [
+          {
+            "id": "upright",
+            "label": "UPRIGHT",
+            "role": "decoy"
+          },
+          {
+            "id": "sideways",
+            "label": "SIDEWAYS",
+            "role": "correct"
+          },
+          {
+            "id": "rotate_phone",
+            "label": "ROTATE PHONE",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "The Level said tap, not enroll in a furniture-moving course."
       },
       "solution": {
-        "target_id": "",
-        "explanation": "Future Tap Logic Level."
+        "target_id": "sideways",
+        "explanation": "The correct move is tapping the button labeled SIDEWAYS, not rotating the device."
       },
       "scoring": {
         "speed_seconds": {
@@ -580,28 +644,31 @@
         },
         "action_count": {
           "great": 1,
-          "ok": 3
+          "ok": 4
         },
         "roast_penalty": 5
       },
       "roasts": {
         "failure": [
-          "Future failure line."
+          "You made sideways complicated. Premium dingleberry logistics.",
+          "The button was named SIDEWAYS and you still went on a side quest."
         ],
         "delay": [
-          "Future delay line."
+          "The word SIDEWAYS is standing right there, trying not to make eye contact."
         ],
         "scorecard": [
-          "Future scorecard line."
+          "You ended Pack 1 by tapping a word. The victory parade is very short."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "future_placeholder"
+          "three_large_buttons",
+          "portrait_phone_frame",
+          "judge_face_stub"
         ]
       },
-      "uqiq_moment": "Future Pack 1 twist."
+      "uqiq_moment": "The final sideways gag is a tap target, not an orientation change."
     }
   ]
 }
