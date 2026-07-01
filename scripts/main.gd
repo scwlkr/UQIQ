@@ -11,6 +11,7 @@ const COLOR_YELLOW := Color(1.00, 0.78, 0.15)
 const COLOR_GREEN := Color(0.30, 0.82, 0.50)
 const COLOR_RED := Color(0.95, 0.22, 0.24)
 const COLOR_BLUE := Color(0.12, 0.58, 0.92)
+const COLOR_ORANGE := Color(0.96, 0.43, 0.13)
 const COLOR_TEXT := Color(0.98, 0.98, 0.96)
 const COLOR_MUTED := Color(0.73, 0.75, 0.76)
 
@@ -19,7 +20,11 @@ var _profile := LocalProfileScript.new()
 var _pack := {}
 var _current_level := {}
 var _tap_count := 0
+var _roast_count := 0
 var _last_best_attempt := {}
+var _last_completed_attempt := {}
+var _last_score_result := {}
+var _level_list_notice := ""
 var _feedback_label: Label
 
 
@@ -43,6 +48,8 @@ func _show_level_list() -> void:
 	var levels: Array = _pack.get("levels", [])
 	_add_status(root, "Loaded %d Level Specs from %s" % [levels.size(), source_path], COLOR_GREEN)
 	_add_profile_status(root)
+	if not _level_list_notice.is_empty():
+		_add_status(root, _level_list_notice, COLOR_YELLOW)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -61,16 +68,31 @@ func _show_level_list() -> void:
 		var title := str(level.get("title", "Untitled"))
 		var is_playable := _is_level_playable(level)
 		var button_text := "%02d  %s  |  %s" % [level_number, title, _level_state_text(level)]
+		var row := HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_theme_constant_override("separation", 8)
+		list.add_child(row)
+
 		var button := _make_button(button_text, _level_button_color(level))
 		button.disabled = not is_playable
 		button.pressed.connect(Callable(self, "_show_play_screen").bind(level))
-		list.add_child(button)
+		row.add_child(button)
+
+		var dur_button := _make_button("DUR", COLOR_ORANGE, Vector2(76, 58))
+		dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+		dur_button.disabled = not _profile.can_spend_dur_token(level)
+		dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
+		row.add_child(dur_button)
 
 
 func _show_play_screen(level: Dictionary) -> void:
 	_current_level = level
 	_tap_count = 0
+	_roast_count = 0
 	_last_best_attempt = {}
+	_last_completed_attempt = {}
+	_last_score_result = {}
+	_level_list_notice = ""
 
 	var root := _make_screen(COLOR_PANEL)
 
@@ -93,14 +115,23 @@ func _show_play_screen(level: Dictionary) -> void:
 	top_bar.add_child(level_label)
 
 	var score_label := Label.new()
-	score_label.text = "UQIQ 100"
+	score_label.text = "UQIQ %d" % _profile.current_uqiq_score()
 	score_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	score_label.add_theme_font_size_override("font_size", 18)
+	score_label.add_theme_font_size_override("font_size", 16)
 	score_label.add_theme_color_override("font_color", COLOR_YELLOW)
 	top_bar.add_child(score_label)
 
+	var token_label := Label.new()
+	token_label.text = "Dur %d" % _profile.dur_tokens()
+	token_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	token_label.add_theme_font_size_override("font_size", 16)
+	token_label.add_theme_color_override("font_color", COLOR_ORANGE)
+	top_bar.add_child(token_label)
+
 	_add_label(root, str(level.get("title", "Untitled")), 30, COLOR_TEXT)
 	_add_label(root, str(level.get("prompt", "")), 19, COLOR_MUTED)
+	if _profile.is_level_durd(str(level.get("id", ""))):
+		_add_status(root, "DUR'D: finish this Level to recover 1 Dur Token.", COLOR_YELLOW)
 
 	var stage := PanelContainer.new()
 	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -133,6 +164,15 @@ func _show_play_screen(level: Dictionary) -> void:
 	_feedback_label = _new_label("Choose carefully.", 18, COLOR_INK)
 	stage_box.add_child(_feedback_label)
 
+	var actions := HBoxContainer.new()
+	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_theme_constant_override("separation", 10)
+	root.add_child(actions)
+
+	var roast_button := _make_button("Roast", COLOR_ORANGE)
+	roast_button.pressed.connect(Callable(self, "_handle_roast_action"))
+	actions.add_child(roast_button)
+
 
 func _handle_tap_target(target_id: String) -> void:
 	_tap_count += 1
@@ -149,8 +189,15 @@ func _handle_tap_target(target_id: String) -> void:
 	_feedback_label.text = _first_roast("failure", "Nope. Your finger has executive dysfunction.")
 
 
+func _handle_roast_action() -> void:
+	_roast_count += 1
+	_feedback_label.text = _roast_line("delay", "Roast used. Your dignity is now a renewable resource.", _roast_count - 1)
+
+
 func _complete_current_level() -> void:
-	_last_best_attempt = _profile.record_completed_attempt(_current_level, _tap_count)
+	_last_best_attempt = _profile.record_completed_attempt(_current_level, _tap_count, _roast_count)
+	_last_completed_attempt = _profile.last_completed_attempt
+	_last_score_result = _profile.last_score_result
 	_show_score_roastcard()
 
 
@@ -159,13 +206,19 @@ func _show_score_roastcard() -> void:
 
 	_add_label(root, "Score Roastcard", 38, COLOR_YELLOW)
 	_add_label(root, str(_current_level.get("title", "Level complete")), 24, COLOR_TEXT)
-	_add_status(root, "Completed in %d tap(s)" % _tap_count, COLOR_GREEN)
+	_add_status(root, "Completed in %d action(s)" % int(_last_completed_attempt.get("action_count", _tap_count)), COLOR_GREEN)
 	if not _last_best_attempt.is_empty():
-		_add_status(root, "Best Attempt: %d tap(s)" % int(_last_best_attempt.get("action_count", _tap_count)), COLOR_GREEN)
+		_add_status(root, "Best Attempt: %d action(s), %d Roast(s)" % [
+			int(_last_best_attempt.get("action_count", _tap_count)),
+			int(_last_best_attempt.get("roast_count", 0)),
+		], COLOR_GREEN)
 	if not _profile.last_error.is_empty():
 		_add_status(root, _profile.last_error, COLOR_RED)
 	else:
-		_add_status(root, "Saved. Level %02d unlocked." % int(_profile.data.get("unlocked_level", 1)), COLOR_GREEN)
+		_add_status(root, "Saved. Level %02d unlocked. UQIQ %d." % [
+			int(_profile.data.get("unlocked_level", 1)),
+			_profile.current_uqiq_score(),
+		], COLOR_GREEN)
 
 	var card := PanelContainer.new()
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -179,8 +232,17 @@ func _show_score_roastcard() -> void:
 	card_box.add_theme_constant_override("separation", 16)
 	card.add_child(card_box)
 
-	_add_label(card_box, "UQIQ 100", 36, COLOR_YELLOW)
-	_add_label(card_box, "Stub score only. Real scoring starts after issue #1.", 18, COLOR_MUTED)
+	var score_before := int(_last_score_result.get("score_before", _profile.current_uqiq_score()))
+	var score_after := int(_last_score_result.get("score_after", _profile.current_uqiq_score()))
+	var score_delta := int(_last_score_result.get("score_delta", 0))
+	var roast_count := int(_last_completed_attempt.get("roast_count", _roast_count))
+	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
+	_add_label(card_box, "UQIQ %d" % score_after, 36, COLOR_YELLOW)
+	_add_label(card_box, "Score Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 18, COLOR_MUTED)
+	_add_label(card_box, "Actions: %d" % action_count, 18, COLOR_TEXT)
+	_add_label(card_box, "Roasts used: %d" % roast_count, 18, COLOR_TEXT)
+	if bool(_last_completed_attempt.get("durd_at_start", false)):
+		_add_label(card_box, "DUR'D recovery: spent earlier, restored %d Dur Token." % int(_last_completed_attempt.get("dur_tokens_restored", 0)), 18, COLOR_YELLOW)
 	_add_label(card_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 20, COLOR_TEXT)
 	_add_label(card_box, str(_current_level.get("uqiq_moment", "")), 17, COLOR_MUTED)
 
@@ -282,12 +344,32 @@ func _target_color(target: Dictionary) -> Color:
 	return COLOR_PANEL_ALT
 
 
+func _handle_dur_level(level: Dictionary) -> void:
+	if _profile.spend_dur_token(level):
+		var result := _profile.last_dur_spend_result
+		_level_list_notice = "DUR'D Level %02d. Dur %d/%d. Level %02d unlocked." % [
+			int(result.get("level_number", 0)),
+			int(result.get("tokens_after", 0)),
+			LocalProfileScript.MAX_DUR_TOKENS,
+			int(result.get("unlocked_level", 1)),
+		]
+	else:
+		_level_list_notice = _profile.last_error
+
+	_show_level_list()
+
+
 func _add_profile_status(parent: Node) -> void:
 	if not _profile.last_error.is_empty():
 		_add_status(parent, _profile.last_error, COLOR_RED)
 		return
 
-	_add_status(parent, "Local Profile: Level %02d unlocked" % int(_profile.data.get("unlocked_level", 1)), COLOR_MUTED)
+	_add_status(parent, "Local Profile: UQIQ %d | Dur %d/%d | Level %02d unlocked" % [
+		_profile.current_uqiq_score(),
+		_profile.dur_tokens(),
+		LocalProfileScript.MAX_DUR_TOKENS,
+		int(_profile.data.get("unlocked_level", 1)),
+	], COLOR_MUTED)
 
 
 func _is_level_playable(level: Dictionary) -> bool:
@@ -311,8 +393,11 @@ func _level_state_text(level: Dictionary) -> String:
 	if _profile.is_level_completed(level_id):
 		var best_attempt := _profile.get_best_attempt(level_id)
 		if not best_attempt.is_empty():
-			return "completed - replay | best %d tap(s)" % int(best_attempt.get("action_count", 0))
+			return "completed - replay | best %d action(s)" % int(best_attempt.get("action_count", 0))
 		return "completed - replay"
+
+	if _profile.is_level_durd(level_id):
+		return "DUR'D - finish to recover Dur"
 
 	if not _profile.is_level_unlocked(level_number):
 		return "locked"
@@ -329,6 +414,8 @@ func _level_button_color(level: Dictionary) -> Color:
 
 	if _profile.is_level_completed(level_id):
 		return COLOR_GREEN
+	if _profile.is_level_durd(level_id):
+		return COLOR_ORANGE
 	if _profile.is_level_unlocked(level_number) and _has_tap_targets(level):
 		return COLOR_BLUE
 	if _profile.is_level_unlocked(level_number):
@@ -337,12 +424,16 @@ func _level_button_color(level: Dictionary) -> Color:
 
 
 func _first_roast(kind: String, fallback: String) -> String:
+	return _roast_line(kind, fallback, 0)
+
+
+func _roast_line(kind: String, fallback: String, index: int) -> String:
 	var roasts = _current_level.get("roasts", {})
 	if typeof(roasts) != TYPE_DICTIONARY:
 		return fallback
 
 	var lines = roasts.get(kind, [])
 	if typeof(lines) == TYPE_ARRAY and not lines.is_empty():
-		return str(lines[0])
+		return str(lines[max(index, 0) % lines.size()])
 
 	return fallback
