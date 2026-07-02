@@ -71,10 +71,12 @@ func _verify_tactile_tap_logic() -> void:
 
 	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true, decoy_touch_position), "correct_button", decoy_pad)
 	_require(int(_main.get("_tap_count")) == 0, "Direct tap press should preview without spending an action.")
+	var selected_border := _panel_border_color(decoy_pad)
 	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false, decoy_touch_position), "correct_button", decoy_pad)
 	_require(not _profile.is_level_completed(level_id), "Wrong direct tap should not complete Level 1.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct tap should count as one action.")
 	_require(str(_main.get("_last_direct_tap_target_id")) == "correct_button", "Direct tap handler should record the touched decoy target.")
+	_require(_panel_border_color(decoy_pad) != selected_border, "Wrong direct tap should return the target to its base frame instead of staying selected.")
 
 	_main.call("_show_play_screen", level)
 	correct_pad = _node_named(_main, "tap_scene_target_wrong_button") as Control
@@ -109,6 +111,18 @@ func _screen_touch_event(pressed: bool, position: Vector2 = Vector2(16, 16)) -> 
 
 func _touch_position(control: Control) -> Vector2:
 	return control.get_global_rect().position + Vector2(16, 16)
+
+
+func _panel_border_color(control: Control) -> Color:
+	var panel := control as PanelContainer
+	_require(panel != null, "Expected a framed direct tap panel.")
+	if panel == null:
+		return Color.TRANSPARENT
+	var style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+	_require(style != null, "Expected direct tap panel style.")
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
 
 
 func _level_by_number(level_number: int) -> Dictionary:

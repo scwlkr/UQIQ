@@ -535,18 +535,20 @@ func _handle_tap_target(target_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
 
-	var solution = _current_level.get("solution", {})
-	var winning_target := ""
-	if typeof(solution) == TYPE_DICTIONARY:
-		winning_target = str(solution.get("target_id", ""))
-
-	if target_id == winning_target:
+	if _is_tap_solution(target_id):
 		_complete_current_level()
 		return
 
 	_feedback_label.text = _first_roast("failure", "Nope. Your finger has executive dysfunction.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
+
+
+func _is_tap_solution(target_id: String) -> bool:
+	var solution = _current_level.get("solution", {})
+	if typeof(solution) != TYPE_DICTIONARY:
+		return false
+	return target_id == str(solution.get("target_id", ""))
 
 
 func _handle_drag_select(object_id: String) -> void:
@@ -1718,6 +1720,8 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 			_mark_input_handled()
 			return
 		_last_direct_tap_target_id = target_id
+		if not _is_tap_solution(target_id):
+			_apply_direct_base_panel_style(pad)
 		_handle_tap_target(target_id)
 		_mark_input_handled()
 
