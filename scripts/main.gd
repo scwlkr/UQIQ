@@ -1201,9 +1201,9 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 				continue
 
 			var cell_id := str(cell.get("id", ""))
-			var cell_button := _make_button("TAP\n%s" % str(cell.get("label", "?")), COLOR_PANEL_ALT, Vector2(86, 70))
+			var cell_button := _make_button(str(cell.get("label", "?")), COLOR_PANEL_ALT, Vector2(86, 70))
 			cell_button.name = "pattern_mark_cell_%s" % cell_id
-			cell_button.add_theme_font_size_override("font_size", 16)
+			cell_button.add_theme_font_size_override("font_size", 24)
 			_apply_pattern_button_style(cell_button, COLOR_PANEL_ALT, COLOR_BLUE)
 			cell_button.pressed.connect(Callable(self, "_handle_pattern_mark_cell").bind(cell_id, cell_button))
 			grid.add_child(cell_button)
