@@ -56,10 +56,17 @@ func _verify_direct_drag_drop() -> void:
 	_require(not _has_button_prefix(_main, "Move:"), "Drag Logic should not expose Move: choice buttons as the primary interaction.")
 	_require(not _has_button_prefix(_main, "Drop on:"), "Drag Logic should not expose Drop on: choice buttons as the primary interaction.")
 
+	_release_tile_into_empty_space("word_right")
+	_require(_screen_has_label_text("RIGHT missed every box."), "Direct Drag Logic miss feedback should use the visible tile label.")
+	_require(not _screen_has_label_text("word_right"), "Direct Drag Logic miss feedback should not leak internal object ids.")
+
+	_main.call("_show_play_screen", level)
 	_drag_tile_to_zone("word_right", "confidence_box")
 	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
 	_require(str(_main.get("_last_failed_drag_return_id")) == "word_right", "Wrong direct drag/drop should schedule the dragged tile to return to origin.")
+	_require(_screen_has_label_text("RIGHT does not belong in Confidence Box."), "Wrong direct drag/drop feedback should use visible tile and box labels.")
+	_require(not _screen_has_label_text("word_right"), "Wrong direct drag/drop feedback should not leak internal object ids.")
 
 	_main.call("_show_play_screen", level)
 	_release_overlapping_tile_with_bad_pointer("word_wrong", "truth_box")
@@ -122,6 +129,18 @@ func _release_overlapping_tile_with_bad_pointer(object_id: String, target_id: St
 	_main.call("_handle_drag_tile_input", press, object_id, tile)
 	tile.position = zone.position
 	tile.move_to_front()
+	var release := _mouse_button_event(Vector2(-500, -500), false)
+	_main.call("_handle_drag_tile_input", release, object_id, tile)
+
+
+func _release_tile_into_empty_space(object_id: String) -> void:
+	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
+	_require(tile != null, "Expected draggable tile for %s." % object_id)
+	if _failed:
+		return
+
+	var press := _mouse_button_event(Vector2(12, 12), true)
+	_main.call("_handle_drag_tile_input", press, object_id, tile)
 	var release := _mouse_button_event(Vector2(-500, -500), false)
 	_main.call("_handle_drag_tile_input", release, object_id, tile)
 

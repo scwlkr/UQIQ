@@ -533,7 +533,7 @@ func _handle_drag_select(object_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_selected_drag_id = object_id
-	_feedback_label.text = "Holding %s. Now move it somewhere questionable." % object_id
+	_feedback_label.text = "Holding %s. Move it into a box." % _drag_object_label(object_id)
 
 
 func _handle_drag_drop(drop_target_id: String) -> void:
@@ -555,7 +555,7 @@ func _resolve_drag_drop(object_id: String, drop_target_id: String) -> void:
 		_complete_current_level()
 		return
 
-	_feedback_label.text = _first_roast("failure", "Wrong thing, wrong place. Somehow both.")
+	_feedback_label.text = "%s does not belong in %s." % [_drag_object_label(object_id), _drop_target_label(drop_target_id)]
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
@@ -567,6 +567,24 @@ func _is_drag_drop_solution(object_id: String, drop_target_id: String) -> bool:
 
 	return object_id == str(solution.get("object_id", "")) \
 		and drop_target_id == str(solution.get("drop_target_id", ""))
+
+
+func _drag_object_label(object_id: String) -> String:
+	var objects = _rules().get("draggable_objects", [])
+	if typeof(objects) == TYPE_ARRAY:
+		for object in objects:
+			if typeof(object) == TYPE_DICTIONARY and str(object.get("id", "")) == object_id:
+				return str(object.get("label", object_id))
+	return object_id
+
+
+func _drop_target_label(target_id: String) -> String:
+	var targets = _rules().get("drop_targets", [])
+	if typeof(targets) == TYPE_ARRAY:
+		for target in targets:
+			if typeof(target) == TYPE_DICTIONARY and str(target.get("id", "")) == target_id:
+				return str(target.get("label", target_id))
+	return target_id
 
 
 func _handle_text_submit() -> void:
@@ -1605,7 +1623,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_apply_drag_tile_style(tile, true)
 		tile.move_to_front()
 		_set_drag_hover_target(_drop_target_for_released_tile(_event_canvas_position(event, tile), tile))
-		_feedback_label.text = "Dragging %s. Drop it where truth will tolerate it." % object_id
+		_feedback_label.text = "Dragging %s. Find its box." % _drag_object_label(object_id)
 		_mark_input_handled()
 		return
 
@@ -1796,7 +1814,7 @@ func _handle_direct_drag_miss(object_id: String, tile: Control = null) -> void:
 	_last_drag_drop_target_id = ""
 	if tile != null and is_instance_valid(tile):
 		_animate_control_position(tile, _drag_origin)
-	_feedback_label.text = "%s hit empty space. The floor is not a valid argument." % object_id
+	_feedback_label.text = "%s missed every box." % _drag_object_label(object_id)
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
 

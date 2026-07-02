@@ -101,6 +101,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Fifty-third local polish loop removed Physics Draw surface tags and rewrote path status copy into player-facing ramp language; Physics Draw screenshot refreshed and full verification floor passed again.
 - Fifty-fourth local polish loop compacted the play-screen Judge panel so direct game surfaces get more vertical room without changing Judge state behavior; screenshots refreshed and full verification floor passed again.
 - Fifty-fifth local polish loop changed initial direct-play feedback lines from repeated instructions into state labels for tap, drag, text, memory, and physics surfaces; screenshots refreshed and full verification floor passed again.
+- Fifty-sixth local polish loop changed Drag Logic feedback to use visible tile and box labels instead of internal ids like `word_wrong`; focused drag checks and the full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
