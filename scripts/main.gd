@@ -2276,6 +2276,8 @@ func _resolve_direct_memory_if_full() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Memory failed. The pixels had one job and so did you.")
+	_memory_input = []
+	_update_memory_recall_slots()
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
 

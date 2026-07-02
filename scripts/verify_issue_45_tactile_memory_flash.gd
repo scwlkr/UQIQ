@@ -68,7 +68,10 @@ func _verify_tactile_memory_flash() -> void:
 	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong direct memory row should count one action per tile.")
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "MOON", "Direct memory handler should record the last touched tile.")
-	_require(_screen_has_label_text("DUR"), "Recall slots should show tapped memory input.")
+	var memory_after_wrong: Array = _main.get("_memory_input")
+	_require(memory_after_wrong.is_empty(), "Wrong full Memory Flash row should clear recall input for a clean retry.")
+	var first_slot_label := _node_named(_main, "memory_recall_slot_label_0") as Label
+	_require(first_slot_label != null and str(first_slot_label.text) == "_", "Wrong full Memory Flash row should reset recall slot labels.")
 
 	_main.call("_show_play_screen", level)
 	_press_tiles_with_mouse(["SUN", "MOON", "DUR"])
