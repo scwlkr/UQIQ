@@ -149,6 +149,7 @@ godot --headless --path . --script res://scripts/verify_issue_40_interaction_cor
 godot --headless --path . --script res://scripts/verify_issue_41_pack_6_direct_drawing.gd
 godot --headless --path . --script res://scripts/verify_issue_42_pattern_grid_interaction.gd
 godot --headless --path . --script res://scripts/verify_issue_43_tactile_tap_logic.gd
+godot --headless --path . --script res://scripts/verify_issue_45_tactile_memory_flash.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -196,6 +197,8 @@ godot --headless --path . --script res://scripts/verify_issue_43_tactile_tap_log
 `verify_issue_42_pattern_grid_interaction.gd` is the direct Pattern Grid check. It verifies Level 4 renders a markable grid instead of the old single-cell `Submit Pattern` flow, rejects a wrong row, and completes from marked grid state.
 
 `verify_issue_43_tactile_tap_logic.gd` is the tactile Tap Logic check. It verifies Level 1 renders a direct tap scene instead of `CORRECT` / `WRONG` answer-choice buttons, rejects a wrong direct tap, accepts mouse/touch-shaped input, and completes through Score Roastcard.
+
+`verify_issue_45_tactile_memory_flash.gd` is the tactile Memory Flash check. It verifies Level 5 renders direct memory tiles and recall slots instead of `Flash` / `Hide` / choice buttons, rejects a wrong row, accepts mouse/touch-shaped input, and completes through Score Roastcard.
 
 ## Desktop Smoke
 

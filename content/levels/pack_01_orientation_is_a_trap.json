@@ -331,7 +331,8 @@
           "MOON"
         ],
         "flash_seconds": 1,
-        "interaction_model": "manual_flash_hide_choose"
+        "interaction_model": "direct_memory_tiles",
+        "scene_prompt": "Tap tiles into the recall slots in the flashed order."
       },
       "solution": {
         "sequence": [
@@ -368,7 +369,8 @@
         "style": "flat_vector",
         "shapes": [
           "flash_tiles",
-          "choice_buttons",
+          "recall_slots",
+          "direct_memory_tiles",
           "judge_face_stub"
         ]
       },

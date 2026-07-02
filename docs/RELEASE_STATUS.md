@@ -8,8 +8,8 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Active Next Step
 
-- GitHub issue: [#44 Add quick wireless iPhone deploy loop](https://github.com/scwlkr/UQIQ/issues/44)
-- Branch: `codex/issue-44-quick-phone-deploy`
+- GitHub issue: [#45 Build tactile Memory Flash prototype](https://github.com/scwlkr/UQIQ/issues/45)
+- Branch: `codex/issue-45-tactile-memory-flash`
 
 ## Current Gameplay Proof
 
@@ -17,6 +17,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Level 4 Pattern Grid has direct row marking.
 - Level 6 and Pack 6 Physics Draw have direct line drawing.
 - Level 1 Tap Logic now has a direct tap scene instead of `CORRECT` / `WRONG` answer-choice buttons.
+- Level 5 Memory Flash now has direct memory tiles and recall slots instead of choice buttons.
 
 ## Latest Verification
 
@@ -25,6 +26,9 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Affected checks passed: `verify_issue_40_interaction_core.gd`, `verify_issue_42_pattern_grid_interaction.gd`, `verify_issue_4.gd`, `verify_issue_5_desktop_smoke.gd`, `verify_issue_7_pack_1_smoke.gd`.
 - Full README verification floor passed through `verify_issue_43_tactile_tap_logic.gd`.
 - `scripts/deploy_phone.sh` passed on physical iPhone `17 Hoe Max`: installed/launched UQIQ `0.1.1 (20260701224540)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701224540.png`.
+- `verify_issue_45_tactile_memory_flash.gd` passed locally.
+- Full README verification floor passed through `verify_issue_45_tactile_memory_flash.gd`.
+- #45 phone deploy passed: installed/launched UQIQ `0.1.1 (20260701225006)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701225006.png`.
 
 ## Known Blockers
 
@@ -33,4 +37,4 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Next Gate
 
-Close #44 with proof, then route the next `next-step` back to gameplay-feel iteration.
+Close #45 with proof, then route the next `next-step` to direct phone playtest access for target mechanics.
