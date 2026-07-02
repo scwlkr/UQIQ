@@ -5,7 +5,8 @@ const LocalProfileScript := preload("res://scripts/local_profile.gd")
 const DeviceSmokeRunnerScript := preload("res://scripts/device_smoke_runner.gd")
 
 const COLOR_INK := Color(0.06, 0.07, 0.09)
-const COLOR_PAPER := Color(0.97, 0.95, 0.86)
+const COLOR_PAPER := Color(0.91, 0.94, 0.95)
+const COLOR_PLAYFIELD := Color(0.80, 0.86, 0.88)
 const COLOR_PANEL := Color(0.12, 0.13, 0.16)
 const COLOR_PANEL_ALT := Color(0.18, 0.20, 0.24)
 const COLOR_YELLOW := Color(1.00, 0.78, 0.15)
@@ -986,7 +987,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 	surface.name = "tap_scene_surface"
 	surface.custom_minimum_size = Vector2(0, 280)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
 
 	var hint := _new_label("labels are evidence, not instructions", 16, COLOR_INK)
@@ -1014,7 +1015,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 	playfield.name = "drag_playfield"
 	playfield.custom_minimum_size = Vector2(0, 280)
 	playfield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	playfield.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	playfield.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(playfield)
 
 	var hint := _new_label("drag tiles -> drop zones", 15, COLOR_INK)
@@ -1077,7 +1078,7 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 	surface.name = "text_tile_surface"
 	surface.custom_minimum_size = Vector2(0, 260)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
 
 	var prompt_label := _new_label("answer slot", 15, COLOR_INK)
@@ -1215,7 +1216,7 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 	surface.name = "memory_tile_surface"
 	surface.custom_minimum_size = Vector2(0, 312)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
 
 	var flash_label := _new_label("flash order: %s" % "  ".join(_string_array(_rules().get("flash_items", []))), 16, COLOR_INK)
@@ -1329,7 +1330,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	surface.name = "physics_draw_surface"
 	surface.custom_minimum_size = Vector2(0, 280)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	surface.mouse_filter = Control.MOUSE_FILTER_STOP
 	surface.gui_input.connect(Callable(self, "_handle_physics_surface_input").bind(surface))
 	stage_box.add_child(surface)
@@ -1395,7 +1396,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	var surface := PanelContainer.new()
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
 
 	var surface_box := VBoxContainer.new()
