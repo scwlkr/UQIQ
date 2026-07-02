@@ -196,8 +196,8 @@
       "title": "One Square Panicked",
       "template": "Pattern Grid",
       "challenge_type": "pattern puzzle",
-      "completion_mode": "submit",
-      "prompt": "Find the square that forgot the pattern.",
+      "completion_mode": "auto_complete_on_marked_cells",
+      "prompt": "Mark the row containing the square that forgot the pattern.",
       "rules": {
         "columns": 3,
         "cells": [
@@ -246,10 +246,17 @@
             "label": "C",
             "role": "decoy"
           }
-        ]
+        ],
+        "interaction_model": "direct_mark_cells",
+        "mark_count": 3
       },
       "solution": {
         "cell_id": "r2c2",
+        "cell_ids": [
+          "r2c1",
+          "r2c2",
+          "r2c3"
+        ],
         "explanation": "Every row repeats one letter except the middle cell, which is a number pretending to be helpful."
       },
       "scoring": {

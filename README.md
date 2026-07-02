@@ -147,6 +147,7 @@ godot --headless --path . --script res://scripts/verify_issue_23_ui_readability.
 godot --headless --path . --script res://scripts/verify_issue_38_long_screen_fit.gd
 godot --headless --path . --script res://scripts/verify_issue_40_interaction_core.gd
 godot --headless --path . --script res://scripts/verify_issue_41_pack_6_direct_drawing.gd
+godot --headless --path . --script res://scripts/verify_issue_42_pattern_grid_interaction.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -190,6 +191,8 @@ godot --headless --path . --script res://scripts/verify_issue_41_pack_6_direct_d
 `verify_issue_40_interaction_core.gd` is the interaction-core check. It verifies Drag Logic exposes a direct drag/drop playfield instead of `Move:` / `Drop on:` buttons, Physics Draw exposes a direct drawing surface instead of `Draw:` option buttons, and both interactions complete through Score Roastcard with persistence.
 
 `verify_issue_41_pack_6_direct_drawing.gd` is the Pack 6 direct drawing check. It verifies every Pack 6 Physics Draw Level renders a direct drawing surface instead of `Draw:` fallback buttons, rejects a bad short line, and completes through its encoded drawing gesture.
+
+`verify_issue_42_pattern_grid_interaction.gd` is the direct Pattern Grid check. It verifies Level 4 renders a markable grid instead of the old single-cell `Submit Pattern` flow, rejects a wrong row, and completes from marked grid state.
 
 ## Desktop Smoke
 

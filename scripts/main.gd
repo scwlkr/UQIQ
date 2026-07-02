@@ -58,6 +58,8 @@ var _drag_offset := Vector2.ZERO
 var _drag_drop_zones := {}
 var _last_drag_drop_target_id := ""
 var _selected_pattern_cell := ""
+var _pattern_marked_cells: Array[String] = []
+var _pattern_cell_buttons := {}
 var _memory_input: Array[String] = []
 var _physics_choice := ""
 var _last_physics_result := ""
@@ -345,6 +347,8 @@ func _show_play_screen(level: Dictionary) -> void:
 	_drag_drop_zones = {}
 	_last_drag_drop_target_id = ""
 	_selected_pattern_cell = ""
+	_pattern_marked_cells = []
+	_pattern_cell_buttons = {}
 	_memory_input = []
 	_physics_choice = ""
 	_last_physics_result = ""
@@ -526,6 +530,30 @@ func _handle_pattern_submit() -> void:
 	_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
+
+
+func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
+	_tap_count += 1
+	_trigger_feedback("tap")
+
+	if _pattern_marked_cells.has(cell_id):
+		_pattern_marked_cells.erase(cell_id)
+	else:
+		_pattern_marked_cells.append(cell_id)
+
+	_apply_pattern_mark_style(cell_id, button)
+	_feedback_label.text = "Marked: %s" % "  ".join(_pattern_marked_cells)
+
+	var solution_cells := _pattern_solution_cells()
+	if _same_string_set(_pattern_marked_cells, solution_cells):
+		_complete_current_level()
+		return
+
+	var mark_count := int(_rules().get("mark_count", solution_cells.size()))
+	if mark_count > 0 and _pattern_marked_cells.size() >= mark_count:
+		_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
+		_set_judge_state("fail")
+		_trigger_feedback("fail")
 
 
 func _handle_memory_flash(show_sequence: bool) -> void:
@@ -887,6 +915,10 @@ func _render_text_trap(stage_box: VBoxContainer) -> void:
 
 
 func _render_pattern_grid(stage_box: VBoxContainer) -> void:
+	if _uses_direct_pattern_grid():
+		_render_direct_pattern_grid(stage_box)
+		return
+
 	var grid := GridContainer.new()
 	grid.columns = int(_rules().get("columns", 3))
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -909,6 +941,33 @@ func _render_pattern_grid(stage_box: VBoxContainer) -> void:
 	stage_box.add_child(submit_button)
 
 	_add_feedback(stage_box, "Find the cell that breaks the pattern.")
+
+
+func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, "Mark the whole broken row.", 17, COLOR_INK)
+
+	var grid := GridContainer.new()
+	grid.name = "pattern_mark_grid"
+	grid.columns = int(_rules().get("columns", 3))
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	stage_box.add_child(grid)
+
+	var cells = _rules().get("cells", [])
+	if typeof(cells) == TYPE_ARRAY:
+		for cell in cells:
+			if typeof(cell) != TYPE_DICTIONARY:
+				continue
+
+			var cell_id := str(cell.get("id", ""))
+			var cell_button := _make_button(str(cell.get("label", "?")), _target_color(cell), Vector2(86, 64))
+			cell_button.name = "pattern_mark_cell_%s" % cell_id
+			cell_button.pressed.connect(Callable(self, "_handle_pattern_mark_cell").bind(cell_id, cell_button))
+			grid.add_child(cell_button)
+			_pattern_cell_buttons[cell_id] = cell_button
+
+	_add_feedback(stage_box, "Mark cells in the row that broke the pattern. It will judge you automatically.")
 
 
 func _render_memory_flash(stage_box: VBoxContainer) -> void:
@@ -1390,6 +1449,48 @@ func _level_button_color(level: Dictionary) -> Color:
 	if _profile.is_level_unlocked(level_number):
 		return COLOR_PANEL_ALT
 	return Color(0.22, 0.23, 0.25)
+
+
+func _uses_direct_pattern_grid() -> bool:
+	return str(_rules().get("interaction_model", "")) == "direct_mark_cells"
+
+
+func _pattern_solution_cells() -> Array[String]:
+	var solution := _solution()
+	var cell_ids = solution.get("cell_ids", [])
+	if typeof(cell_ids) == TYPE_ARRAY:
+		return _string_array(cell_ids)
+
+	var cell_id := str(solution.get("cell_id", ""))
+	if not cell_id.is_empty():
+		return [cell_id]
+	return []
+
+
+func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
+	var is_marked := _pattern_marked_cells.has(cell_id)
+	var color := COLOR_YELLOW if is_marked else _target_color(_pattern_cell_by_id(cell_id))
+	button.add_theme_stylebox_override("normal", _flat_box(color, 8))
+	button.add_theme_stylebox_override("hover", _flat_box(color.lightened(0.08), 8))
+	button.add_theme_stylebox_override("pressed", _flat_box(color.darkened(0.08), 8))
+
+
+func _pattern_cell_by_id(cell_id: String) -> Dictionary:
+	var cells = _rules().get("cells", [])
+	if typeof(cells) == TYPE_ARRAY:
+		for cell in cells:
+			if typeof(cell) == TYPE_DICTIONARY and str(cell.get("id", "")) == cell_id:
+				return cell
+	return {}
+
+
+func _same_string_set(left: Array[String], right: Array[String]) -> bool:
+	if left.size() != right.size():
+		return false
+	for value in left:
+		if not right.has(value):
+			return false
+	return true
 
 
 func _rules() -> Dictionary:

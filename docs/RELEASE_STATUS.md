@@ -30,6 +30,9 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 - `verify_issue_41_pack_6_direct_drawing.gd` proves Pack 6 Physics Draw levels reject a bad line and complete through direct drawing.
 - Full documented verification floor passed after the Pack 6 drawing slice.
 - Issue #41 closed with proof in commit `c41c67f`.
+- Issue #42 adds direct row-marking interaction for Level 4 Pattern Grid.
+- `verify_issue_42_pattern_grid_interaction.gd` proves Level 4 rejects a wrong row and completes from marked grid state without `Submit Pattern`.
+- Full documented verification floor passed after the Pattern Grid slice.
 - Issue #39 was superseded by product-direction feedback and the new interaction-core issue.
 
 ## Known Blockers
@@ -39,4 +42,4 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Next Gate
 
-Build one richer Pattern Grid prototype so grid play is not only single-cell choice plus `Submit Pattern`.
+Close issue #42 with proof, then choose the next gameplay-depth issue before release work resumes.
