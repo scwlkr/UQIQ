@@ -1141,9 +1141,14 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
+	var objects = _rules().get("draggable_objects", [])
+	var targets = _rules().get("drop_targets", [])
+	var object_count: int = objects.size() if typeof(objects) == TYPE_ARRAY else 0
+	var target_count: int = targets.size() if typeof(targets) == TYPE_ARRAY else 0
+	var row_count := maxi(object_count, target_count)
 	var playfield := Panel.new()
 	playfield.name = "drag_playfield"
-	playfield.custom_minimum_size = Vector2(0, 280)
+	playfield.custom_minimum_size = Vector2(0, _drag_playfield_height(row_count))
 	playfield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	playfield.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(playfield)
@@ -1154,7 +1159,6 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	playfield.add_child(hint)
 
-	var objects = _rules().get("draggable_objects", [])
 	if typeof(objects) == TYPE_ARRAY:
 		for index in range(objects.size()):
 			var object = objects[index]
@@ -1162,10 +1166,9 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 				continue
 
 			var tile := _make_drag_tile(object)
-			tile.position = Vector2(18, 62 + (index * 82))
+			tile.position = Vector2(18, _drag_row_y(index, row_count, 76.0))
 			playfield.add_child(tile)
 
-	var targets = _rules().get("drop_targets", [])
 	if typeof(targets) == TYPE_ARRAY:
 		for index in range(targets.size()):
 			var target = targets[index]
@@ -1173,11 +1176,23 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 				continue
 
 			var zone := _make_drop_zone(target)
-			zone.position = Vector2(176, 62 + (index * 88))
+			zone.position = Vector2(176, _drag_row_y(index, row_count, 82.0))
 			playfield.add_child(zone)
 			_drag_drop_zones[str(target.get("id", ""))] = zone
 
 	_add_feedback(stage_box, "Tile ready.")
+
+
+func _drag_playfield_height(row_count: int) -> float:
+	if row_count <= 0:
+		return 280.0
+	return maxf(280.0, _drag_row_y(row_count - 1, row_count, 82.0) + 74.0 + 18.0)
+
+
+func _drag_row_y(index: int, row_count: int, default_step: float) -> float:
+	if row_count <= 2:
+		return 62.0 + (index * default_step)
+	return 58.0 + (index * default_step)
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:

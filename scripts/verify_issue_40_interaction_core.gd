@@ -27,6 +27,10 @@ func _initialize() -> void:
 	if _failed:
 		return
 
+	_verify_drag_layout_bounds()
+	if _failed:
+		return
+
 	_verify_direct_physics_draw()
 	if _failed:
 		return
@@ -88,6 +92,46 @@ func _verify_direct_drag_drop() -> void:
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct drag/drop should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct drag/drop should persist as one direct action.")
+
+
+func _verify_drag_layout_bounds() -> void:
+	var levels = _pack_set.get("levels", [])
+	_require(typeof(levels) == TYPE_ARRAY, "Default pack set should expose levels for drag layout verification.")
+	if typeof(levels) != TYPE_ARRAY:
+		return
+
+	for level in levels:
+		if typeof(level) != TYPE_DICTIONARY or str(level.get("template", "")) != "Drag Logic":
+			continue
+
+		_main.call("_show_play_screen", level)
+		var playfield := _node_named(_main, "drag_playfield") as Control
+		_require(playfield != null, "Drag Logic Level %d should render a playfield." % int(level.get("level_number", 0)))
+		if playfield == null:
+			return
+
+		var playfield_height := _control_height(playfield)
+		_require(playfield_height >= 280.0, "Drag Logic Level %d playfield should keep a phone-friendly minimum height." % int(level.get("level_number", 0)))
+		_verify_named_children_fit(playfield, "drag_tile_", playfield_height, int(level.get("level_number", 0)))
+		_verify_named_children_fit(playfield, "drop_zone_", playfield_height, int(level.get("level_number", 0)))
+
+
+func _verify_named_children_fit(parent: Control, name_prefix: String, parent_height: float, level_number: int) -> void:
+	var count := 0
+	for child in parent.get_children():
+		var control := child as Control
+		if control == null or not str(control.name).begins_with(name_prefix):
+			continue
+		count += 1
+		var bottom := control.position.y + _control_height(control)
+		_require(bottom <= parent_height + 0.01, "Drag Logic Level %d %s should fit inside the playfield." % [level_number, str(control.name)])
+	_require(count > 0, "Drag Logic Level %d should render %s controls." % [level_number, name_prefix])
+
+
+func _control_height(control: Control) -> float:
+	if control.size.y > 0.0:
+		return control.size.y
+	return control.custom_minimum_size.y
 
 
 func _verify_direct_physics_draw() -> void:
