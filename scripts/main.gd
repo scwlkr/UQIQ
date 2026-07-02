@@ -882,19 +882,19 @@ func _show_score_roastcard() -> void:
 	root.add_child(actions)
 
 	var replay_button := _make_button("Replay", COLOR_BLUE)
-	_apply_button_frame(replay_button, COLOR_BLUE)
+	_apply_button_frame(replay_button, COLOR_BLUE, COLOR_PANEL)
 	replay_button.pressed.connect(Callable(self, "_show_play_screen").bind(_current_level))
 	actions.add_child(replay_button)
 
 	var next_level := _next_playable_level()
 	if not next_level.is_empty():
 		var next_button := _make_button("Next", COLOR_GREEN)
-		_apply_button_frame(next_button, COLOR_GREEN)
+		next_button.add_theme_color_override("font_color", COLOR_INK)
 		next_button.pressed.connect(Callable(self, "_show_next_level"))
 		actions.add_child(next_button)
 
-	var list_button := _make_button("Level List", COLOR_GREEN)
-	_apply_button_frame(list_button, COLOR_GREEN)
+	var list_button := _make_button("Level List", COLOR_PANEL)
+	_apply_button_frame(list_button, COLOR_GREEN, COLOR_PANEL)
 	list_button.pressed.connect(Callable(self, "_show_level_list"))
 	actions.add_child(list_button)
 
