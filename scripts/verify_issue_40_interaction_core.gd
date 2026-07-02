@@ -109,9 +109,10 @@ func _verify_direct_physics_draw() -> void:
 	_require(not _profile.is_level_completed(level_id), "A tiny Physics Draw stroke should not complete Level 6.")
 	_require(_screen_has_label_text("Line too short."), "A tiny Physics Draw stroke should ask for a longer line.")
 
-	_draw_curved_line_on_surface(Vector2(48, 220), [Vector2(112, 204), Vector2(184, 218)], Vector2(260, 220))
+	_draw_curved_line_on_surface(Vector2(48, 220), [Vector2(-120, 360), Vector2(500, -80)], Vector2(260, 220))
 	_require(str(_main.get("_last_physics_result")) == "fail", "A wrong curved Physics Draw stroke should fail without completing.")
 	_require(_drawn_line_point_count() >= 4, "Physics Draw should preserve a multi-point finger path instead of snapping to start/end.")
+	_require(_drawn_line_points_inside_surface(), "Physics Draw should clamp off-surface finger movement inside the playfield.")
 	_require(not _profile.is_level_completed(level_id), "A wrong curved Physics Draw stroke should not complete Level 6.")
 
 	_main.call("_show_play_screen", level)
@@ -226,6 +227,27 @@ func _drawn_line_point_count() -> int:
 	if line == null:
 		return 0
 	return line.points.size()
+
+
+func _drawn_line_points_inside_surface() -> bool:
+	var surface := _node_named(_main, "physics_draw_surface") as Control
+	var line := _node_named(_main, "player_drawn_line") as Line2D
+	_require(surface != null, "Expected Physics Draw surface.")
+	_require(line != null, "Expected Physics Draw player line.")
+	if surface == null or line == null:
+		return false
+
+	var bounds := surface.size
+	if bounds.x <= 0.0:
+		bounds.x = maxf(surface.custom_minimum_size.x, 320.0)
+	if bounds.y <= 0.0:
+		bounds.y = maxf(surface.custom_minimum_size.y, 280.0)
+
+	for point in line.points:
+		if point.x < -0.01 or point.y < -0.01 or point.x > bounds.x + 0.01 or point.y > bounds.y + 0.01:
+			return false
+
+	return true
 
 
 func _physics_hint_is_secondary() -> bool:

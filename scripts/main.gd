@@ -1931,7 +1931,7 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 		_physics_has_drawn_line = false
 		_physics_choice = ""
 		_last_physics_result = "drawing"
-		_physics_draw_start = _event_position_in_control(event, surface, surface)
+		_physics_draw_start = _clamp_physics_draw_point(_event_position_in_control(event, surface, surface))
 		_physics_draw_end = _physics_draw_start
 		_physics_draw_points = PackedVector2Array([_physics_draw_start])
 		_set_physics_line_points(_physics_draw_points)
@@ -1980,6 +1980,7 @@ func _simulate_physics_draw_line(start: Vector2, end: Vector2) -> void:
 
 
 func _append_physics_draw_point(point: Vector2, force: bool = false) -> void:
+	point = _clamp_physics_draw_point(point)
 	_physics_draw_end = point
 	if _physics_draw_points.is_empty():
 		_physics_draw_points = PackedVector2Array([point])
@@ -1995,6 +1996,22 @@ func _append_physics_draw_point(point: Vector2, force: bool = false) -> void:
 	else:
 		_physics_draw_points[last_index] = point
 	_set_physics_line_points(_physics_draw_points)
+
+
+func _clamp_physics_draw_point(point: Vector2) -> Vector2:
+	if _physics_draw_surface == null or not is_instance_valid(_physics_draw_surface):
+		return point
+
+	var bounds := _physics_draw_surface.size
+	if bounds.x <= 0.0:
+		bounds.x = maxf(_physics_draw_surface.custom_minimum_size.x, 320.0)
+	if bounds.y <= 0.0:
+		bounds.y = maxf(_physics_draw_surface.custom_minimum_size.y, 280.0)
+
+	return Vector2(
+		clamp(point.x, 0.0, bounds.x),
+		clamp(point.y, 0.0, bounds.y)
+	)
 
 
 func _set_physics_line_points(points: PackedVector2Array) -> void:
