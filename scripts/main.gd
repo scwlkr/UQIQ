@@ -1083,8 +1083,6 @@ func _render_tap_logic(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap the right object in the scene.")), 17, COLOR_INK)
-
 	var surface := Panel.new()
 	surface.name = "tap_scene_surface"
 	surface.custom_minimum_size = Vector2(0, 280)
@@ -1111,8 +1109,6 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Drag the word into a box.", 17, COLOR_INK)
-
 	var playfield := Panel.new()
 	playfield.name = "drag_playfield"
 	playfield.custom_minimum_size = Vector2(0, 280)
@@ -1174,8 +1170,6 @@ func _render_text_trap(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap the literal word into the answer slot.")), 17, COLOR_INK)
-
 	var surface := Panel.new()
 	surface.name = "text_tile_surface"
 	surface.custom_minimum_size = Vector2(0, 260)
@@ -1242,8 +1236,6 @@ func _render_pattern_grid(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, _direct_pattern_prompt(), 17, COLOR_INK)
-
 	var surface := PanelContainer.new()
 	surface.name = "pattern_grid_surface"
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1325,8 +1317,6 @@ func _render_memory_flash(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap tiles into the recall slots.")), 17, COLOR_INK)
-
 	var surface := Panel.new()
 	surface.name = "memory_tile_surface"
 	surface.custom_minimum_size = Vector2(0, 312)
@@ -1424,8 +1414,8 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false, tile
 
 
 func _render_physics_draw(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
 	if not _uses_direct_physics_draw():
+		_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
 		_render_physics_draw_choice_fallback(stage_box)
 		return
 

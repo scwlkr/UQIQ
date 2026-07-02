@@ -53,6 +53,8 @@ func _verify_tactile_tap_logic() -> void:
 	_require(decoy_pad != null, "Tap Logic should render CORRECT as a direct scene target.")
 	_require(correct_pad != null, "Tap Logic should render WRONG as a direct scene target.")
 	_require(_screen_has_label_text("Evidence board"), "Direct Tap Logic should render the playfield as an in-world evidence board.")
+	_require(not _screen_has_label_text("Tap the object, not an answer list."), "Direct Tap Logic should not repeat instruction copy above the scene.")
+	_require(not _screen_has_label_text("Tap the right object in the scene."), "Direct Tap Logic should not render fallback instruction copy above the scene.")
 	_require(not _screen_has_label_text("labels are evidence"), "Direct Tap Logic should not render old instruction-like playfield copy.")
 	_require(_screen_has_label_text("Scene waiting."), "Direct Tap Logic should start with positive ready-state feedback.")
 	_require(not _screen_has_label_text("No object tapped."), "Direct Tap Logic should not render old negative idle feedback.")

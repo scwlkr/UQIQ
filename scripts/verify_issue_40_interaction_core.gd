@@ -54,6 +54,7 @@ func _verify_direct_drag_drop() -> void:
 	_require(_node_named(_main, "drag_tile_word_wrong") != null, "Drag Logic should render the correct word as a draggable tile.")
 	_require(_node_named(_main, "drop_zone_truth_box") != null, "Drag Logic should render the Truth Box as a drop zone.")
 	_require(_screen_has_label_text("Loose claims"), "Drag Logic should render the playfield with in-world state copy.")
+	_require(not _screen_has_label_text("Drag the word into a box."), "Direct Drag Logic should not repeat instruction copy above the playfield.")
 	_require(not _screen_has_label_text("drag tiles to drop zones"), "Drag Logic should not render old instruction-like playfield copy.")
 	_require(_screen_has_label_text("Tile ready."), "Drag Logic should start with positive ready-state feedback.")
 	_require(not _screen_has_label_text("No tile moving."), "Drag Logic should not render old negative idle feedback.")

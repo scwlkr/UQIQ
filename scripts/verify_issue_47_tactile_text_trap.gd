@@ -63,6 +63,8 @@ func _verify_tactile_text_trap() -> void:
 	_require(not _has_line_edit(_main), "Direct Text Trap should not render a LineEdit.")
 	_require(not _has_button_text(_main, "Submit"), "Direct Text Trap should not expose a Submit button.")
 	_require(not (nothing_tile is Button), "Direct Text Trap word tiles should not be Button answer choices.")
+	_require(not _screen_has_label_text("Fill the answer slot with the literal word"), "Direct Text Trap should not repeat instruction copy above the tile surface.")
+	_require(not _screen_has_label_text("Tap the literal word into the answer slot."), "Direct Text Trap should not render fallback instruction copy above the tile surface.")
 
 	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true), "blank", "", blank_tile)
 	_require(int(_main.get("_tap_count")) == 0, "Direct Text Trap press should preview without spending an action.")

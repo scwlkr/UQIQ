@@ -49,6 +49,8 @@ func _verify_direct_pattern_grid() -> void:
 	_require(_node_named(_main, "pattern_mark_grid") != null, "Pattern Grid should render a direct mark-grid container.")
 	_require(_node_named(_main, "pattern_mark_cell_r2c2") != null, "Pattern Grid should render named markable cells.")
 	_require(_screen_has_label_text("Grid unmarked."), "Pattern Grid should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("Tap the cell that breaks the pattern."), "Direct Pattern Grid should not repeat instruction copy above the grid.")
+	_require(not _screen_has_label_text("Mark the whole broken set."), "Direct Pattern Grid should not repeat multi-mark instruction copy above the grid.")
 	_require(not _screen_has_label_text("No cells marked."), "Pattern Grid should not render old negative idle feedback.")
 	_require(not _has_button_text(_main, "Submit Pattern"), "Direct Pattern Grid should not use Submit Pattern as the primary interaction.")
 

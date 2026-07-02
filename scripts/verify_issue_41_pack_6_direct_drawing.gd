@@ -70,6 +70,7 @@ func _verify_direct_drawing_level(level: Dictionary) -> void:
 	_require(_node_named(_main, "physics_draw_surface") != null, "Level %d should render a direct drawing surface." % level_number)
 	_require(_node_named(_main, "player_drawn_line") != null, "Level %d should render the player's line." % level_number)
 	_require(not _has_button_prefix(_main, "Draw:"), "Level %d should not expose Draw: fallback buttons." % level_number)
+	_require(not _screen_has_label_text("Draw one line so the ball reaches the cup."), "Level %d should not repeat generic Physics Draw instruction copy above the playfield." % level_number)
 
 	_draw_line_on_surface(Vector2(30, 220), Vector2(48, 222))
 	_require(str(_main.get("_physics_choice")) != correct_draw_id, "Level %d bad short line should not classify as correct." % level_number)

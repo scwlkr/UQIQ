@@ -60,6 +60,7 @@ func _verify_tactile_memory_flash() -> void:
 	_require(not _has_button_text(_main, "SUN"), "Direct Memory Flash should not expose SUN as a choice button.")
 	_require(not _has_button_text(_main, "MOON"), "Direct Memory Flash should not expose MOON as a choice button.")
 	_require(not _has_button_text(_main, "DUR"), "Direct Memory Flash should not expose DUR as a choice button.")
+	_require(not _screen_has_label_text("Tap tiles into the recall slots"), "Direct Memory Flash should not repeat instruction copy above the tile surface.")
 	_main.call("_hide_direct_memory_flash", int(_main.get("_direct_memory_flash_generation")))
 	_require(_screen_has_label_text("Receipt hidden"), "Direct Memory Flash hidden state should use concise in-world copy.")
 	_require(not _screen_has_label_text("flash hidden - rebuild it from memory"), "Direct Memory Flash should not render old instruction-like hidden copy.")
