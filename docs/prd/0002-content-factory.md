@@ -1,5 +1,7 @@
 # PRD 0002: Content Factory
 
+Status: parked until `docs/prd/0005-polished-six-level-core.md` proves the six-Level tactile core and scwlkr approves scaling content.
+
 ## Goal
 
 Expand UQIQ from the six-Level vertical slice into curated offline Level Pack content.

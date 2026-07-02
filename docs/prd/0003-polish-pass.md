@@ -1,5 +1,7 @@
 # PRD 0003: Polish Pass
 
+Status: parked until `docs/prd/0005-polished-six-level-core.md` proves the six-Level tactile core and scwlkr approves a v1.0 scope.
+
 ## Goal
 
 Turn the complete 60-Level offline build into a first-pass polished iOS release candidate.

@@ -4,48 +4,58 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Release prep is paused. The current priority is making the gameplay core feel like interactive problem solving instead of answer-choice UI.
+Six-Level Tactile Prototype.
+
+Release prep is paused. The active priority is implementing the Polished Six-Level Core from `docs/prd/0005-polished-six-level-core.md`.
 
 ## Active Next Step
 
-- GitHub issue: [#49 Direction needed from phone playtest build](https://github.com/scwlkr/UQIQ/issues/49)
-- Branch: none; scwlkr direction is required before the next implementation slice.
+- GitHub issue: [Implement Level 1 First Ramp freehand physics runner](https://github.com/scwlkr/UQIQ/issues/64)
+- PRD: [`docs/prd/0005-polished-six-level-core.md`](prd/0005-polished-six-level-core.md)
+- Branch: none assigned yet.
+
+## Direction Captured
+
+The stale phone-direction gate is closed: [Direction needed from phone playtest build](https://github.com/scwlkr/UQIQ/issues/49).
+
+Current direction:
+
+- UQIQ is a tactile mobile puzzle game first.
+- Humor/judgment is secondary flavor.
+- Freehand physics drawing is the strongest Level family.
+- The next product proof is six polished Levels, not 60 Levels.
+- The six-Level mix is two Draw/Shape, two Physics-Linked Rearrange, and two Memory/Reveal Levels.
+
+## Six-Level Core
+
+Design source: [Wayfinder map: UQIQ tactile six-level core](https://github.com/scwlkr/UQIQ/issues/56)
+
+1. `First Ramp` - draw a ramp so the ball reaches the cup.
+2. `Brake Check` - draw a stopper so the ball drops into the cup.
+3. `Goalposts Are Portable` - drag the cup into the ball path.
+4. `Gravity Has Handles` - drag `GRAVITY` to change the physics direction.
+5. `Cup Blinks First` - reveal hidden cup, hide it, draw to memory.
+6. `Remember the Pull` - reveal gravity direction, hide it, move `GRAVITY`.
 
 ## Current Gameplay Proof
 
-- Debug phone playtest supports direct level jump and is adding all-level Level List access.
-- Level 2 Drag Logic has direct drag/drop.
-- Level 4 Pattern Grid has direct row marking.
-- Level 6 and Pack 6 Physics Draw have direct line drawing.
-- Level 1 Tap Logic now has a direct tap scene instead of `CORRECT` / `WRONG` answer-choice buttons.
-- Level 3 Text Trap now uses direct word tiles instead of `LineEdit` / `Submit`.
-- Level 5 Memory Flash now has direct memory tiles and recall slots instead of choice buttons.
+- Debug phone playtest supports direct level jump and all-level Level List access.
+- Existing Pack 1 direct-touch prototypes are playable on phone.
+- Existing Physics Draw proves touch drawing and gesture classification, but not yet realish physical collision.
+- Physical iPhone proof exists for the old direct-touch build: UQIQ `0.1.1 (20260702073553)` installed/launched on `17 Hoe Max`.
 
 ## Latest Verification
 
-- Issue #43 closed with proof in commit `ada873e` and merge `42dcafd`.
-- `verify_issue_43_tactile_tap_logic.gd` passed.
-- Affected checks passed: `verify_issue_40_interaction_core.gd`, `verify_issue_42_pattern_grid_interaction.gd`, `verify_issue_4.gd`, `verify_issue_5_desktop_smoke.gd`, `verify_issue_7_pack_1_smoke.gd`.
-- Full README verification floor passed through `verify_issue_43_tactile_tap_logic.gd`.
-- `scripts/deploy_phone.sh` passed on physical iPhone `17 Hoe Max`: installed/launched UQIQ `0.1.1 (20260701224540)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701224540.png`.
-- `verify_issue_45_tactile_memory_flash.gd` passed locally.
-- Full README verification floor passed through `verify_issue_45_tactile_memory_flash.gd`.
-- #45 phone deploy passed: installed/launched UQIQ `0.1.1 (20260701225006)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701225006.png`.
-- `verify_issue_46_playtest_level_jump.gd` passed locally.
-- Full README verification floor passed through `verify_issue_46_playtest_level_jump.gd`.
-- #46 phone deploy passed with `UQIQ_PLAYTEST_LEVEL=5`: installed/launched UQIQ `0.1.1 (20260701225719)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701225719.png`.
-- `verify_issue_47_tactile_text_trap.gd` passed locally.
-- Full README verification floor passed through `verify_issue_47_tactile_text_trap.gd`.
-- #47 phone deploy passed with `UQIQ_PLAYTEST_LEVEL=3`: installed/launched UQIQ `0.1.1 (20260701230643)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701230643.png`.
-- `verify_issue_48_debug_playtest_all.gd` passed locally.
-- Full README verification floor passed through `verify_issue_48_debug_playtest_all.gd`.
-- #48 phone deploy passed with `UQIQ_PLAYTEST_UNLOCK_ALL=1`: installed/launched UQIQ `0.1.1 (20260701231050)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701231050.png`.
+- Wayfinder planning artifacts are committed and pushed through `6eaa100`.
+- `git diff --check` passed for the six-Level planning artifacts.
+- Previous phone proof for the old direct-touch build passed with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702073553.png`.
 
 ## Known Blockers
 
-- Necessary blocker: scwlkr must feel the phone build and decide the next gameplay direction.
-- App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until gameplay core is stronger and scwlkr approves.
+- No current owner decision blocker for the prototype path.
+- Physical iPhone proof is required again after the new realish physics implementation exists.
+- App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until the six-Level core is stronger and scwlkr approves.
 
 ## Next Gate
 
-Use #49 feedback to create the next implementation issue.
+Implement Level 1 `First Ramp` with realish freehand physics: drawn stroke becomes collision geometry, `Release` starts ball motion, and the ball reaches the cup by physical overlap.

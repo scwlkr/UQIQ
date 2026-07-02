@@ -1,5 +1,7 @@
 # PRD 0001: Vertical Slice
 
+Status: historical baseline. Current work is superseded by `docs/prd/0005-polished-six-level-core.md`.
+
 ## Goal
 
 Build the first playable proof of UQIQ's full loop before producing all 60 Levels.

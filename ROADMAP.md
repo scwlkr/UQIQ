@@ -1,8 +1,10 @@
 # UQIQ Roadmap
 
-## Goal
+## Current Goal
 
-Ship UQIQ v1.0 as a free, phone-only, portrait iOS game with 60 curated offline Levels, local progress, no backend, no accounts, no ads, no in-app purchases, and no in-app AI.
+Prove UQIQ as a tactile, phone-first puzzle game with a polished six-Level prototype before adding more content or resuming App Store release work.
+
+The old 60-Level v1.0 path is parked until the six-Level core feels good on a physical iPhone and scwlkr approves the direction.
 
 ## Roadmap
 
@@ -10,52 +12,40 @@ Ship UQIQ v1.0 as a free, phone-only, portrait iOS game with 60 curated offline 
    - Maintain `CONTEXT.md` as the domain glossary.
    - Record hard-to-reverse decisions in `docs/adr/`.
    - Manage work through `docs/PROJECT_CYCLE.md`: Roadmap -> PRD -> GitHub Issue -> Next Step.
-   - Define the Level Spec format using one JSON Pack Level File per Level Pack.
-   - Keep required Level Spec fields in `docs/LEVEL_SPEC.md`.
+   - Keep the active PRD and active `next-step` issue named in `docs/RELEASE_STATUS.md`.
 
-2. **Godot Project Boot**
-   - Create a Godot 4.x project.
-   - Set portrait phone-only layout constraints.
-   - Build the Flat Vector Style system, Judge Face, Play Screen, Level List, and Local Profile save path.
-   - First build sequence: load a fake Pack Level File, route Level List to Play Screen to Score Roastcard, then implement one simple Tap Logic Level.
+2. **Existing Godot Baseline**
+   - Keep the current Godot 4.x project, portrait phone-only constraints, Flat Vector Style foundation, Judge Face, Level List, Play Screen, Local Profile, UQIQ Score placeholder, Dur Tokens, Roasts, Replay, and local verification floor.
+   - Treat the existing 60-Level content and App Store draft assets as historical scaffolding, not the active product target.
 
-3. **Vertical Slice**
-   - Build one playable Level for each Level Template: Tap Logic, Drag Logic, Text Trap, Pattern Grid, Memory Flash, and Physics Draw.
-   - Include UQIQ Score placeholder, Dur Tokens, DUR'D state, Best Attempts, Roasts, and Replay.
-   - Done when playable in desktop Godot and exported to one physical iPhone with save/load working, Dur Tokens working, UQIQ Score changing, Roasts showing, and no crash in a 10-minute play session.
+3. **Polished Six-Level Core Prototype** _(active)_
+   - Build six excellent tactile Levels:
+     1. `First Ramp` - draw a ramp so the ball reaches the cup.
+     2. `Brake Check` - draw a stopper so the ball drops into the cup.
+     3. `Goalposts Are Portable` - drag the cup into the ball path.
+     4. `Gravity Has Handles` - drag `GRAVITY` to change the physics direction.
+     5. `Cup Blinks First` - remember a hidden cup, then draw toward it.
+     6. `Remember the Pull` - remember a direction, then move `GRAVITY`.
+   - Prefer realish, forgiving physics and direct touch interaction over answer-choice UI.
+   - Done when all six Levels are playable on desktop and physical iPhone, have focused verifier coverage, reset cleanly, and scwlkr approves the phone feel.
 
-4. **Content Factory**
-   - Generate 100+ rough Level ideas.
-   - Select and refine 60 into Level Specs.
-   - Finalize Level Spec validation.
-   - Create 60 Levels across 6 Level Packs; every Level needs at least one UQIQ Moment.
-   - Verify each Level has solvable rules, scoring thresholds, at least three Roasts, Completion Mode, and Attempt Metrics.
-   - Done when all 60 Levels can be completed by a fresh tester without developer help, every Level has at least three Roasts, every Level has scoring thresholds, there are no softlocks or impossible states, and a solution-known full run takes under 90 minutes.
+4. **Core Feedback and Tuning**
+   - Add only the feedback needed to make the six-Level prototype readable: success, failure, reset, lightweight Judge Face reactions, and minimal haptics/audio if cheap.
+   - Keep UQIQ Score, Dur Token loops, Score Roastcards, 60-Level content expansion, and final Roast systems parked unless they directly help evaluate the six-Level core.
 
-5. **Polish Pass**
-   - Tune UQIQ Score as a simple weighted average using completion, speed, action count, Roast usage, and DUR'D state, with visible range `UQIQ -20` through `UQIQ 420`.
-   - Expand Context-Aware Roasts.
-   - Add minimal punchy audio and haptics: tap blips, fail sting, success pop, Roast sting, Dur Token spend sound, and light success/fail haptics.
-   - Add transitions, Judge Face reactions, and final flat vector visual polish.
-   - Optional if cheap: native share sheet with text-only UQIQ Score / Level completion jokes. No custom image generation and no social SDKs.
-   - Avoid music in v1.0 unless it is trivial and not annoying.
-
-6. **iOS Export / TestFlight**
-   - Export through Godot's iOS pipeline and Xcode.
+5. **Prototype TestFlight Gate**
+   - Export the six-Level prototype through the Godot/Xcode path.
    - Test on physical iPhones.
-   - Run a tiny TestFlight beta with 3-10 people before App Store submission.
-   - Ask beta testers to report only crashes, stuck/confusing Levels, unfun Levels, unreadable/tiny UI, and Roasts that go too far.
-   - Use device logs/TestFlight crash reports first; evaluate free-tier Sentry or Firebase Crashlytics only after Godot iOS export is proven.
-   - Fix crashes, save issues, layout issues, and review-blocking usability problems.
+   - Use internal TestFlight only if local phone proof is strong enough and scwlkr approves.
+   - Ask testers only about crashes, stuck/confusing Levels, unfun Levels, unreadable/tiny UI, and whether the tactile core is promising.
 
-7. **App Store Prep**
-   - Prepare app name `UQIQ`, subtitle `Puzzle Game for Giga Brains`, description, keywords, icon, screenshots, privacy details, age-rating questionnaire, support URL, and privacy policy.
-   - App icon concept: Flat Vector Style Judge Face with UQIQ letter treatment on a vibrant background, readable at small iPhone sizes.
-   - Host the minimal static policy/support page at `https://uqiq.wlkrlabs.com/privacy`.
-   - Confirm no real IQ-test claims.
-   - Submission blockers: crash on launch, save loss, impossible Level, softlock, unreadable phone UI, missing App Store metadata, missing Privacy Page, or any content that implies real IQ testing.
+6. **v1.0 Scope Decision**
+   - After the six-Level core is proven or rejected, decide final v1.0 scope:
+     - final Level count,
+     - whether 60 curated Levels still makes sense,
+     - role of UQIQ Score, Dur Tokens, Roastcards, and Judge Face,
+     - asset/audio/haptic direction,
+     - App Store/TestFlight release path.
 
-8. **Review / Release**
-   - Submit to App Review.
-   - Respond to review issues.
-   - Release v1.0 manually after approval.
+7. **Parked v1.0 Production Path**
+   - Content Factory, full polish pass, App Store metadata, external TestFlight, App Review, live hosting/DNS, and public release remain parked until the v1.0 scope decision reopens them.

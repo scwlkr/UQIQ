@@ -1,5 +1,7 @@
 # PRD 0004: App Store/TestFlight Release Prep
 
+Status: parked until `docs/prd/0005-polished-six-level-core.md` proves the six-Level tactile core and scwlkr approves release prep.
+
 ## Goal
 
 Move UQIQ from internal TestFlight proof to a submission-ready v1.0 package without starting external beta review, App Review, live hosting/DNS, or public release without explicit scwlkr approval.
