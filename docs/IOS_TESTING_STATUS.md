@@ -174,13 +174,46 @@ Either JWT (--api-issuer and --api-key) or username and app password authenticat
 Internal-TestFlight-only upload was attempted with `destination=upload` and `testFlightInternalTestingOnly=true`:
 
 ```text
-App record with bundle identifier "com.wlkrlabs.uqiq" not found on App Store Connect.
-Create an app record on App Store Connect, or distribute the app from Xcode, and then try again.
+Uploading "UQIQ.ipa" is complete.
+Uploaded package is processing.
+Upload succeeded.
 ```
+
+## Internal TestFlight Status
+
+App Store Connect now shows UQIQ `0.1.0 (1)` in TestFlight:
+
+```text
+Build: 1
+Status: Ready to Test
+Expires: 90 days
+Group: Internal Smoke
+```
+
+Internal TestFlight group setup:
+
+```text
+Group: Internal Smoke
+Type: Internal Group
+Automatic distribution: enabled
+Builds: 1
+Tester: Shane Walker <shane.caleb.walker@gmail.com>
+Tester status: Invited
+```
+
+Proof screenshots:
+
+```text
+/tmp/uqiq-testflight-poll-1.png
+/tmp/uqiq-testflight-internal-group-ready.png
+/tmp/uqiq-testflight-tester-added-modal.png
+```
+
+No external TestFlight or public App Review path has been started.
 
 ## Current Blocker
 
-The remaining release blocker requires scwlkr-controlled App Store Connect access: create the app record for `com.wlkrlabs.uqiq`. Browser login reached App Store Connect password/passkey auth; passkey returned `No passkeys found`.
+The remaining release blocker requires scwlkr to accept the internal TestFlight invite, install UQIQ `0.1.0 (1)` on a physical iPhone, and launch it once for proof.
 
 ## Next Commands After Apple Access
 
@@ -190,7 +223,7 @@ mkdir -p /tmp/uqiq-ios-release-wlkrlabs
 godot --headless --path . --export-release iOS /tmp/uqiq-ios-release-wlkrlabs/UQIQ.ipa
 ```
 
-If Godot's generic archive still fails, retry the generated project manually and upload as an internal-TestFlight-only proof build:
+If a replacement build is needed, retry the generated project manually and upload as an internal-TestFlight-only proof build:
 
 ```sh
 xcodebuild -project /tmp/uqiq-ios-release-wlkrlabs/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -allowProvisioningUpdates DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY="" -archivePath /tmp/uqiq-ios-release-wlkrlabs/UQIQ-auto.xcarchive
