@@ -23,6 +23,7 @@ const PLAYTEST_UNLOCK_ALL_ENV := "UQIQ_PLAYTEST_UNLOCK_ALL"
 const SCREENSHOT_CAPTURE_ENV := "UQIQ_SCREENSHOT_CAPTURE"
 const FEEDBACK_MIX_RATE := 22050.0
 const MIN_DRAG_DROP_OVERLAP_RATIO := 0.28
+const MIN_PHYSICS_DRAW_LENGTH := 36.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
 	"Drag Logic",
@@ -1852,6 +1853,10 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 
 	if _is_primary_release(event) and _physics_is_drawing:
 		_physics_draw_end = _event_position_in_control(event, surface, surface)
+		if (_physics_draw_end - _physics_draw_start).length() < MIN_PHYSICS_DRAW_LENGTH:
+			_cancel_short_physics_stroke()
+			_mark_input_handled()
+			return
 		_pulse_control(surface, 0.99, 0.035)
 		_record_physics_drawn_line(true)
 		_mark_input_handled()
@@ -1883,6 +1888,22 @@ func _set_physics_line_points(start: Vector2, end: Vector2) -> void:
 	_physics_line.points = PackedVector2Array([start, end])
 
 
+func _clear_physics_line() -> void:
+	if _physics_line == null or not is_instance_valid(_physics_line):
+		return
+	_physics_line.points = PackedVector2Array()
+
+
+func _cancel_short_physics_stroke() -> void:
+	_physics_is_drawing = false
+	_physics_has_drawn_line = false
+	_physics_choice = ""
+	_last_physics_result = "short"
+	_clear_physics_line()
+	_update_physics_choice_label()
+	_feedback_label.text = "Line too short."
+
+
 func _classify_physics_line(start: Vector2, end: Vector2) -> String:
 	var gesture := str(_rules().get("direct_draw_gesture", ""))
 	if not gesture.is_empty():
@@ -1891,7 +1912,7 @@ func _classify_physics_line(start: Vector2, end: Vector2) -> String:
 		return _first_wrong_physics_draw_id()
 
 	var delta := end - start
-	if delta.length() < 36.0:
+	if delta.length() < MIN_PHYSICS_DRAW_LENGTH:
 		return "wall"
 	if abs(delta.x) < 28.0:
 		return "wall"
@@ -1905,7 +1926,7 @@ func _classify_physics_line(start: Vector2, end: Vector2) -> String:
 func _line_matches_gesture(gesture: String, start: Vector2, end: Vector2) -> bool:
 	var delta := end - start
 	var length := delta.length()
-	if length < 36.0:
+	if length < MIN_PHYSICS_DRAW_LENGTH:
 		return false
 
 	match gesture:

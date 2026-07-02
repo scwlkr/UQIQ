@@ -100,6 +100,13 @@ func _verify_direct_physics_draw() -> void:
 	_require(_screen_has_label_text("Line ready."), "Physics Draw should start with positive ready-state feedback.")
 	_require(not _screen_has_label_text("No ramp drawn."), "Physics Draw should not render old negative idle feedback.")
 
+	_draw_line_on_surface(Vector2(48, 220), Vector2(54, 216))
+	_require(str(_main.get("_last_physics_result")) == "short", "A tiny Physics Draw stroke should record a short-stroke state.")
+	_require(str(_main.get("_physics_choice")).is_empty(), "A tiny Physics Draw stroke should not select a ramp.")
+	_require(int(_main.get("_tap_count")) == 0, "A tiny Physics Draw stroke should not spend an action.")
+	_require(not _profile.is_level_completed(level_id), "A tiny Physics Draw stroke should not complete Level 6.")
+	_require(_screen_has_label_text("Line too short."), "A tiny Physics Draw stroke should ask for a longer line.")
+
 	_draw_line_on_surface(Vector2(48, 220), Vector2(260, 110))
 	_require(str(_main.get("_physics_choice")) == "ramp_to_cup", "A rising line from ball to cup should classify as the ramp.")
 	_require(str(_main.get("_last_physics_result")) == "success", "Correct drawn ramp release should record success state.")
