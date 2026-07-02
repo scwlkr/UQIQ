@@ -123,6 +123,7 @@ func _verify_default_tap_levels_render_direct_scene() -> void:
 			_require(pad != null, "Tap Logic Level %d should render direct target %s." % [level_number, target_id])
 			if pad != null:
 				_require(pad.position.x >= 0.0 and pad.position.x + pad.size.x <= 342.0, "Tap Logic Level %d direct target %s should fit inside the portrait playfield." % [level_number, target_id])
+				_require_direct_tap_label_fits(pad, str(target.get("label", "")), targets.size(), level_number)
 
 
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:
@@ -158,6 +159,30 @@ func _panel_border_color(control: Control) -> Color:
 
 func _failure_shake_count(control: Control) -> int:
 	return int(control.get_meta("failure_shake_count", 0))
+
+
+func _require_direct_tap_label_fits(pad: Control, label_text: String, target_count: int, level_number: int) -> void:
+	var label := _first_label(pad)
+	_require(label != null, "Tap Logic Level %d direct target should render a label." % level_number)
+	if label == null:
+		return
+	_require(label.autowrap_mode == TextServer.AUTOWRAP_OFF, "Tap Logic Level %d direct target label should stay single-line." % level_number)
+	_require(label.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS, "Tap Logic Level %d direct target label should trim if needed." % level_number)
+	var font_size := label.get_theme_font_size("font_size")
+	if target_count >= 3 and label_text.length() > 16:
+		_require(font_size <= 12, "Tap Logic Level %d long direct target label should use compact type." % level_number)
+	elif target_count >= 3 and label_text.length() > 10:
+		_require(font_size <= 14, "Tap Logic Level %d medium direct target label should use reduced type." % level_number)
+
+
+func _first_label(node: Node) -> Label:
+	if node is Label:
+		return node
+	for child in node.get_children():
+		var label := _first_label(child)
+		if label != null:
+			return label
+	return null
 
 
 func _level_by_number(level_number: int) -> Dictionary:

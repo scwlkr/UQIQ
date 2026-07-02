@@ -1618,7 +1618,8 @@ func _make_direct_tap_target(target: Dictionary, index: int, target_count: int) 
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pad.add_child(box)
 
-	var label := _new_label(str(target.get("label", "Tap")), 24, COLOR_TEXT)
+	var label_text := str(target.get("label", "Tap"))
+	var label := _new_label(label_text, _direct_tap_label_font_size(label_text, target_count), COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -1639,6 +1640,20 @@ func _default_tap_target_position(index: int, target_count: int) -> Vector2:
 	if target_count == 2:
 		return Vector2(28 + (index * 162), 92)
 	return Vector2(111, 92)
+
+
+func _direct_tap_label_font_size(label_text: String, target_count: int) -> int:
+	if target_count >= 3:
+		if label_text.length() > 16:
+			return 12
+		if label_text.length() > 10:
+			return 14
+		return 18
+	if label_text.length() > 14:
+		return 18
+	if label_text.length() > 10:
+		return 20
+	return 24
 
 
 func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
