@@ -674,7 +674,10 @@ func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
 		_pattern_marked_cells.append(cell_id)
 
 	_apply_pattern_mark_style(cell_id, button)
-	_feedback_label.text = "Marked: %s" % "  ".join(_pattern_marked_cell_labels())
+	if _pattern_marked_cells.is_empty():
+		_feedback_label.text = "Grid unmarked."
+	else:
+		_feedback_label.text = "Marked: %s" % "  ".join(_pattern_marked_cell_labels())
 
 	var solution_cells := _pattern_solution_cells()
 	if _same_string_set(_pattern_marked_cells, solution_cells):

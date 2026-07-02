@@ -54,6 +54,13 @@ func _verify_direct_pattern_grid() -> void:
 	_require(not _screen_has_label_text("No cells marked."), "Pattern Grid should not render old negative idle feedback.")
 	_require(not _has_button_text(_main, "Submit Pattern"), "Direct Pattern Grid should not use Submit Pattern as the primary interaction.")
 
+	_press_cells(["r1c1"])
+	_press_cells(["r1c1"])
+	var marked_after_toggle: Array = _main.get("_pattern_marked_cells")
+	_require(marked_after_toggle.is_empty(), "Tapping a marked Pattern Grid cell again should unmark it.")
+	_require(_screen_has_label_text("Grid unmarked."), "Unmarking the last Pattern Grid cell should restore the ready-state feedback.")
+
+	_main.call("_show_play_screen", level)
 	_press_cells(["r1c1", "r1c2", "r1c3"])
 	_require(not _profile.is_level_completed(level_id), "Wrong marked row should not complete Level 4.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong row should count one action per marked cell.")
