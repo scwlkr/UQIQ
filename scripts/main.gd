@@ -429,6 +429,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	root.add_child(top_bar)
 
 	var back_button := _make_button("<", COLOR_INK, Vector2(48, 48))
+	_apply_button_frame(back_button, COLOR_MUTED, COLOR_PANEL)
 	back_button.pressed.connect(Callable(self, "_show_level_list"))
 	top_bar.add_child(back_button)
 
