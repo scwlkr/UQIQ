@@ -140,6 +140,8 @@ func _verify_direct_physics_draw() -> void:
 	_main.call("_show_play_screen", level)
 
 	_require(_node_named(_main, "physics_draw_surface") != null, "Physics Draw should render a named direct drawing surface.")
+	_require(_physics_marker_is_visible("physics_ball_marker"), "Physics Draw should render a visible ball marker.")
+	_require(_physics_marker_is_visible("physics_cup_marker"), "Physics Draw should render a visible cup marker.")
 	_require(_node_named(_main, "player_drawn_line") != null, "Physics Draw should render the player's drawn line.")
 	_require(_physics_hint_is_secondary(), "Physics Draw hint line should read as a faint guide, not a completed player stroke.")
 	_require(not _has_button_prefix(_main, "Draw:"), "Physics Draw should not expose Draw: option buttons as the primary interaction.")
@@ -344,6 +346,14 @@ func _physics_surface_failure_pulse_count() -> int:
 	if surface == null:
 		return 0
 	return int(surface.get_meta("failure_pulse_count", 0))
+
+
+func _physics_marker_is_visible(marker_name: String) -> bool:
+	var marker := _node_named(_main, marker_name) as Control
+	_require(marker != null, "Expected Physics Draw marker %s." % marker_name)
+	if marker == null:
+		return false
+	return marker.size.x >= 20.0 and marker.size.y >= 20.0 and marker.visible
 
 
 func _physics_hint_is_secondary() -> bool:

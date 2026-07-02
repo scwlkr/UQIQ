@@ -1521,13 +1521,16 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_apply_board_entry_motion(surface)
 	_physics_draw_surface = surface
 
+	surface.add_child(_make_physics_marker("physics_ball_marker", Vector2(78, 218), COLOR_ORANGE.darkened(0.08), COLOR_ORANGE))
+	surface.add_child(_make_physics_marker("physics_cup_marker", Vector2(260, 108), COLOR_GREEN.darkened(0.12), COLOR_GREEN))
+
 	var ball := _new_label("BALL", 17, COLOR_INK)
-	ball.position = Vector2(18, 216)
+	ball.position = Vector2(18, 232)
 	ball.size = Vector2(76, 28)
 	surface.add_child(ball)
 
 	var cup := _new_label("CUP", 17, COLOR_INK)
-	cup.position = Vector2(244, 84)
+	cup.position = Vector2(272, 88)
 	cup.size = Vector2(76, 28)
 	surface.add_child(cup)
 
@@ -1570,6 +1573,17 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	surface.add_child(_physics_result_label)
 
 	_add_feedback(stage_box, "Line ready.")
+
+
+func _make_physics_marker(marker_name: String, center: Vector2, fill: Color, border: Color) -> Panel:
+	var marker := Panel.new()
+	marker.name = marker_name
+	marker.position = center - Vector2(11, 11)
+	marker.size = Vector2(22, 22)
+	marker.custom_minimum_size = marker.size
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	marker.add_theme_stylebox_override("panel", _framed_box(fill, border, 11))
+	return marker
 
 
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
