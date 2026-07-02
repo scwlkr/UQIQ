@@ -965,7 +965,6 @@ func _apply_button_frame(button: Button, accent: Color, fill: Color = COLOR_PANE
 
 func _render_level_stage(stage_box: VBoxContainer, level: Dictionary) -> void:
 	var template := str(level.get("template", ""))
-	_add_label(stage_box, template, 24, COLOR_INK)
 
 	match template:
 		"Tap Logic":
@@ -1028,7 +1027,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 
 			surface.add_child(_make_direct_tap_target(target, index))
 
-	_add_feedback(stage_box, "Tap an object on the surface. The list is gone.")
+	_add_feedback(stage_box, "Tap what is actually true.")
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
