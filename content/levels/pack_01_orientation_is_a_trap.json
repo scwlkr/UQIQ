@@ -16,14 +16,32 @@
           {
             "id": "correct_button",
             "label": "CORRECT",
-            "role": "decoy"
+            "role": "decoy",
+            "scene_position": [
+              28,
+              92
+            ],
+            "scene_size": [
+              138,
+              96
+            ]
           },
           {
             "id": "wrong_button",
             "label": "WRONG",
-            "role": "correct"
+            "role": "correct",
+            "scene_position": [
+              190,
+              92
+            ],
+            "scene_size": [
+              138,
+              96
+            ]
           }
         ],
+        "interaction_model": "direct_tap_scene",
+        "scene_prompt": "Tap the object, not an answer list.",
         "feedback_on_wrong_tap": "Nope. The label was loud, not right."
       },
       "solution": {
@@ -56,7 +74,7 @@
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "two_large_buttons",
+          "two_tappable_scene_objects",
           "judge_face_stub"
         ]
       },
