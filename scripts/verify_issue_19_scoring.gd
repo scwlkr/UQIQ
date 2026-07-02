@@ -128,6 +128,10 @@ func _verify_score_roastcard_rows() -> void:
 	_require(_screen_has_label_text("DUR:"), "Score Roastcard should show DUR context row after a DUR'D completion.")
 	_require(_screen_has_label_text("Dignity tax"), "Score Roastcard should show absurd Roast flavor label.")
 	_require(_screen_has_label_text("DUR parole"), "Score Roastcard should show absurd DUR flavor label.")
+	var score_panel := _node_named(_main, "score_total_panel") as Control
+	_require(score_panel != null, "Score Roastcard should expose a named total score panel.")
+	if score_panel != null:
+		_require(int(score_panel.get_meta("arrival_pulse_count", 0)) > 0, "Score Roastcard total score panel should pulse on arrival.")
 	var next_button := _button_with_text(_main, "Next")
 	_require(next_button != null, "Score Roastcard should expose a Next Level action when the next level is unlocked.")
 	var list_button := _button_with_text(_main, "Level List")
@@ -253,6 +257,16 @@ func _button_with_text(node: Node, text: String) -> Button:
 		var button := _button_with_text(child, text)
 		if button != null:
 			return button
+	return null
+
+
+func _node_named(node: Node, node_name: String) -> Node:
+	if node.name == node_name:
+		return node
+	for child in node.get_children():
+		var match := _node_named(child, node_name)
+		if match != null:
+			return match
 	return null
 
 

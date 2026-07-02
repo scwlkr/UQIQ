@@ -850,9 +850,12 @@ func _show_score_roastcard() -> void:
 	var roast_count := int(_last_completed_attempt.get("roast_count", _roast_count))
 
 	var score_panel := PanelContainer.new()
+	score_panel.name = "score_total_panel"
 	score_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	score_panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL, 8))
 	root.add_child(score_panel)
+	score_panel.set_meta("arrival_pulse_count", int(score_panel.get_meta("arrival_pulse_count", 0)) + 1)
+	_pulse_control(score_panel, 0.985, 0.05)
 
 	var score_box := VBoxContainer.new()
 	score_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
