@@ -1638,7 +1638,7 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 		_physics_has_drawn_line = false
 		_physics_choice = ""
 		_last_physics_result = "drawing"
-		_physics_draw_start = _event_position_in_control(event, surface, surface)
+		_physics_draw_start = _event_position_in_control_clamped(event, surface, surface)
 		_physics_draw_end = _physics_draw_start
 		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
 		_update_physics_choice_label()
@@ -1647,13 +1647,13 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 		return
 
 	if _is_pointer_drag(event) and _physics_is_drawing:
-		_physics_draw_end = _event_position_in_control(event, surface, surface)
+		_physics_draw_end = _event_position_in_control_clamped(event, surface, surface)
 		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
 		_mark_input_handled()
 		return
 
 	if _is_primary_release(event) and _physics_is_drawing:
-		_physics_draw_end = _event_position_in_control(event, surface, surface)
+		_physics_draw_end = _event_position_in_control_clamped(event, surface, surface)
 		_record_physics_drawn_line()
 		_mark_input_handled()
 
@@ -1694,10 +1694,10 @@ func _classify_physics_line(start: Vector2, end: Vector2) -> String:
 		return "wall"
 	if abs(delta.x) < 28.0:
 		return "wall"
+	if delta.x > 48.0 and delta.y < -12.0:
+		return "ramp_to_cup"
 	if abs(delta.y) < 22.0:
 		return "flat_line"
-	if delta.x > 48.0 and delta.y < -18.0:
-		return "ramp_to_cup"
 	return "flat_line"
 
 
@@ -1709,7 +1709,7 @@ func _line_matches_gesture(gesture: String, start: Vector2, end: Vector2) -> boo
 
 	match gesture:
 		"rising_ramp":
-			return delta.x > 48.0 and delta.y < -18.0
+			return delta.x > 48.0 and delta.y < -12.0
 		"high_bridge":
 			return abs(delta.y) < 24.0 and abs(delta.x) > 90.0 and min(start.y, end.y) < 130.0
 		"rising_vertical":
@@ -1760,10 +1760,8 @@ func _is_pointer_drag(event: InputEvent) -> bool:
 
 
 func _event_canvas_position(event: InputEvent, local_node: Control) -> Vector2:
-	if event is InputEventMouseButton or event is InputEventMouseMotion:
+	if event is InputEventMouseButton or event is InputEventMouseMotion or event is InputEventScreenTouch or event is InputEventScreenDrag:
 		return local_node.get_global_transform_with_canvas() * event.position
-	if event is InputEventScreenTouch or event is InputEventScreenDrag:
-		return event.position
 	var viewport := get_viewport()
 	if viewport != null:
 		return viewport.get_mouse_position()
@@ -1772,6 +1770,19 @@ func _event_canvas_position(event: InputEvent, local_node: Control) -> Vector2:
 
 func _event_position_in_control(event: InputEvent, control: Control, local_node: Control) -> Vector2:
 	return control.get_global_transform_with_canvas().affine_inverse() * _event_canvas_position(event, local_node)
+
+
+func _event_position_in_control_clamped(event: InputEvent, control: Control, local_node: Control) -> Vector2:
+	return _clamp_point_to_control(_event_position_in_control(event, control, local_node), control)
+
+
+func _clamp_point_to_control(point: Vector2, control: Control) -> Vector2:
+	if control.size.x <= 0.0 or control.size.y <= 0.0:
+		return point
+	return Vector2(
+		clampf(point.x, 0.0, control.size.x),
+		clampf(point.y, 0.0, control.size.y)
+	)
 
 
 func _mark_input_handled() -> void:
