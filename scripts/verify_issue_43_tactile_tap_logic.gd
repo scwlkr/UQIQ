@@ -27,6 +27,10 @@ func _initialize() -> void:
 	if _failed:
 		return
 
+	_verify_default_tap_levels_render_direct_scene()
+	if _failed:
+		return
+
 	print("Issue #43 Tap Logic verification passed: Level 1 renders a tactile direct tap scene, rejects a wrong direct tap, and completes through Score Roastcard from a direct object tap.")
 	_cleanup()
 	quit(0)
@@ -100,6 +104,27 @@ func _verify_tactile_tap_logic() -> void:
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct tap should persist as one direct action.")
 
 
+func _verify_default_tap_levels_render_direct_scene() -> void:
+	for level_number in [7, 8, 10, 15, 35, 44, 55]:
+		var level := _level_by_number(level_number)
+		_main.call("_show_play_screen", level)
+		var surface := _node_named(_main, "tap_scene_surface") as Control
+		_require(surface != null, "Tap Logic Level %d should render the direct tap scene by default." % level_number)
+		_require(not _has_any_tap_target_button(_main, level), "Tap Logic Level %d should not fall back to answer-choice buttons." % level_number)
+		var targets = level.get("rules", {}).get("tap_targets", [])
+		_require(typeof(targets) == TYPE_ARRAY and not targets.is_empty(), "Tap Logic Level %d should have tap targets." % level_number)
+		if typeof(targets) != TYPE_ARRAY:
+			continue
+		for target in targets:
+			if typeof(target) != TYPE_DICTIONARY:
+				continue
+			var target_id := str(target.get("id", ""))
+			var pad := _node_named(_main, "tap_scene_target_%s" % target_id) as Control
+			_require(pad != null, "Tap Logic Level %d should render direct target %s." % [level_number, target_id])
+			if pad != null:
+				_require(pad.position.x >= 0.0 and pad.position.x + pad.size.x <= 342.0, "Tap Logic Level %d direct target %s should fit inside the portrait playfield." % [level_number, target_id])
+
+
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:
 	var event := InputEventMouseButton.new()
 	event.button_index = MOUSE_BUTTON_LEFT
@@ -156,6 +181,16 @@ func _has_button_text(node: Node, text: String) -> bool:
 		return true
 	for child in node.get_children():
 		if _has_button_text(child, text):
+			return true
+	return false
+
+
+func _has_any_tap_target_button(node: Node, level: Dictionary) -> bool:
+	var targets = level.get("rules", {}).get("tap_targets", [])
+	if typeof(targets) != TYPE_ARRAY:
+		return false
+	for target in targets:
+		if typeof(target) == TYPE_DICTIONARY and _has_button_text(node, str(target.get("label", ""))):
 			return true
 	return false
 

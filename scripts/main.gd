@@ -1133,7 +1133,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 			if typeof(target) != TYPE_DICTIONARY:
 				continue
 
-			surface.add_child(_make_direct_tap_target(target, index))
+			surface.add_child(_make_direct_tap_target(target, index, targets.size()))
 
 	_add_feedback(stage_box, "Scene waiting.")
 
@@ -1542,7 +1542,12 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 
 
 func _uses_direct_tap_scene() -> bool:
-	return str(_rules().get("interaction_model", "")) == "direct_tap_scene"
+	if str(_rules().get("interaction_model", "")) == "direct_tap_scene":
+		return true
+	var targets = _rules().get("tap_targets", [])
+	return str(_current_level.get("template", "")) == "Tap Logic" \
+		and typeof(targets) == TYPE_ARRAY \
+		and not targets.is_empty()
 
 
 func _uses_direct_text_tiles() -> bool:
@@ -1561,13 +1566,13 @@ func _uses_direct_physics_draw() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_draw_line_then_release"
 
 
-func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
+func _make_direct_tap_target(target: Dictionary, index: int, target_count: int) -> PanelContainer:
 	var target_id := str(target.get("id", "target"))
 	var pad := PanelContainer.new()
 	pad.name = "tap_scene_target_%s" % target_id
-	pad.custom_minimum_size = _vector2_from_array(target.get("scene_size", []), Vector2(138, 96))
+	pad.custom_minimum_size = _vector2_from_array(target.get("scene_size", []), _default_tap_target_size(target_count))
 	pad.size = pad.custom_minimum_size
-	pad.position = _vector2_from_array(target.get("scene_position", []), Vector2(28 + (index * 162), 92))
+	pad.position = _vector2_from_array(target.get("scene_position", []), _default_tap_target_position(index, target_count))
 	pad.mouse_filter = Control.MOUSE_FILTER_STOP
 	pad.set_meta("target_id", target_id)
 	_apply_direct_base_panel_style(pad)
@@ -1586,6 +1591,20 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(label)
 	return pad
+
+
+func _default_tap_target_size(target_count: int) -> Vector2:
+	if target_count >= 3:
+		return Vector2(96, 90)
+	return Vector2(138, 96)
+
+
+func _default_tap_target_position(index: int, target_count: int) -> Vector2:
+	if target_count >= 3:
+		return Vector2(18 + ((index % 3) * 108), 96 + (int(index / 3) * 98))
+	if target_count == 2:
+		return Vector2(28 + (index * 162), 92)
+	return Vector2(111, 92)
 
 
 func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
