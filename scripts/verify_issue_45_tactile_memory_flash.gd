@@ -88,6 +88,7 @@ func _verify_tactile_memory_flash() -> void:
 	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong direct memory row should count one action per tile.")
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "MOON", "Direct memory handler should record the last touched tile.")
+	_require(not _memory_tiles_have_selected_border(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should return touched tiles to their base frames.")
 	var memory_after_wrong: Array = _main.get("_memory_input")
 	_require(memory_after_wrong.is_empty(), "Wrong full Memory Flash row should clear recall input for a clean retry.")
 	var first_slot_label := _node_named(_main, "memory_recall_slot_label_0") as Label
@@ -151,6 +152,29 @@ func _press_clear_with_touch() -> void:
 	_main.call("_handle_direct_memory_clear_input", _screen_touch_event(true, touch_position), tile)
 	_require(int(_main.get("_tap_count")) == tap_count_before_press, "Direct Memory Flash CLEAR press should preview without spending an action.")
 	_main.call("_handle_direct_memory_clear_input", _screen_touch_event(false, touch_position), tile)
+
+
+func _memory_tiles_have_selected_border(item_ids: Array[String]) -> bool:
+	for item_id in item_ids:
+		var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+		_require(tile != null, "Expected direct memory tile %s." % item_id)
+		if tile == null:
+			return false
+		if _panel_border_color(tile).is_equal_approx(Color(1.00, 0.78, 0.15)):
+			return true
+	return false
+
+
+func _panel_border_color(control: Control) -> Color:
+	var panel := control as PanelContainer
+	_require(panel != null, "Expected a framed direct memory tile.")
+	if panel == null:
+		return Color.TRANSPARENT
+	var style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+	_require(style != null, "Expected direct memory tile style.")
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
 
 
 func _require_tile_label_fits(item_id: String) -> void:

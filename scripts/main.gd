@@ -1789,7 +1789,10 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 		_handle_memory_choice(item_id)
 		_update_memory_recall_slots()
 		_pulse_memory_recall_slot(_memory_input.size() - 1)
+		var will_reset_wrong_row := _direct_memory_row_is_full_and_wrong()
 		_resolve_direct_memory_if_full()
+		if will_reset_wrong_row:
+			_reset_direct_memory_tile_styles()
 		_mark_input_handled()
 
 
@@ -2449,6 +2452,29 @@ func _resolve_direct_memory_if_full() -> void:
 	_update_memory_recall_slots()
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
+
+
+func _direct_memory_row_is_full_and_wrong() -> bool:
+	var sequence := _memory_solution_sequence()
+	return not sequence.is_empty() and _memory_input.size() >= sequence.size() and _memory_input != sequence
+
+
+func _reset_direct_memory_tile_styles() -> void:
+	if _direct_memory_flash_label == null or not is_instance_valid(_direct_memory_flash_label):
+		return
+	var surface := _direct_memory_flash_label.get_parent() as Control
+	if surface == null or not is_instance_valid(surface):
+		return
+
+	for child in surface.get_children():
+		var control := child as Control
+		if control == null or not str(control.name).begins_with("memory_tile_"):
+			continue
+
+		if str(control.name) == "memory_tile_clear":
+			_apply_direct_base_panel_style(control, COLOR_ORANGE)
+		else:
+			_apply_direct_base_panel_style(control)
 
 
 func _memory_tile_size(tile_count: int, height: float) -> Vector2:
