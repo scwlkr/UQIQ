@@ -114,6 +114,7 @@ func _verify_direct_physics_draw() -> void:
 	_require(str(_main.get("_last_physics_result")) == "fail", "A wrong curved Physics Draw stroke should fail without completing.")
 	_require(_drawn_line_point_count() >= 4, "Physics Draw should preserve a multi-point finger path instead of snapping to start/end.")
 	_require(_drawn_line_points_inside_surface(), "Physics Draw should clamp off-surface finger movement inside the playfield.")
+	_require(_player_line_color().is_equal_approx(Color(0.95, 0.22, 0.24)), "A wrong Physics Draw stroke should color the player line as failure.")
 	_require(not _profile.is_level_completed(level_id), "A wrong curved Physics Draw stroke should not complete Level 6.")
 
 	_main.call("_show_play_screen", level)
@@ -249,6 +250,14 @@ func _drawn_line_points_inside_surface() -> bool:
 			return false
 
 	return true
+
+
+func _player_line_color() -> Color:
+	var line := _node_named(_main, "player_drawn_line") as Line2D
+	_require(line != null, "Expected Physics Draw player line.")
+	if line == null:
+		return Color.TRANSPARENT
+	return line.default_color
 
 
 func _physics_hint_is_secondary() -> bool:

@@ -750,6 +750,7 @@ func _handle_physics_draw(draw_id: String) -> void:
 	_physics_choice = draw_id
 	_last_physics_result = "selected"
 	_physics_has_drawn_line = true
+	_set_physics_line_color(COLOR_BLUE)
 	_update_physics_choice_label()
 	_feedback_label.text = "Ramp set: %s. Lift to test." % _physics_draw_label(draw_id)
 
@@ -766,11 +767,13 @@ func _resolve_physics_release(count_action: bool) -> void:
 	var solution := _solution()
 	if _physics_choice == str(solution.get("draw_id", "")):
 		_last_physics_result = "success"
+		_set_physics_line_color(COLOR_GREEN)
 		_update_physics_result_label(true)
 		_complete_current_level()
 		return
 
 	_last_physics_result = "fail"
+	_set_physics_line_color(COLOR_RED)
 	_update_physics_result_label(false)
 	_feedback_label.text = _first_roast("failure", "The ball saw your line and requested a different universe.")
 	_set_judge_state("fail")
@@ -1959,6 +1962,7 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 		_physics_draw_start = _clamp_physics_draw_point(_event_position_in_control(event, surface, surface))
 		_physics_draw_end = _physics_draw_start
 		_physics_draw_points = PackedVector2Array([_physics_draw_start])
+		_set_physics_line_color(COLOR_BLUE)
 		_set_physics_line_points(_physics_draw_points)
 		_update_physics_choice_label()
 		_feedback_label.text = "Drawing. Aim like gravity is watching."
@@ -2043,6 +2047,12 @@ func _set_physics_line_points(points: PackedVector2Array) -> void:
 	if _physics_line == null or not is_instance_valid(_physics_line):
 		return
 	_physics_line.points = points
+
+
+func _set_physics_line_color(color: Color) -> void:
+	if _physics_line == null or not is_instance_valid(_physics_line):
+		return
+	_physics_line.default_color = color
 
 
 func _clear_physics_line() -> void:
