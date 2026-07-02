@@ -34,6 +34,7 @@ var _last_best_attempt := {}
 var _last_completed_attempt := {}
 var _last_score_result := {}
 var _level_list_notice := ""
+var _level_started_at_msec := 0
 var _feedback_label: Label
 var _text_input: LineEdit
 var _selected_drag_id := ""
@@ -270,6 +271,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_current_level = level
 	_tap_count = 0
 	_roast_count = 0
+	_level_started_at_msec = Time.get_ticks_msec()
 	_last_best_attempt = {}
 	_last_completed_attempt = {}
 	_last_score_result = {}
@@ -483,7 +485,7 @@ func _handle_roast_action() -> void:
 
 
 func _complete_current_level() -> void:
-	_last_best_attempt = _profile.record_completed_attempt(_current_level, _tap_count, _roast_count)
+	_last_best_attempt = _profile.record_completed_attempt(_current_level, _tap_count, _roast_count, _elapsed_level_seconds())
 	_last_completed_attempt = _profile.last_completed_attempt
 	_last_score_result = _profile.last_score_result
 	_show_score_roastcard()
@@ -523,14 +525,20 @@ func _show_score_roastcard() -> void:
 	var score_before := int(_last_score_result.get("score_before", _profile.current_uqiq_score()))
 	var score_after := int(_last_score_result.get("score_after", _profile.current_uqiq_score()))
 	var score_delta := int(_last_score_result.get("score_delta", 0))
+	var attempt_score_delta := int(_last_score_result.get("attempt_score_delta", score_delta))
+	var score_components := _dictionary_from(_last_score_result.get("score_components", {}))
 	var roast_count := int(_last_completed_attempt.get("roast_count", _roast_count))
 	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
 	_add_label(card_box, "UQIQ %d" % score_after, 36, COLOR_YELLOW)
-	_add_label(card_box, "Score Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 18, COLOR_MUTED)
-	_add_label(card_box, "Actions: %d" % action_count, 18, COLOR_TEXT)
-	_add_label(card_box, "Roasts used: %d" % roast_count, 18, COLOR_TEXT)
+	_add_label(card_box, "Total Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 18, COLOR_MUTED)
+	if attempt_score_delta != score_delta:
+		_add_label(card_box, "Attempt Delta: %+d before score cap" % attempt_score_delta, 16, COLOR_MUTED)
+	_add_label(card_box, _score_component_text(score_components, "speed", "Speed", "Chrono shrug"), 18, COLOR_TEXT)
+	_add_label(card_box, _score_component_text(score_components, "actions", "Actions", "Finger mystery"), 18, COLOR_TEXT)
+	_add_label(card_box, _score_component_text(score_components, "roasts", "Roasts", "Dignity intact"), 18, COLOR_TEXT)
 	if bool(_last_completed_attempt.get("durd_at_start", false)):
-		_add_label(card_box, "DUR'D recovery: spent earlier, restored %d Dur Token." % int(_last_completed_attempt.get("dur_tokens_restored", 0)), 18, COLOR_YELLOW)
+		_add_label(card_box, _score_component_text(score_components, "dur", "DUR", "DUR parole"), 18, COLOR_YELLOW)
+	_add_label(card_box, "Raw: %d action(s), %d Roast(s)" % [action_count, roast_count], 16, COLOR_MUTED)
 	_add_label(card_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 20, COLOR_TEXT)
 	_add_label(card_box, str(_current_level.get("uqiq_moment", "")), 17, COLOR_MUTED)
 
@@ -568,6 +576,12 @@ func _make_screen(background_color: Color) -> VBoxContainer:
 	root.add_theme_constant_override("separation", 14)
 	add_child(root)
 	return root
+
+
+func _elapsed_level_seconds() -> float:
+	if _level_started_at_msec <= 0:
+		return 0.0
+	return maxf(float(Time.get_ticks_msec() - _level_started_at_msec) / 1000.0, 0.0)
 
 
 func _add_label(parent: Node, text: String, font_size: int, color: Color) -> Label:
@@ -902,6 +916,22 @@ func _string_array(values: Array) -> Array[String]:
 	for value in values:
 		strings.append(str(value))
 	return strings
+
+
+func _dictionary_from(value: Variant) -> Dictionary:
+	if typeof(value) == TYPE_DICTIONARY:
+		return value
+	return {}
+
+
+func _score_component_text(components: Dictionary, key: String, title: String, fallback_label: String) -> String:
+	var component := _dictionary_from(components.get(key, {}))
+	var label := str(component.get("label", fallback_label))
+	var delta := int(component.get("delta", 0))
+	var detail := str(component.get("detail", ""))
+	if detail.is_empty():
+		return "%s: %s (%+d)" % [title, label, delta]
+	return "%s: %s (%+d) | %s" % [title, label, delta, detail]
 
 
 func _first_roast(kind: String, fallback: String) -> String:

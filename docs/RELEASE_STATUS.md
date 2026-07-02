@@ -9,12 +9,13 @@ Polish Pass.
 ## Active Next Step
 
 - GitHub issue: [#19 Tune UQIQ Score and Score Roastcards](https://github.com/scwlkr/UQIQ/issues/19)
-- Branch: not started for issue #19 yet
+- Branch: `codex/issue-19-tune-uqiq-score`
 
 ## Latest Proof
 
-- Pack 1-6 content QA work is committed through `d7a02db`.
-- Active issue #19 has not started in this status file.
+- Issue #19 local implementation verified on 2026-07-01 with Godot `4.7.stable.official.5b4e0cb0f`.
+- Passed: Godot import/run checks plus README verification floor through `verify_issue_19_scoring.gd`.
+- Latest pushed commit: pending.
 
 ## Known Blockers
 

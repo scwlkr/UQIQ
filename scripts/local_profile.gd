@@ -7,6 +7,17 @@ const MAX_DUR_TOKENS := 3
 const DEFAULT_UQIQ_SCORE := 100
 const MIN_UQIQ_SCORE := -20
 const MAX_UQIQ_SCORE := 420
+const MIN_ATTEMPT_DELTA := -20
+const MAX_ATTEMPT_DELTA := 20
+const COMPLETION_DELTA := 3
+const GREAT_SPEED_DELTA := 3
+const OK_SPEED_DELTA := 2
+const SLOW_SPEED_DELTA := -3
+const GREAT_ACTION_DELTA := 3
+const OK_ACTION_DELTA := 2
+const HIGH_ACTION_DELTA := -3
+const DUR_RECOVERY_DELTA := 2
+const DEFAULT_ROAST_PENALTY := 5
 
 var save_path: String
 var last_error := ""
@@ -155,7 +166,7 @@ func spend_dur_token(level: Dictionary) -> bool:
 	return save()
 
 
-func record_completed_attempt(level: Dictionary, action_count: int, roast_count: int = 0) -> Dictionary:
+func record_completed_attempt(level: Dictionary, action_count: int, roast_count: int = 0, elapsed_seconds: float = 0.0) -> Dictionary:
 	last_error = ""
 	last_completed_attempt = {}
 	last_score_result = {}
@@ -180,10 +191,13 @@ func record_completed_attempt(level: Dictionary, action_count: int, roast_count:
 
 	var safe_action_count: int = maxi(action_count, 0)
 	var safe_roast_count: int = maxi(roast_count, 0)
+	var safe_elapsed_seconds: float = maxf(elapsed_seconds, 0.0)
 	var score_before := current_uqiq_score()
-	var raw_delta := _calculate_score_delta(safe_action_count, safe_roast_count, was_durd)
-	var score_after := clampi(score_before + raw_delta, MIN_UQIQ_SCORE, MAX_UQIQ_SCORE)
-	var score_delta := score_after - score_before
+	var score_result := _calculate_score_result(level, score_before, safe_action_count, safe_roast_count, safe_elapsed_seconds, was_durd, tokens_restored)
+	var score_after := int(score_result.get("score_after", score_before))
+	var score_delta := int(score_result.get("score_delta", 0))
+	var attempt_score_delta := int(score_result.get("attempt_score_delta", score_delta))
+	var score_components: Dictionary = score_result.get("score_components", {})
 	var attempt := {
 		"completed": true,
 		"level_id": level_id,
@@ -192,6 +206,7 @@ func record_completed_attempt(level: Dictionary, action_count: int, roast_count:
 		"action_count": safe_action_count,
 		"roast_count": safe_roast_count,
 		"roast_used": safe_roast_count > 0,
+		"elapsed_seconds": safe_elapsed_seconds,
 		"durd_at_start": was_durd,
 		"dur_token_spent": was_durd,
 		"dur_token_recovered": was_durd,
@@ -200,19 +215,18 @@ func record_completed_attempt(level: Dictionary, action_count: int, roast_count:
 		"dur_tokens_after_completion": tokens_after,
 		"score_before": score_before,
 		"score_delta": score_delta,
+		"attempt_score_delta": attempt_score_delta,
+		"raw_score_delta": int(score_result.get("raw_score_delta", attempt_score_delta)),
+		"score_components": score_components,
 		"score_after": score_after,
 	}
-	var score_result := {
-		"level_id": level_id,
-		"level_number": level_number,
-		"score_before": score_before,
-		"score_delta": score_delta,
-		"score_after": score_after,
-		"action_count": safe_action_count,
-		"roast_count": safe_roast_count,
-		"durd_at_start": was_durd,
-		"dur_tokens_restored": tokens_restored,
-	}
+	score_result["level_id"] = level_id
+	score_result["level_number"] = level_number
+	score_result["action_count"] = safe_action_count
+	score_result["roast_count"] = safe_roast_count
+	score_result["elapsed_seconds"] = safe_elapsed_seconds
+	score_result["durd_at_start"] = was_durd
+	score_result["dur_tokens_restored"] = tokens_restored
 	var score_results := _score_results()
 
 	completed_levels[level_id] = true
@@ -304,20 +318,139 @@ func _score_results() -> Dictionary:
 	return {}
 
 
-func _calculate_score_delta(action_count: int, roast_count: int, was_durd: bool) -> int:
-	var base_delta := 12
-	var action_penalty: int = maxi(action_count - 1, 0) * 2
-	var roast_penalty: int = maxi(roast_count, 0) * 5
-	var dur_recovery_bonus := 0
-	if was_durd:
-		dur_recovery_bonus = 3
+func _calculate_score_result(level: Dictionary, score_before: int, action_count: int, roast_count: int, elapsed_seconds: float, was_durd: bool, tokens_restored: int) -> Dictionary:
+	var score_components := _calculate_score_components(level, action_count, roast_count, elapsed_seconds, was_durd, tokens_restored)
+	var raw_delta := 0
+	for component in score_components.values():
+		if typeof(component) == TYPE_DICTIONARY:
+			raw_delta += int(component.get("delta", 0))
 
-	return clampi(base_delta - action_penalty - roast_penalty + dur_recovery_bonus, -20, 20)
+	var attempt_delta := clampi(raw_delta, MIN_ATTEMPT_DELTA, MAX_ATTEMPT_DELTA)
+	var score_after := clampi(score_before + attempt_delta, MIN_UQIQ_SCORE, MAX_UQIQ_SCORE)
+	var score_delta := score_after - score_before
+	return {
+		"score_before": score_before,
+		"score_delta": score_delta,
+		"attempt_score_delta": attempt_delta,
+		"raw_score_delta": raw_delta,
+		"score_after": score_after,
+		"score_components": score_components,
+	}
+
+
+func _calculate_score_components(level: Dictionary, action_count: int, roast_count: int, elapsed_seconds: float, was_durd: bool, tokens_restored: int) -> Dictionary:
+	return {
+		"completion": {
+			"delta": COMPLETION_DELTA,
+			"label": "Solved, allegedly",
+			"detail": "Level complete",
+		},
+		"speed": _speed_component(level, elapsed_seconds),
+		"actions": _action_component(level, action_count),
+		"roasts": _roast_component(level, roast_count),
+		"dur": _dur_component(was_durd, tokens_restored),
+	}
+
+
+func _speed_component(level: Dictionary, elapsed_seconds: float) -> Dictionary:
+	var scoring := _dictionary_from(level.get("scoring", {}))
+	var speed := _dictionary_from(scoring.get("speed_seconds", {}))
+	var great_seconds := maxf(float(speed.get("great", 0.0)), 0.0)
+	var ok_seconds := maxf(float(speed.get("ok", great_seconds)), great_seconds)
+	if speed.is_empty():
+		return {
+			"delta": 0,
+			"label": "Chrono shrug",
+			"detail": "%.1fs" % elapsed_seconds,
+		}
+
+	if elapsed_seconds <= great_seconds:
+		return {
+			"delta": GREAT_SPEED_DELTA,
+			"label": "Chrono flex",
+			"detail": "%.1fs <= %.1fs great" % [elapsed_seconds, great_seconds],
+		}
+	if elapsed_seconds <= ok_seconds:
+		return {
+			"delta": OK_SPEED_DELTA,
+			"label": "Acceptable blur",
+			"detail": "%.1fs <= %.1fs ok" % [elapsed_seconds, ok_seconds],
+		}
+	return {
+		"delta": SLOW_SPEED_DELTA,
+		"label": "Calendar damage",
+		"detail": "%.1fs > %.1fs ok" % [elapsed_seconds, ok_seconds],
+	}
+
+
+func _action_component(level: Dictionary, action_count: int) -> Dictionary:
+	var scoring := _dictionary_from(level.get("scoring", {}))
+	var actions := _dictionary_from(scoring.get("action_count", {}))
+	var great_actions := maxi(int(actions.get("great", 1)), 1)
+	var ok_actions := maxi(int(actions.get("ok", great_actions)), great_actions)
+	if actions.is_empty():
+		return {
+			"delta": 0,
+			"label": "Finger mystery",
+			"detail": "%d action(s)" % action_count,
+		}
+
+	if action_count <= great_actions:
+		return {
+			"delta": GREAT_ACTION_DELTA,
+			"label": "Finger budget saint",
+			"detail": "%d <= %d great" % [action_count, great_actions],
+		}
+	if action_count <= ok_actions:
+		return {
+			"delta": OK_ACTION_DELTA,
+			"label": "Acceptable pokes",
+			"detail": "%d <= %d ok" % [action_count, ok_actions],
+		}
+	return {
+		"delta": HIGH_ACTION_DELTA,
+		"label": "Tap debt",
+		"detail": "%d > %d ok" % [action_count, ok_actions],
+	}
+
+
+func _roast_component(level: Dictionary, roast_count: int) -> Dictionary:
+	var scoring := _dictionary_from(level.get("scoring", {}))
+	var penalty := maxi(int(scoring.get("roast_penalty", DEFAULT_ROAST_PENALTY)), 0)
+	var delta := -maxi(roast_count, 0) * penalty
+	var label := "Dignity intact"
+	if roast_count > 0:
+		label = "Dignity tax"
+	return {
+		"delta": delta,
+		"label": label,
+		"detail": "%d Roast(s) x -%d" % [roast_count, penalty],
+	}
+
+
+func _dur_component(was_durd: bool, tokens_restored: int) -> Dictionary:
+	if was_durd:
+		return {
+			"delta": DUR_RECOVERY_DELTA,
+			"label": "DUR parole",
+			"detail": "Recovered %d Dur Token(s)" % tokens_restored,
+		}
+	return {
+		"delta": 0,
+		"label": "No DUR drama",
+		"detail": "No Dur Token recovery",
+	}
+
+
+func _dictionary_from(value: Variant) -> Dictionary:
+	if typeof(value) == TYPE_DICTIONARY:
+		return value
+	return {}
 
 
 func _is_better_attempt(candidate: Dictionary, current_best: Dictionary) -> bool:
-	var candidate_delta := int(candidate.get("score_delta", -9999))
-	var current_delta := int(current_best.get("score_delta", -9999))
+	var candidate_delta := int(candidate.get("attempt_score_delta", candidate.get("score_delta", -9999)))
+	var current_delta := int(current_best.get("attempt_score_delta", current_best.get("score_delta", -9999)))
 	if candidate_delta != current_delta:
 		return candidate_delta > current_delta
 
@@ -325,5 +458,10 @@ func _is_better_attempt(candidate: Dictionary, current_best: Dictionary) -> bool
 	var current_actions := int(current_best.get("action_count", 0))
 	if candidate_actions != current_actions:
 		return candidate_actions < current_actions
+
+	var candidate_elapsed := float(candidate.get("elapsed_seconds", 999999.0))
+	var current_elapsed := float(current_best.get("elapsed_seconds", 999999.0))
+	if not is_equal_approx(candidate_elapsed, current_elapsed):
+		return candidate_elapsed < current_elapsed
 
 	return int(candidate.get("roast_count", 0)) < int(current_best.get("roast_count", 0))

@@ -89,7 +89,7 @@ Open/run:
 4. Open the imported project.
 5. Press **Run Project**.
 
-The boot skeleton starts at the Level List, loads the default Pack Level Files from `content/levels/`, opens unlocked Levels, and routes completion to a Score Roastcard stub.
+The boot skeleton starts at the Level List, loads the default Pack Level Files from `content/levels/`, opens unlocked Levels, and routes completion to a Score Roastcard.
 
 Headless import/run checks:
 
@@ -139,6 +139,7 @@ godot --headless --path . --script res://scripts/verify_issue_13_pack_5_specs.gd
 godot --headless --path . --script res://scripts/verify_issue_13_pack_5_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_16_pack_6_specs.gd
 godot --headless --path . --script res://scripts/verify_issue_16_pack_6_smoke.gd
+godot --headless --path . --script res://scripts/verify_issue_19_scoring.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -166,6 +167,8 @@ godot --headless --path . --script res://scripts/verify_issue_16_pack_6_smoke.gd
 `verify_issue_16_pack_6_specs.gd` is the Pack 6 specs-only check for `content/levels/pack_06_gravity_is_fake.json`. It validates the 10 `Gravity Is Fake` Level Specs for Levels 51-60 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
 
 `verify_issue_16_pack_6_smoke.gd` is the Pack 6 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3/4/5/6 grouping, completes Levels 51-60 through Score Roastcards, and checks Level 50 to Level 51 unlock, linear unlock through Level 60, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 60-Level progression.
+
+`verify_issue_19_scoring.gd` is the scoring polish check. It verifies one representative Level from each Pack against the UQIQ Score component formula, score clamps, DUR recovery scoring, capped replay Best Attempt behavior, and visible Speed/Actions/Roasts/DUR Score Roastcard rows.
 
 ## Desktop Smoke
 
