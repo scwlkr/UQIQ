@@ -156,6 +156,7 @@ godot --headless --path . --script res://scripts/verify_issue_48_debug_playtest_
 godot --headless --path . --script res://scripts/verify_issue_51_scorecard_safe_area.gd
 godot --headless --path . --script res://scripts/verify_issue_53_physics_draw_ios_path.gd
 godot --headless --path . --script res://scripts/verify_issue_54_neutral_targets.gd
+godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitboxes.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -217,6 +218,8 @@ godot --headless --path . --script res://scripts/verify_issue_54_neutral_targets
 `verify_issue_53_physics_draw_ios_path.gd` is the Physics Draw iOS-path check. It verifies screen-touch drawing stays inside the draw surface, invalid flat lines fail, and a rising ramp classifies as `ramp_to_cup` before Release Ball completes Level 06.
 
 `verify_issue_54_neutral_targets.gd` is the neutral target styling check. It verifies Level 04 grid cells and Levels 07/08/10 tap targets start with role-neutral colors while wrong/correct input feedback still works.
+
+`verify_issue_55_phone_ui_hitboxes.gd` is the Pack 1 phone UI hitbox/readability check. It verifies Level 01 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with `portrait`, and notched-phone margins remain applied.
 
 ## Desktop Smoke
 

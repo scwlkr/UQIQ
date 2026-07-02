@@ -56,6 +56,9 @@ var _transition_counts := {}
 var _last_transition_name := ""
 var _feedback_label: Label
 var _text_input: LineEdit
+var _text_keyboard_request_count := 0
+var _last_text_keyboard_rect := Rect2()
+var _last_text_focus_event_was_touch := false
 var _direct_text_answer_label: Label
 var _last_direct_text_tile_id := ""
 var _selected_drag_id := ""
@@ -386,6 +389,9 @@ func _show_play_screen(level: Dictionary) -> void:
 	_last_score_result = {}
 	_level_list_notice = ""
 	_text_input = null
+	_text_keyboard_request_count = 0
+	_last_text_keyboard_rect = Rect2()
+	_last_text_focus_event_was_touch = false
 	_direct_text_answer_label = null
 	_last_direct_text_tile_id = ""
 	_last_direct_tap_target_id = ""
@@ -993,6 +999,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 	surface.custom_minimum_size = Vector2(0, 280)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.resized.connect(Callable(self, "_layout_direct_tap_targets").bind(surface))
 	stage_box.add_child(surface)
 
 	var hint := _new_label("labels are evidence, not instructions", 16, COLOR_INK)
@@ -1009,6 +1016,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 				continue
 
 			surface.add_child(_make_direct_tap_target(target, index))
+	call_deferred("_layout_direct_tap_targets", surface)
 
 	_add_feedback(stage_box, "Tap an object on the surface. The list is gone.")
 
@@ -1065,7 +1073,12 @@ func _render_text_trap(stage_box: VBoxContainer) -> void:
 	_text_input.custom_minimum_size = Vector2(0, 56)
 	_text_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_text_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_text_input.virtual_keyboard_enabled = true
+	_text_input.virtual_keyboard_show_on_focus = true
+	_text_input.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_DEFAULT
 	_text_input.add_theme_font_size_override("font_size", 22)
+	_text_input.focus_entered.connect(Callable(self, "_show_text_input_keyboard"))
+	_text_input.gui_input.connect(Callable(self, "_handle_text_input_focus_event"))
 	_text_input.text_submitted.connect(Callable(self, "_handle_text_submitted"))
 	stage_box.add_child(_text_input)
 
@@ -1417,6 +1430,7 @@ func _uses_direct_physics_draw() -> bool:
 
 func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	var target_id := str(target.get("id", "target"))
+	var label_text := str(target.get("label", "Tap"))
 	var pad := PanelContainer.new()
 	pad.name = "tap_scene_target_%s" % target_id
 	pad.custom_minimum_size = _vector2_from_array(target.get("scene_size", []), Vector2(138, 96))
@@ -1424,14 +1438,48 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	pad.position = _vector2_from_array(target.get("scene_position", []), Vector2(28 + (index * 162), 92))
 	pad.mouse_filter = Control.MOUSE_FILTER_STOP
 	pad.set_meta("target_id", target_id)
+	pad.set_meta("scene_position", pad.position)
 	pad.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
 	pad.gui_input.connect(Callable(self, "_handle_direct_tap_scene_input").bind(target_id, pad))
 
-	var label := _new_label(str(target.get("label", "Tap")), 25, COLOR_TEXT)
+	var label := _new_label(label_text, _direct_tap_target_font_size(label_text), COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pad.add_child(label)
 	return pad
+
+
+func _direct_tap_target_font_size(text: String) -> int:
+	if text.length() >= 7:
+		return 20
+	return 25
+
+
+func _layout_direct_tap_targets(surface: Control) -> void:
+	if surface == null or not is_instance_valid(surface):
+		return
+
+	var pads: Array[Control] = []
+	for child in surface.get_children():
+		if child is Control and str(child.name).begins_with("tap_scene_target_"):
+			pads.append(child as Control)
+	if pads.size() != 2:
+		return
+	if surface.size.x <= 0.0:
+		return
+
+	var side_padding := 18.0
+	var gap := 12.0
+	var target_width := clampf((surface.size.x - (side_padding * 2.0) - gap) / 2.0, 120.0, 156.0)
+	for index in range(pads.size()):
+		var pad := pads[index]
+		var original_position: Vector2 = pad.get_meta("scene_position", Vector2(0, 92))
+		pad.size = Vector2(target_width, maxf(pad.size.y, 96.0))
+		pad.custom_minimum_size = pad.size
+		var x := side_padding if index == 0 else surface.size.x - side_padding - target_width
+		pad.position = Vector2(x, original_position.y)
 
 
 func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
@@ -1527,6 +1575,45 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 		pad.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	_handle_tap_target(target_id)
 	_mark_input_handled()
+
+
+func _handle_text_input_focus_event(event: InputEvent) -> void:
+	if not _is_primary_press(event):
+		return
+
+	_last_text_focus_event_was_touch = event is InputEventScreenTouch
+	_focus_text_input()
+
+
+func _focus_text_input() -> void:
+	if _text_input == null or not is_instance_valid(_text_input):
+		return
+
+	_text_input.grab_focus()
+	_text_input.edit()
+	call_deferred("_show_text_input_keyboard")
+
+
+func _show_text_input_keyboard() -> void:
+	if _text_input == null or not is_instance_valid(_text_input):
+		return
+	if not _text_input.has_focus():
+		return
+
+	_text_keyboard_request_count += 1
+	_last_text_keyboard_rect = _text_input.get_global_rect()
+	if not DisplayServer.has_feature(DisplayServer.FEATURE_VIRTUAL_KEYBOARD):
+		return
+
+	var cursor := _text_input.caret_column
+	DisplayServer.virtual_keyboard_show(
+		_text_input.text,
+		_last_text_keyboard_rect,
+		DisplayServer.KEYBOARD_TYPE_DEFAULT,
+		_text_input.max_length,
+		cursor,
+		cursor
+	)
 
 
 func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: String, tile: Control) -> void:
