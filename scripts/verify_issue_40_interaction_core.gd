@@ -55,6 +55,8 @@ func _verify_direct_drag_drop() -> void:
 	_require(_node_named(_main, "drop_zone_truth_box") != null, "Drag Logic should render the Truth Box as a drop zone.")
 	_require(_screen_has_label_text("Loose claims"), "Drag Logic should render the playfield with in-world state copy.")
 	_require(not _screen_has_label_text("drag tiles to drop zones"), "Drag Logic should not render old instruction-like playfield copy.")
+	_require(_screen_has_label_text("Tile ready."), "Drag Logic should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("No tile moving."), "Drag Logic should not render old negative idle feedback.")
 	_require(not _has_button_prefix(_main, "Move:"), "Drag Logic should not expose Move: choice buttons as the primary interaction.")
 	_require(not _has_button_prefix(_main, "Drop on:"), "Drag Logic should not expose Drop on: choice buttons as the primary interaction.")
 
@@ -89,6 +91,8 @@ func _verify_direct_physics_draw() -> void:
 	_require(_screen_has_label_text("Ramp sketch"), "Physics Draw should render the playfield with in-world state copy.")
 	_require(not _screen_has_label_text("Draw toward the cup"), "Physics Draw should not render old instruction-like playfield copy.")
 	_require(_screen_has_label_text("Ramp ready"), "Physics Draw should start with no selected line.")
+	_require(_screen_has_label_text("Line ready."), "Physics Draw should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("No ramp drawn."), "Physics Draw should not render old negative idle feedback.")
 
 	_draw_line_on_surface(Vector2(48, 220), Vector2(260, 110))
 	_require(str(_main.get("_physics_choice")) == "ramp_to_cup", "A rising line from ball to cup should classify as the ramp.")

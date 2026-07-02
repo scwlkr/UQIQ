@@ -1060,7 +1060,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 
 			surface.add_child(_make_direct_tap_target(target, index))
 
-	_add_feedback(stage_box, "No object tapped.")
+	_add_feedback(stage_box, "Scene waiting.")
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
@@ -1102,7 +1102,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 			playfield.add_child(zone)
 			_drag_drop_zones[str(target.get("id", ""))] = zone
 
-	_add_feedback(stage_box, "No tile moving.")
+	_add_feedback(stage_box, "Tile ready.")
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
@@ -1162,7 +1162,7 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 			if typeof(tile_data) == TYPE_DICTIONARY:
 				surface.add_child(_make_text_tile(tile_data, index))
 
-	_add_feedback(stage_box, "Slot empty.")
+	_add_feedback(stage_box, "Answer slot ready.")
 
 
 func _render_pattern_grid(stage_box: VBoxContainer) -> void:
@@ -1233,7 +1233,7 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 			grid.add_child(cell_button)
 			_pattern_cell_buttons[cell_id] = cell_button
 
-	_add_feedback(stage_box, "No cells marked.")
+	_add_feedback(stage_box, "Grid unmarked.")
 
 
 func _render_memory_flash(stage_box: VBoxContainer) -> void:
@@ -1298,7 +1298,7 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 
 	_render_memory_recall_slots(surface)
 	_render_memory_tile_bank(surface)
-	_add_feedback(stage_box, "Row empty.")
+	_add_feedback(stage_box, "Recall row ready.")
 
 
 func _render_memory_recall_slots(surface: Control) -> void:
@@ -1434,7 +1434,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_result_label)
 
-	_add_feedback(stage_box, "No ramp drawn.")
+	_add_feedback(stage_box, "Line ready.")
 
 
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:

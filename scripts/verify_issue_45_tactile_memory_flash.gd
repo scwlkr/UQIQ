@@ -52,6 +52,8 @@ func _verify_tactile_memory_flash() -> void:
 	_require(_node_named(_main, "memory_tile_moon") != null, "Memory Flash should render MOON as a direct tile.")
 	_require(_node_named(_main, "memory_tile_dur") != null, "Memory Flash should render DUR as a direct tile.")
 	_require_tile_label_fits("MOON")
+	_require(_screen_has_label_text("Recall row ready."), "Direct Memory Flash should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("Row empty."), "Direct Memory Flash should not render old negative idle feedback.")
 	_require(not _has_button_text(_main, "Flash"), "Direct Memory Flash should not expose Flash button.")
 	_require(not _has_button_text(_main, "Hide"), "Direct Memory Flash should not expose Hide button.")
 	_require(not _has_button_text(_main, "Submit"), "Direct Memory Flash should not expose Submit button.")

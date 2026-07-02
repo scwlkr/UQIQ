@@ -48,6 +48,8 @@ func _verify_direct_pattern_grid() -> void:
 	_main.call("_show_play_screen", level)
 	_require(_node_named(_main, "pattern_mark_grid") != null, "Pattern Grid should render a direct mark-grid container.")
 	_require(_node_named(_main, "pattern_mark_cell_r2c2") != null, "Pattern Grid should render named markable cells.")
+	_require(_screen_has_label_text("Grid unmarked."), "Pattern Grid should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("No cells marked."), "Pattern Grid should not render old negative idle feedback.")
 	_require(not _has_button_text(_main, "Submit Pattern"), "Direct Pattern Grid should not use Submit Pattern as the primary interaction.")
 
 	_press_cells(["r1c1", "r1c2", "r1c3"])

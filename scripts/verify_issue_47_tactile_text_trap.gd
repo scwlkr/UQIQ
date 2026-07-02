@@ -58,6 +58,8 @@ func _verify_tactile_text_trap() -> void:
 	_require(blank_tile != null, "Text Trap should render a blank decoy tile.")
 	_require(nothing_tile != null, "Text Trap should render the NOTHING solution tile.")
 	_require(empty_tile != null, "Text Trap should render an empty decoy tile.")
+	_require(_screen_has_label_text("Answer slot ready."), "Text Trap should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("Slot empty."), "Text Trap should not render old negative idle feedback.")
 	_require(not _has_line_edit(_main), "Direct Text Trap should not render a LineEdit.")
 	_require(not _has_button_text(_main, "Submit"), "Direct Text Trap should not expose a Submit button.")
 	_require(not (nothing_tile is Button), "Direct Text Trap word tiles should not be Button answer choices.")
