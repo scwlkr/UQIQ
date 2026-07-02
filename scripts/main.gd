@@ -1510,7 +1510,7 @@ func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	tile.custom_minimum_size = Vector2(126, 64)
 	tile.size = tile.custom_minimum_size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
-	tile.add_theme_stylebox_override("panel", _flat_box(_concealed_play_piece_color(object), 8))
+	tile.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
 	tile.set_meta("object_id", str(object.get("id", "")))
 	tile.gui_input.connect(Callable(self, "_handle_drag_tile_input").bind(str(object.get("id", "")), tile))
 
@@ -1946,10 +1946,6 @@ func _target_color(target: Dictionary) -> Color:
 	if role == "decoy":
 		return COLOR_BLUE
 	return COLOR_PANEL_ALT
-
-
-func _concealed_play_piece_color(_target: Dictionary) -> Color:
-	return COLOR_BLUE
 
 
 func _animate_control_position(control: Control, target_position: Vector2) -> void:
