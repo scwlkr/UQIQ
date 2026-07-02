@@ -143,6 +143,7 @@ func _drag_tile_to_zone(object_id: String, target_id: String, expected_hover_tex
 	motion.position = tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	_main.call("_handle_drag_tile_input", motion, object_id, tile)
 	_require(str(_main.get("_drag_hover_target_id")) == target_id, "Dragging over a drop zone should mark it as the current hover target.")
+	_require(_drop_zone_scale(target_id).is_equal_approx(Vector2(1.035, 1.035)), "Dragging over a drop zone should lift the hovered target.")
 	if not expected_hover_text.is_empty():
 		_require(_screen_has_label_text(expected_hover_text), "Dragging over a drop zone should show release guidance with visible labels.")
 	target_center = zone.get_global_rect().get_center()
@@ -150,6 +151,7 @@ func _drag_tile_to_zone(object_id: String, target_id: String, expected_hover_tex
 	var release := _mouse_button_event(release_position, false)
 	_main.call("_handle_drag_tile_input", release, object_id, tile)
 	_require(str(_main.get("_drag_hover_target_id")).is_empty(), "Releasing a drag should clear drop-zone hover state.")
+	_require(_drop_zone_scale(target_id).is_equal_approx(Vector2.ONE), "Releasing a drag should return the drop target to resting scale.")
 
 
 func _release_overlapping_tile_with_bad_pointer(object_id: String, target_id: String) -> void:
@@ -206,6 +208,14 @@ func _drop_zone_border_color(target_id: String) -> Color:
 	if style == null:
 		return Color.TRANSPARENT
 	return style.border_color
+
+
+func _drop_zone_scale(target_id: String) -> Vector2:
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(zone != null, "Expected drop zone %s." % target_id)
+	if zone == null:
+		return Vector2.ZERO
+	return zone.scale
 
 
 func _draw_line_on_surface(start: Vector2, end: Vector2) -> void:

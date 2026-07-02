@@ -1891,6 +1891,18 @@ func _refresh_drag_drop_zone_styles() -> void:
 		var color := COLOR_YELLOW.darkened(0.16) if is_hovered else COLOR_PLAYFIELD.darkened(0.05)
 		var border_color := COLOR_YELLOW if is_hovered else COLOR_BLUE
 		zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+		_apply_drag_drop_zone_hover_lift(zone, is_hovered)
+
+
+func _apply_drag_drop_zone_hover_lift(zone: Control, is_hovered: bool) -> void:
+	var target_scale := Vector2(1.035, 1.035) if is_hovered else Vector2.ONE
+	if zone.scale.is_equal_approx(target_scale):
+		return
+	zone.pivot_offset = zone.size * 0.5
+	if DisplayServer.get_name() == "headless":
+		zone.scale = target_scale
+	else:
+		_animate_control_scale(zone, target_scale, 0.06, Tween.TRANS_CUBIC, Tween.EASE_OUT)
 
 
 func _apply_drag_drop_zone_result_style(target_id: String, success: bool) -> void:
