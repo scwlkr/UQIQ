@@ -1,6 +1,6 @@
 # iOS Testing Status
 
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 Active GitHub issue: https://github.com/scwlkr/UQIQ/issues/25
 
@@ -55,10 +55,10 @@ Current generic archive result:
 "UQIQ" requires a provisioning profile.
 ```
 
-Physical-device Xcode build now succeeds against `17 Hoe Max`:
+Physical-device Xcode build now succeeds for `com.wlkrlabs.uqiq` against `17 Hoe Max`:
 
 ```sh
-xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Debug -destination 'platform=iOS,id=00008150-001435EA1480401C' build -allowProvisioningUpdates -allowProvisioningDeviceRegistration DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic
+xcodebuild -project /tmp/uqiq-ios-wlkrlabs/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Debug -destination 'platform=iOS,id=00008150-001435EA1480401C' build -allowProvisioningUpdates -allowProvisioningDeviceRegistration DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic
 ```
 
 Current result:
@@ -66,7 +66,8 @@ Current result:
 ```text
 ** BUILD SUCCEEDED **
 Signing Identity: Apple Development: Shane Walker (79A6A93QV3)
-Provisioning Profile: iOS Team Provisioning Profile: *
+Provisioning Profile: iOS Team Provisioning Profile: * (UUID 02720632-77c8-4918-9d15-5ee9a5c85e14)
+Profile application identifier: QP9SJRTA44.*
 ```
 
 `xcrun devicectl list devices` and `xcodebuild -showdestinations` now see the physical iPhone:
@@ -79,10 +80,10 @@ Provisioning Profile: iOS Team Provisioning Profile: *
 The app installs and launches on the physical iPhone:
 
 ```sh
-xcrun devicectl device install app --device 9820C039-3903-5542-9D4A-388ED65AEFDE /Users/shanewalker/Library/Developer/Xcode/DerivedData/UQIQ-gzplululhoslqicnydwkeixwffki/Build/Products/Debug-iphoneos/UQIQ.app
-xcrun devicectl device process launch --device 9820C039-3903-5542-9D4A-388ED65AEFDE --terminate-existing --environment-variables '{"UQIQ_DEVICE_SMOKE":"1"}' com.scwlkr.uqiq
+xcrun devicectl device install app --device 9820C039-3903-5542-9D4A-388ED65AEFDE /Users/shanewalker/Library/Developer/Xcode/DerivedData/UQIQ-dkgmgzzhwncdyobemcmwqexzypys/Build/Products/Debug-iphoneos/UQIQ.app
+xcrun devicectl device process launch --device 9820C039-3903-5542-9D4A-388ED65AEFDE --terminate-existing --environment-variables '{"UQIQ_DEVICE_SMOKE":"1"}' com.wlkrlabs.uqiq
 xcrun devicectl device orientation set --device 9820C039-3903-5542-9D4A-388ED65AEFDE portrait
-xcrun devicectl device capture screenshot --device 9820C039-3903-5542-9D4A-388ED65AEFDE --destination /tmp/uqiq-issue-24-device-smoke-portrait.png
+xcrun devicectl device capture screenshot --device 9820C039-3903-5542-9D4A-388ED65AEFDE --destination /tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png
 ```
 
 Device smoke result visible in the screenshot:
@@ -109,7 +110,7 @@ xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphonesimulat
 
 That build succeeds, but it cannot install on the iOS 27 simulator because the simulator runs `arm64` only and the Godot 4.7 official simulator `libgodot.a` present here is `x86_64`.
 
-Physical iPhone proof for issue #24 is complete.
+Physical iPhone proof is complete for the development-signed `com.wlkrlabs.uqiq` bundle.
 
 ## Distribution Status
 
@@ -118,51 +119,84 @@ The Release export preset is now internally set for App Store distribution:
 ```text
 application/code_sign_identity_release="Apple Distribution"
 application/export_method_release=0
+application/bundle_identifier="com.wlkrlabs.uqiq"
 ```
 
-`godot --headless --path . --export-release iOS /tmp/uqiq-ios-release/UQIQ.ipa` now generates:
+`godot --headless --path . --export-release iOS /tmp/uqiq-ios-release-wlkrlabs/UQIQ.ipa` now generates:
 
 ```text
 method = app-store
 teamID = QP9SJRTA44
+provisioningProfiles.com.wlkrlabs.uqiq = ""
 ```
 
-The archive still fails because this Mac does not have distribution signing available:
+The direct Godot archive still fails because the generated project has an `Apple Distribution` identity while automatic signing starts from development settings:
 
 ```text
 UQIQ is automatically signed for development, but a conflicting code signing identity Apple Distribution has been manually specified.
 ```
 
-Local signing/auth inventory:
+The generated Xcode project can still produce a valid App Store Connect IPA by clearing the archive-time identity override and letting export-time automatic signing use Xcode cloud-managed distribution signing:
+
+```sh
+xcodebuild -project /tmp/uqiq-ios-release-wlkrlabs/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -allowProvisioningUpdates DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY="" -archivePath /tmp/uqiq-ios-release-wlkrlabs/UQIQ-auto.xcarchive
+xcodebuild -exportArchive -archivePath /tmp/uqiq-ios-release-wlkrlabs/UQIQ-auto.xcarchive -exportPath /tmp/uqiq-ios-release-wlkrlabs/exported -exportOptionsPlist /tmp/uqiq-ios-release-wlkrlabs/UQIQ/export_options.plist -allowProvisioningUpdates
+```
+
+Current result:
+
+```text
+** ARCHIVE SUCCEEDED **
+** EXPORT SUCCEEDED **
+Exported IPA: /tmp/uqiq-ios-release-wlkrlabs/exported/UQIQ.ipa
+Signing Identity: Apple Distribution: Shane Walker (QP9SJRTA44)
+Provisioning Profile: iOS Team Store Provisioning Profile: com.wlkrlabs.uqiq
+Entitlements: beta-reports-active=true, get-task-allow=false
+Info.plist privacy strings: camera/microphone/photo library are non-empty and state no v1.0 use.
+```
+
+Local signing/App Store Connect inventory:
 
 ```text
 security find-identity -v -p codesigning
 Apple Development: Shane Walker (79A6A93QV3)
-No Apple Distribution identity found.
+No local Apple Distribution identity found; export used cloud-managed distribution signing.
 
-~/Library/MobileDevice/Provisioning Profiles
-0 mobileprovision files
+~/Library/Developer/Xcode/UserData/Provisioning Profiles/02720632-77c8-4918-9d15-5ee9a5c85e14.mobileprovision
+iOS Team Provisioning Profile: *
+Application identifier: QP9SJRTA44.*
+Provisioned device: 00008150-001435EA1480401C
 
 xcrun altool --list-providers
 Either JWT (--api-issuer and --api-key) or username and app password authentication is required.
 ```
 
+Internal-TestFlight-only upload was attempted with `destination=upload` and `testFlightInternalTestingOnly=true`:
+
+```text
+App record with bundle identifier "com.wlkrlabs.uqiq" not found on App Store Connect.
+Create an app record on App Store Connect, or distribute the app from Xcode, and then try again.
+```
+
 ## Current Blocker
 
-The remaining release blocker requires scwlkr-controlled Apple access: Apple Distribution signing/provisioning for `com.scwlkr.uqiq` and App Store Connect upload credentials/app record access.
+The remaining release blocker requires scwlkr-controlled App Store Connect access: create the app record for `com.wlkrlabs.uqiq`. Browser login reached App Store Connect password/passkey auth; passkey returned `No passkeys found`.
 
 ## Next Commands After Apple Access
 
 ```sh
-rm -rf /tmp/uqiq-ios
-mkdir -p /tmp/uqiq-ios
-godot --headless --path . --export-release iOS /tmp/uqiq-ios/UQIQ.ipa
+rm -rf /tmp/uqiq-ios-release-wlkrlabs
+mkdir -p /tmp/uqiq-ios-release-wlkrlabs
+godot --headless --path . --export-release iOS /tmp/uqiq-ios-release-wlkrlabs/UQIQ.ipa
 ```
 
-If Godot's generic archive still fails, retry the generated project manually with explicit signing settings:
+If Godot's generic archive still fails, retry the generated project manually and upload as an internal-TestFlight-only proof build:
 
 ```sh
-xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -allowProvisioningUpdates DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic -archivePath /tmp/uqiq-ios/UQIQ.xcarchive
+xcodebuild -project /tmp/uqiq-ios-release-wlkrlabs/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -allowProvisioningUpdates DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY="" -archivePath /tmp/uqiq-ios-release-wlkrlabs/UQIQ-auto.xcarchive
+xcodebuild -exportArchive -archivePath /tmp/uqiq-ios-release-wlkrlabs/UQIQ-auto.xcarchive -exportPath /tmp/uqiq-ios-release-wlkrlabs/exported -exportOptionsPlist /tmp/uqiq-ios-release-wlkrlabs/UQIQ/export_options.plist -allowProvisioningUpdates
+cp /tmp/uqiq-ios-release-wlkrlabs/exported/ExportOptions.plist /tmp/uqiq-upload-export-options.plist
+plutil -replace destination -string upload /tmp/uqiq-upload-export-options.plist
+plutil -replace testFlightInternalTestingOnly -bool true /tmp/uqiq-upload-export-options.plist
+xcodebuild -exportArchive -archivePath /tmp/uqiq-ios-release-wlkrlabs/UQIQ-auto.xcarchive -exportPath /tmp/uqiq-ios-release-wlkrlabs/upload -exportOptionsPlist /tmp/uqiq-upload-export-options.plist -allowProvisioningUpdates
 ```
-
-Then export/upload through Xcode/App Store Connect tooling once distribution signing resolves.

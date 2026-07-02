@@ -89,7 +89,7 @@ func _show_device_smoke_result(result: Dictionary) -> void:
 	var root := _make_screen(COLOR_INK, "device_smoke")
 	_add_label(root, "Device Smoke Passed" if success else "Device Smoke Failed", 34, COLOR_GREEN if success else COLOR_RED)
 	_add_judge_face(root, _judge_state)
-	_add_status(root, "Issue #24 physical iPhone release proof", COLOR_YELLOW)
+	_add_status(root, "Physical iPhone smoke proof", COLOR_YELLOW)
 
 	var lines = result.get("lines", [])
 	if typeof(lines) == TYPE_ARRAY:

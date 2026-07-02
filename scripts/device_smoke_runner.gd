@@ -237,7 +237,7 @@ func _finish(success: bool) -> Dictionary:
 		lines.append("FAILED: %s" % _failure)
 		lines.append_array(_checks)
 
-	print("Issue #24 device smoke %s: %s" % ["passed" if success else "failed", " | ".join(lines)])
+	print("Device smoke %s: %s" % ["passed" if success else "failed", " | ".join(lines)])
 	_remove_test_save()
 	return {
 		"success": success,

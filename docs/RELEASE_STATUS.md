@@ -1,10 +1,10 @@
 # UQIQ Release Status
 
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 ## Current Phase
 
-iOS physical-device proof passed; TestFlight/App Store distribution is blocked on Apple signing/auth.
+iOS physical-device proof and App Store Connect IPA export passed for `com.wlkrlabs.uqiq`; TestFlight upload is blocked on App Store Connect app-record setup.
 
 ## Active Next Step
 
@@ -13,11 +13,13 @@ iOS physical-device proof passed; TestFlight/App Store distribution is blocked o
 
 ## Latest Proof
 
-- Issue #25 fixed the Release export preset to App Store method with `Apple Distribution`.
-- Release export now generates `method=app-store` but Xcode archive fails because only Apple Development signing is installed.
-- Upload auth is absent: `altool --list-providers` requires API key or Apple ID app-specific password/provider.
-- Issue #24 physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
-- Device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-24-device-smoke-portrait.png`.
+- Issue #25 set the canonical bundle ID to `com.wlkrlabs.uqiq`.
+- Direct Godot Release export still hits Xcode's manual identity conflict, but the generated Xcode project can archive and export via automatic cloud-managed distribution signing.
+- Exported IPA proof: `/tmp/uqiq-ios-release-wlkrlabs/exported/UQIQ.ipa`, signed by `Apple Distribution: Shane Walker (QP9SJRTA44)`.
+- Exported IPA Info.plist has non-empty camera, microphone, and photo-library usage descriptions.
+- App Store Connect upload as internal-TestFlight-only failed because no app record exists for `com.wlkrlabs.uqiq`.
+- Physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
+- `com.wlkrlabs.uqiq` device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png`.
 - Device smoke covered 60-spec load, isolated Local Profile, Level List, Play -> Score Roastcard, save/load, Dur spend/recovery, and no launch crash.
 - Issue #23 UI readability slice closed with proof: `57f6acb`.
 - Issue #22 Physics Draw polish slice closed with proof: `d9d08cc`.
@@ -30,9 +32,9 @@ iOS physical-device proof passed; TestFlight/App Store distribution is blocked o
 
 ## Known Blockers
 
-- Missing Apple Distribution signing identity/profile for `com.scwlkr.uqiq`.
-- Missing App Store Connect upload authentication.
+- Missing App Store Connect app record for `com.wlkrlabs.uqiq`.
+- Browser App Store Connect login requires scwlkr password/2FA; passkey check found no passkeys.
 
 ## Next Gate Needing scwlkr
 
-scwlkr must provide or approve Apple Distribution signing/provisioning and App Store Connect upload credentials/app record access.
+scwlkr must create or authorize creation of the App Store Connect app record for bundle ID `com.wlkrlabs.uqiq`.
