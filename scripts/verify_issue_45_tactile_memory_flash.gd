@@ -51,6 +51,7 @@ func _verify_tactile_memory_flash() -> void:
 	_require(_node_named(_main, "memory_tile_sun") != null, "Memory Flash should render SUN as a direct tile.")
 	_require(_node_named(_main, "memory_tile_moon") != null, "Memory Flash should render MOON as a direct tile.")
 	_require(_node_named(_main, "memory_tile_dur") != null, "Memory Flash should render DUR as a direct tile.")
+	_require_tile_label_fits("MOON")
 	_require(not _has_button_text(_main, "Flash"), "Direct Memory Flash should not expose Flash button.")
 	_require(not _has_button_text(_main, "Hide"), "Direct Memory Flash should not expose Hide button.")
 	_require(not _has_button_text(_main, "Submit"), "Direct Memory Flash should not expose Submit button.")
@@ -89,6 +90,31 @@ func _press_tile(item_id: String, event: InputEvent) -> void:
 	if _failed:
 		return
 	_main.call("_handle_direct_memory_tile_input", event, item_id, tile)
+
+
+func _require_tile_label_fits(item_id: String) -> void:
+	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+	_require(tile != null, "Expected direct memory tile %s." % item_id)
+	if _failed:
+		return
+
+	var label := _first_label(tile)
+	_require(label != null, "Expected direct memory tile %s to have a label." % item_id)
+	if _failed:
+		return
+
+	_require(label.autowrap_mode == TextServer.AUTOWRAP_OFF, "Direct memory tile labels should not wrap.")
+	_require(label.get_minimum_size().x <= tile.size.x, "Direct memory tile %s label should fit in its tile." % item_id)
+
+
+func _first_label(node: Node) -> Label:
+	if node is Label:
+		return node
+	for child in node.get_children():
+		var label := _first_label(child)
+		if label != null:
+			return label
+	return null
 
 
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:
