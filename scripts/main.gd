@@ -2398,6 +2398,13 @@ func _pulse_control(control: Control, shrink: float = 0.96, duration: float = 0.
 		control.scale = Vector2.ONE
 
 
+func _failure_pulse_control(control: Control, shrink: float = 0.94, duration: float = 0.05) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.set_meta("failure_pulse_count", int(control.get_meta("failure_pulse_count", 0)) + 1)
+	_pulse_control(control, shrink, duration)
+
+
 func _shake_control(control: Control, magnitude: float = 5.0, duration: float = 0.028) -> void:
 	if control == null or not is_instance_valid(control):
 		return
@@ -2722,6 +2729,8 @@ func _apply_pattern_result_style(cell_ids: Array[String], success: bool) -> void
 		var button = _pattern_cell_buttons.get(cell_id) as Button
 		if button != null and is_instance_valid(button):
 			_apply_pattern_button_style(button, color, border_color)
+			if not success:
+				_failure_pulse_control(button)
 
 
 func _apply_pattern_button_style(button: Button, color: Color, border_color: Color) -> void:
