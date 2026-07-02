@@ -711,18 +711,22 @@ func _show_score_roastcard() -> void:
 	_add_label(root, "Score Roastcard", 34, COLOR_YELLOW)
 	_add_judge_face(root, _judge_state)
 	_add_label(root, str(_current_level.get("title", "Level complete")), 24, COLOR_TEXT)
-	_add_status(root, "Completed in %d action(s)" % int(_last_completed_attempt.get("action_count", _tap_count)), COLOR_GREEN)
+	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
+	var best_action_count := action_count
+	var best_roast_count := 0
 	if not _last_best_attempt.is_empty():
-		_add_status(root, "Best Attempt: %d action(s), %d Roast(s)" % [
-			int(_last_best_attempt.get("action_count", _tap_count)),
-			int(_last_best_attempt.get("roast_count", 0)),
-		], COLOR_GREEN)
+		best_action_count = int(_last_best_attempt.get("action_count", action_count))
+		best_roast_count = int(_last_best_attempt.get("roast_count", 0))
 	if not _profile.last_error.is_empty():
 		_add_status(root, _profile.last_error, COLOR_RED)
 	else:
-		_add_status(root, "Saved. Level %02d unlocked. UQIQ %d." % [
+		var action_label := "action" if action_count == 1 else "actions"
+		_add_status(root, "Saved | %d %s | Best %dA/%dR | L%02d open" % [
+			action_count,
+			action_label,
+			best_action_count,
+			best_roast_count,
 			int(_profile.data.get("unlocked_level", 1)),
-			_profile.current_uqiq_score(),
 		], COLOR_GREEN)
 
 	var score_before := int(_last_score_result.get("score_before", _profile.current_uqiq_score()))
@@ -731,7 +735,6 @@ func _show_score_roastcard() -> void:
 	var attempt_score_delta := int(_last_score_result.get("attempt_score_delta", score_delta))
 	var score_components := _dictionary_from(_last_score_result.get("score_components", {}))
 	var roast_count := int(_last_completed_attempt.get("roast_count", _roast_count))
-	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
 
 	var score_panel := PanelContainer.new()
 	score_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
