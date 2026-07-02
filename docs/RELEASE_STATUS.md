@@ -8,8 +8,8 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Active Next Step
 
-- GitHub issue: [#41 Expand Physics Draw into real Pack 6 drawing interactions](https://github.com/scwlkr/UQIQ/issues/41)
-- Branch: `codex/issue-41-pack-6-direct-drawing`
+- GitHub issue: [#42 Build interactive Pattern Grid prototype](https://github.com/scwlkr/UQIQ/issues/42)
+- Branch: `codex/issue-42-interactive-pattern-grid`
 
 ## Product Direction From scwlkr
 
@@ -29,6 +29,7 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 - Issue #41 adds direct drawing gestures for all eight Pack 6 Physics Draw levels.
 - `verify_issue_41_pack_6_direct_drawing.gd` proves Pack 6 Physics Draw levels reject a bad line and complete through direct drawing.
 - Full documented verification floor passed after the Pack 6 drawing slice.
+- Issue #41 closed with proof in commit `c41c67f`.
 - Issue #39 was superseded by product-direction feedback and the new interaction-core issue.
 
 ## Known Blockers
@@ -38,4 +39,4 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Next Gate
 
-Close issue #41 with proof, then choose the next gameplay-depth issue before release work resumes.
+Build one richer Pattern Grid prototype so grid play is not only single-cell choice plus `Submit Pattern`.
