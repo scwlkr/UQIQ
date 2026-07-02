@@ -22,7 +22,9 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 - Internal TestFlight install/launch proof passed for UQIQ `0.1.0 (1)` on physical iPhone `17 Hoe Max`.
 - Full local verification floor has passed through `verify_issue_38_long_screen_fit.gd`.
 - Current content includes 60 JSON Level Specs, Local Profile, scoring, Dur Tokens, roasts, replay, and Score Roastcards.
-- Current interaction implementation still uses button-choice approximations for Drag Logic and Physics Draw.
+- Issue #40 adds a direct drag/drop playfield for Level 2 and a direct drawing surface for Level 6.
+- `verify_issue_40_interaction_core.gd` proves the rendered UI no longer exposes `Move:` / `Drop on:` / `Draw:` choice buttons for those prototypes.
+- Full documented verification floor passed after the interaction-core slice.
 - Issue #39 was superseded by product-direction feedback and the new interaction-core issue.
 
 ## Known Blockers
@@ -32,4 +34,4 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Next Gate
 
-Build and verify one real drag/drop interaction and one real drawing interaction in the existing Godot app.
+Close issue #40 with proof, then choose the next gameplay-depth issue before release work resumes.

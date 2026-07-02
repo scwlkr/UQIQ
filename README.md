@@ -145,6 +145,7 @@ godot --headless --path . --script res://scripts/verify_issue_21_judge_transitio
 godot --headless --path . --script res://scripts/verify_issue_22_physics_draw.gd
 godot --headless --path . --script res://scripts/verify_issue_23_ui_readability.gd
 godot --headless --path . --script res://scripts/verify_issue_38_long_screen_fit.gd
+godot --headless --path . --script res://scripts/verify_issue_40_interaction_core.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -184,6 +185,8 @@ godot --headless --path . --script res://scripts/verify_issue_38_long_screen_fit
 `verify_issue_23_ui_readability.gd` is the phone UI readability check. It verifies long labels and buttons use portrait-safe wrapping and ellipsis settings across the Level List, Play Screen, Physics Draw, and Score Roastcard surfaces.
 
 `verify_issue_38_long_screen_fit.gd` is the long-screen fit check. It verifies content-heavy Play Screens and Score Roastcard expose lower actions/content inside portrait scroll containers.
+
+`verify_issue_40_interaction_core.gd` is the interaction-core check. It verifies Drag Logic exposes a direct drag/drop playfield instead of `Move:` / `Drop on:` buttons, Physics Draw exposes a direct drawing surface instead of `Draw:` option buttons, and both interactions complete through Score Roastcard with persistence.
 
 ## Desktop Smoke
 

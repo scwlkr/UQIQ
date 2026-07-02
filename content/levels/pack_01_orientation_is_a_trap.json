@@ -96,7 +96,7 @@
             "role": "decoy"
           }
         ],
-        "interaction_model": "tap_select_then_drop"
+    "interaction_model": "direct_drag_drop"
       },
       "solution": {
         "object_id": "word_wrong",
@@ -378,7 +378,7 @@
         ],
         "ball_start": "left",
         "target_id": "cup_right",
-        "interaction_model": "deterministic_draw_choice_then_release"
+    "interaction_model": "direct_draw_line_then_release"
       },
       "solution": {
         "draw_id": "ramp_to_cup",
@@ -413,11 +413,11 @@
         "shapes": [
           "ball",
           "cup",
-          "drawn_line_options",
+      "draw_surface",
           "judge_face_stub"
         ]
       },
-      "uqiq_moment": "The ball only reaches the cup when the player picks the ramp instead of the flat line or wall."
+  "uqiq_moment": "The ball only reaches the cup when the player draws a rising ramp instead of a flat line or wall."
     },
     {
       "id": "p01_l07_arrow_trial",

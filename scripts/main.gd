@@ -52,12 +52,23 @@ var _last_transition_name := ""
 var _feedback_label: Label
 var _text_input: LineEdit
 var _selected_drag_id := ""
+var _dragging_object_id := ""
+var _dragging_tile: Control = null
+var _drag_offset := Vector2.ZERO
+var _drag_drop_zones := {}
+var _last_drag_drop_target_id := ""
 var _selected_pattern_cell := ""
 var _memory_input: Array[String] = []
 var _physics_choice := ""
 var _last_physics_result := ""
 var _physics_choice_label: Label
 var _physics_result_label: Label
+var _physics_draw_surface: Control = null
+var _physics_line: Line2D = null
+var _physics_is_drawing := false
+var _physics_has_drawn_line := false
+var _physics_draw_start := Vector2.ZERO
+var _physics_draw_end := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -328,12 +339,23 @@ func _show_play_screen(level: Dictionary) -> void:
 	_level_list_notice = ""
 	_text_input = null
 	_selected_drag_id = ""
+	_dragging_object_id = ""
+	_dragging_tile = null
+	_drag_offset = Vector2.ZERO
+	_drag_drop_zones = {}
+	_last_drag_drop_target_id = ""
 	_selected_pattern_cell = ""
 	_memory_input = []
 	_physics_choice = ""
 	_last_physics_result = ""
 	_physics_choice_label = null
 	_physics_result_label = null
+	_physics_draw_surface = null
+	_physics_line = null
+	_physics_is_drawing = false
+	_physics_has_drawn_line = false
+	_physics_draw_start = Vector2.ZERO
+	_physics_draw_end = Vector2.ZERO
 
 	var root := _make_screen(COLOR_PANEL, "play_screen", true)
 
@@ -427,7 +449,18 @@ func _handle_drag_select(object_id: String) -> void:
 func _handle_drag_drop(drop_target_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
+	_resolve_drag_drop(_selected_drag_id, drop_target_id)
 
+
+func _handle_direct_drag_drop(object_id: String, drop_target_id: String) -> void:
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_selected_drag_id = object_id
+	_last_drag_drop_target_id = drop_target_id
+	_resolve_drag_drop(object_id, drop_target_id)
+
+
+func _resolve_drag_drop(object_id: String, drop_target_id: String) -> void:
 	var solution = _current_level.get("solution", {})
 	var winning_object := ""
 	var winning_target := ""
@@ -435,7 +468,7 @@ func _handle_drag_drop(drop_target_id: String) -> void:
 		winning_object = str(solution.get("object_id", ""))
 		winning_target = str(solution.get("drop_target_id", ""))
 
-	if _selected_drag_id == winning_object and drop_target_id == winning_target:
+	if object_id == winning_object and drop_target_id == winning_target:
 		_complete_current_level()
 		return
 
@@ -541,6 +574,7 @@ func _handle_physics_draw(draw_id: String) -> void:
 	_trigger_feedback("tap")
 	_physics_choice = draw_id
 	_last_physics_result = "selected"
+	_physics_has_drawn_line = true
 	_update_physics_choice_label()
 	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(draw_id)
 
@@ -794,29 +828,45 @@ func _render_tap_logic(stage_box: VBoxContainer) -> void:
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Pick the object, then pick where to drop it.", 17, COLOR_INK)
+	_add_label(stage_box, "Drag the word into a box.", 17, COLOR_INK)
+
+	var playfield := Panel.new()
+	playfield.name = "drag_playfield"
+	playfield.custom_minimum_size = Vector2(0, 280)
+	playfield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	playfield.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	stage_box.add_child(playfield)
+
+	var hint := _new_label("drag tiles -> drop zones", 15, COLOR_INK)
+	hint.position = Vector2(18, 16)
+	hint.size = Vector2(260, 28)
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	playfield.add_child(hint)
 
 	var objects = _rules().get("draggable_objects", [])
 	if typeof(objects) == TYPE_ARRAY:
-		for object in objects:
+		for index in range(objects.size()):
+			var object = objects[index]
 			if typeof(object) != TYPE_DICTIONARY:
 				continue
 
-			var object_button := _make_button("Move: %s" % str(object.get("label", "Object")), _target_color(object))
-			object_button.pressed.connect(Callable(self, "_handle_drag_select").bind(str(object.get("id", ""))))
-			stage_box.add_child(object_button)
+			var tile := _make_drag_tile(object)
+			tile.position = Vector2(20, 58 + (index * 78))
+			playfield.add_child(tile)
 
 	var targets = _rules().get("drop_targets", [])
 	if typeof(targets) == TYPE_ARRAY:
-		for target in targets:
+		for index in range(targets.size()):
+			var target = targets[index]
 			if typeof(target) != TYPE_DICTIONARY:
 				continue
 
-			var target_button := _make_button("Drop on: %s" % str(target.get("label", "Target")), COLOR_PANEL_ALT)
-			target_button.pressed.connect(Callable(self, "_handle_drag_drop").bind(str(target.get("id", ""))))
-			stage_box.add_child(target_button)
+			var zone := _make_drop_zone(target)
+			zone.position = Vector2(190, 58 + (index * 88))
+			playfield.add_child(zone)
+			_drag_drop_zones[str(target.get("id", ""))] = zone
 
-	_add_feedback(stage_box, "Move the wrong thing into the right place.")
+	_add_feedback(stage_box, "Drag the wrong thing into the right place.")
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
@@ -900,7 +950,61 @@ func _render_memory_flash(stage_box: VBoxContainer) -> void:
 
 func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
+	if not _uses_direct_physics_draw():
+		_render_physics_draw_choice_fallback(stage_box)
+		return
 
+	var surface := Panel.new()
+	surface.name = "physics_draw_surface"
+	surface.custom_minimum_size = Vector2(0, 280)
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.mouse_filter = Control.MOUSE_FILTER_STOP
+	surface.gui_input.connect(Callable(self, "_handle_physics_surface_input").bind(surface))
+	stage_box.add_child(surface)
+	_physics_draw_surface = surface
+
+	var ball := _new_label("BALL", 17, COLOR_INK)
+	ball.position = Vector2(18, 216)
+	ball.size = Vector2(76, 28)
+	surface.add_child(ball)
+
+	var cup := _new_label("CUP", 17, COLOR_INK)
+	cup.position = Vector2(244, 84)
+	cup.size = Vector2(76, 28)
+	surface.add_child(cup)
+
+	var guide := _new_label("BALL -> selected line -> CUP", 18, COLOR_INK)
+	guide.position = Vector2(20, 18)
+	guide.size = Vector2(300, 30)
+	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(guide)
+
+	_physics_line = Line2D.new()
+	_physics_line.name = "player_drawn_line"
+	_physics_line.width = 6.0
+	_physics_line.default_color = COLOR_BLUE
+	surface.add_child(_physics_line)
+
+	_physics_choice_label = _new_label("Selected line: none", 16, COLOR_INK)
+	_physics_choice_label.position = Vector2(20, 52)
+	_physics_choice_label.size = Vector2(300, 26)
+	_physics_choice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(_physics_choice_label)
+	_physics_result_label = _new_label("Release result: waiting on fake gravity", 16, COLOR_INK)
+	_physics_result_label.position = Vector2(20, 248)
+	_physics_result_label.size = Vector2(320, 26)
+	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(_physics_result_label)
+
+	var release_button := _make_button("Release Ball", COLOR_GREEN)
+	release_button.pressed.connect(Callable(self, "_handle_physics_release"))
+	stage_box.add_child(release_button)
+
+	_add_feedback(stage_box, "Draw the ramp, then release the ball.")
+
+
+func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	var surface := PanelContainer.new()
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
@@ -931,7 +1035,206 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	release_button.pressed.connect(Callable(self, "_handle_physics_release"))
 	stage_box.add_child(release_button)
 
-	_add_feedback(stage_box, "No physics sandbox yet. This deterministic line check is the slice.")
+	_add_feedback(stage_box, "Deterministic choice fallback until this Level gets a direct drawing spec.")
+
+
+func _uses_direct_physics_draw() -> bool:
+	return str(_rules().get("interaction_model", "")) == "direct_draw_line_then_release"
+
+
+func _make_drag_tile(object: Dictionary) -> PanelContainer:
+	var tile := PanelContainer.new()
+	tile.name = "drag_tile_%s" % str(object.get("id", "object"))
+	tile.custom_minimum_size = Vector2(136, 62)
+	tile.size = tile.custom_minimum_size
+	tile.mouse_filter = Control.MOUSE_FILTER_STOP
+	tile.add_theme_stylebox_override("panel", _flat_box(_target_color(object), 8))
+	tile.set_meta("object_id", str(object.get("id", "")))
+	tile.gui_input.connect(Callable(self, "_handle_drag_tile_input").bind(str(object.get("id", "")), tile))
+
+	var label := _new_label(str(object.get("label", "Object")), 21, COLOR_TEXT)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	tile.add_child(label)
+	return tile
+
+
+func _make_drop_zone(target: Dictionary) -> PanelContainer:
+	var zone := PanelContainer.new()
+	zone.name = "drop_zone_%s" % str(target.get("id", "target"))
+	zone.custom_minimum_size = Vector2(150, 72)
+	zone.size = zone.custom_minimum_size
+	zone.mouse_filter = Control.MOUSE_FILTER_PASS
+	zone.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	zone.set_meta("target_id", str(target.get("id", "")))
+
+	var label := _new_label(str(target.get("label", "Target")), 17, COLOR_TEXT)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	zone.add_child(label)
+	return zone
+
+
+func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control) -> void:
+	if _is_primary_press(event):
+		_dragging_object_id = object_id
+		_dragging_tile = tile
+		_drag_offset = _event_position_in_control(event, tile, tile)
+		tile.move_to_front()
+		_feedback_label.text = "Dragging %s. Drop it where truth will tolerate it." % object_id
+		_mark_input_handled()
+		return
+
+	if _is_pointer_drag(event) and _dragging_tile == tile:
+		_move_drag_tile(event, tile)
+		_mark_input_handled()
+		return
+
+	if _is_primary_release(event) and _dragging_tile == tile:
+		var canvas_position := _event_canvas_position(event, tile)
+		var drop_target_id := _drop_target_at_canvas_position(canvas_position)
+		_dragging_object_id = ""
+		_dragging_tile = null
+		_drag_offset = Vector2.ZERO
+		if drop_target_id.is_empty():
+			_handle_direct_drag_miss(object_id)
+		else:
+			_handle_direct_drag_drop(object_id, drop_target_id)
+		_mark_input_handled()
+
+
+func _move_drag_tile(event: InputEvent, tile: Control) -> void:
+	var playfield := tile.get_parent() as Control
+	if playfield == null:
+		return
+
+	var pointer_position := _event_position_in_control(event, playfield, tile)
+	var next_position := pointer_position - _drag_offset
+	var max_x = max(0.0, playfield.size.x - tile.size.x)
+	var max_y = max(42.0, playfield.size.y - tile.size.y)
+	tile.position = Vector2(
+		clamp(next_position.x, 0.0, max_x),
+		clamp(next_position.y, 42.0, max_y)
+	)
+
+
+func _drop_target_at_canvas_position(canvas_position: Vector2) -> String:
+	for target_id in _drag_drop_zones.keys():
+		var zone = _drag_drop_zones[target_id] as Control
+		if zone != null and is_instance_valid(zone) and zone.get_global_rect().has_point(canvas_position):
+			return str(target_id)
+	return ""
+
+
+func _handle_direct_drag_miss(object_id: String) -> void:
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_last_drag_drop_target_id = ""
+	_feedback_label.text = "%s hit empty space. The floor is not a valid argument." % object_id
+	_set_judge_state("fail")
+	_trigger_feedback("fail")
+
+
+func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
+	if _is_primary_press(event):
+		_physics_is_drawing = true
+		_physics_has_drawn_line = false
+		_physics_choice = ""
+		_last_physics_result = "drawing"
+		_physics_draw_start = _event_position_in_control(event, surface, surface)
+		_physics_draw_end = _physics_draw_start
+		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		_update_physics_choice_label()
+		_feedback_label.text = "Drawing. Aim like gravity is watching."
+		_mark_input_handled()
+		return
+
+	if _is_pointer_drag(event) and _physics_is_drawing:
+		_physics_draw_end = _event_position_in_control(event, surface, surface)
+		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		_mark_input_handled()
+		return
+
+	if _is_primary_release(event) and _physics_is_drawing:
+		_physics_draw_end = _event_position_in_control(event, surface, surface)
+		_record_physics_drawn_line()
+		_mark_input_handled()
+
+
+func _record_physics_drawn_line() -> void:
+	_physics_is_drawing = false
+	_physics_has_drawn_line = true
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+	_physics_choice = _classify_physics_line(_physics_draw_start, _physics_draw_end)
+	_last_physics_result = "selected"
+	_update_physics_choice_label()
+	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(_physics_choice)
+
+
+func _simulate_physics_draw_line(start: Vector2, end: Vector2) -> void:
+	_physics_draw_start = start
+	_physics_draw_end = end
+	_record_physics_drawn_line()
+
+
+func _set_physics_line_points(start: Vector2, end: Vector2) -> void:
+	if _physics_line == null or not is_instance_valid(_physics_line):
+		return
+	_physics_line.points = PackedVector2Array([start, end])
+
+
+func _classify_physics_line(start: Vector2, end: Vector2) -> String:
+	var delta := end - start
+	if delta.length() < 36.0:
+		return "wall"
+	if abs(delta.x) < 28.0:
+		return "wall"
+	if abs(delta.y) < 22.0:
+		return "flat_line"
+	if delta.x > 48.0 and delta.y < -18.0:
+		return "ramp_to_cup"
+	return "flat_line"
+
+
+func _is_primary_press(event: InputEvent) -> bool:
+	if event is InputEventMouseButton:
+		return event.button_index == MOUSE_BUTTON_LEFT and event.pressed
+	if event is InputEventScreenTouch:
+		return event.pressed
+	return false
+
+
+func _is_primary_release(event: InputEvent) -> bool:
+	if event is InputEventMouseButton:
+		return event.button_index == MOUSE_BUTTON_LEFT and not event.pressed
+	if event is InputEventScreenTouch:
+		return not event.pressed
+	return false
+
+
+func _is_pointer_drag(event: InputEvent) -> bool:
+	return event is InputEventMouseMotion or event is InputEventScreenDrag
+
+
+func _event_canvas_position(event: InputEvent, local_node: Control) -> Vector2:
+	if event is InputEventMouseButton or event is InputEventMouseMotion:
+		return local_node.get_global_transform_with_canvas() * event.position
+	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		return event.position
+	var viewport := get_viewport()
+	if viewport != null:
+		return viewport.get_mouse_position()
+	return Vector2.ZERO
+
+
+func _event_position_in_control(event: InputEvent, control: Control, local_node: Control) -> Vector2:
+	return control.get_global_transform_with_canvas().affine_inverse() * _event_canvas_position(event, local_node)
+
+
+func _mark_input_handled() -> void:
+	var viewport := get_viewport()
+	if viewport != null:
+		viewport.set_input_as_handled()
 
 
 func _add_feedback(stage_box: VBoxContainer, text: String) -> void:
@@ -1087,6 +1390,8 @@ func _score_component_text(components: Dictionary, key: String, title: String, f
 
 
 func _physics_draw_label(draw_id: String) -> String:
+	if draw_id.is_empty():
+		return "none"
 	var options = _rules().get("draw_options", [])
 	if typeof(options) == TYPE_ARRAY:
 		for option in options:
@@ -1097,9 +1402,15 @@ func _physics_draw_label(draw_id: String) -> String:
 
 func _update_physics_choice_label() -> void:
 	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
-		_physics_choice_label.text = "Selected line: %s" % _physics_draw_label(_physics_choice)
+		if _last_physics_result == "drawing":
+			_physics_choice_label.text = "Selected line: drawing..."
+		else:
+			_physics_choice_label.text = "Selected line: %s" % _physics_draw_label(_physics_choice)
 	if _physics_result_label != null and is_instance_valid(_physics_result_label):
-		_physics_result_label.text = "Release result: ready to test"
+		if _last_physics_result == "drawing":
+			_physics_result_label.text = "Release result: line not released yet"
+		else:
+			_physics_result_label.text = "Release result: ready to test"
 
 
 func _update_physics_result_label(success: bool) -> void:
