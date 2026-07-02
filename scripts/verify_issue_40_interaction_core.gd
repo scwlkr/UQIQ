@@ -31,7 +31,7 @@ func _initialize() -> void:
 	if _failed:
 		return
 
-	print("Issue #40 interaction core verification passed: Drag Logic uses a direct drag/drop playfield, Physics Draw uses a direct draw surface, and both complete through Score Roastcard.")
+	print("Issue #40 interaction core verification passed: Drag Logic uses a direct drag/drop playfield, Physics Draw resolves from a direct draw-release surface, and both complete through Score Roastcard.")
 	_cleanup()
 	quit(0)
 
@@ -61,7 +61,7 @@ func _verify_direct_drag_drop() -> void:
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
 
 	_main.call("_show_play_screen", level)
-	_drag_tile_to_zone("word_wrong", "truth_box")
+	_release_overlapping_tile_with_bad_pointer("word_wrong", "truth_box")
 	_require(_profile.is_level_completed(level_id), "Correct direct drag/drop should complete Level 2.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct drag/drop should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
@@ -80,15 +80,11 @@ func _verify_direct_physics_draw() -> void:
 
 	_draw_line_on_surface(Vector2(48, 220), Vector2(260, 110))
 	_require(str(_main.get("_physics_choice")) == "ramp_to_cup", "A rising line from ball to cup should classify as the ramp.")
-	_require(str(_main.get("_last_physics_result")) == "selected", "Drawing a line should record selected state before release.")
-	_require(_screen_has_label_text("Selected line: ramp to cup"), "Physics Draw should show the classified drawn ramp.")
-
-	_main.call("_handle_physics_release")
 	_require(str(_main.get("_last_physics_result")) == "success", "Correct drawn ramp release should record success state.")
 	_require(_profile.is_level_completed(level_id), "Correct drawn ramp should complete Level 6.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct drawn ramp should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(best_attempt.get("action_count", 0)) == 2, "Draw plus release should persist as two actions.")
+	_require(int(best_attempt.get("action_count", 0)) == 1, "Draw-release should persist as one direct action.")
 
 
 func _drag_tile_to_zone(object_id: String, target_id: String) -> void:
@@ -108,6 +104,22 @@ func _drag_tile_to_zone(object_id: String, target_id: String) -> void:
 	target_center = zone.get_global_rect().get_center()
 	var release_position := tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	var release := _mouse_button_event(release_position, false)
+	_main.call("_handle_drag_tile_input", release, object_id, tile)
+
+
+func _release_overlapping_tile_with_bad_pointer(object_id: String, target_id: String) -> void:
+	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(tile != null, "Expected draggable tile for %s." % object_id)
+	_require(zone != null, "Expected drop zone for %s." % target_id)
+	if _failed:
+		return
+
+	var press := _mouse_button_event(Vector2(12, 12), true)
+	_main.call("_handle_drag_tile_input", press, object_id, tile)
+	tile.position = zone.position
+	tile.move_to_front()
+	var release := _mouse_button_event(Vector2(-500, -500), false)
 	_main.call("_handle_drag_tile_input", release, object_id, tile)
 
 

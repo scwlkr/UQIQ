@@ -19,6 +19,7 @@ const DEVICE_SMOKE_ARG := "--uqiq-device-smoke"
 const DEVICE_SMOKE_ENV := "UQIQ_DEVICE_SMOKE"
 const PLAYTEST_LEVEL_ENV := "UQIQ_PLAYTEST_LEVEL"
 const PLAYTEST_UNLOCK_ALL_ENV := "UQIQ_PLAYTEST_UNLOCK_ALL"
+const SCREENSHOT_CAPTURE_ENV := "UQIQ_SCREENSHOT_CAPTURE"
 const FEEDBACK_MIX_RATE := 22050.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
@@ -60,6 +61,7 @@ var _selected_drag_id := ""
 var _dragging_object_id := ""
 var _dragging_tile: Control = null
 var _drag_offset := Vector2.ZERO
+var _drag_origin := Vector2.ZERO
 var _drag_drop_zones := {}
 var _last_drag_drop_target_id := ""
 var _selected_pattern_cell := ""
@@ -68,6 +70,8 @@ var _pattern_cell_buttons := {}
 var _memory_input: Array[String] = []
 var _memory_slot_labels := {}
 var _last_direct_memory_tile_id := ""
+var _direct_memory_flash_label: Label
+var _direct_memory_flash_generation := 0
 var _physics_choice := ""
 var _last_physics_result := ""
 var _physics_choice_label: Label
@@ -313,12 +317,6 @@ func _add_pack_heading(parent: Node, pack: Dictionary) -> void:
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	parent.add_child(heading)
 
-	var source_path := str(pack.get("source_path", ""))
-	if not source_path.is_empty():
-		var source_label := _new_label(source_path, 13, COLOR_MUTED)
-		source_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		parent.add_child(source_label)
-
 
 func _pack_heading_text(pack: Dictionary) -> String:
 	var levels = pack.get("levels", [])
@@ -388,6 +386,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_dragging_object_id = ""
 	_dragging_tile = null
 	_drag_offset = Vector2.ZERO
+	_drag_origin = Vector2.ZERO
 	_drag_drop_zones = {}
 	_last_drag_drop_target_id = ""
 	_selected_pattern_cell = ""
@@ -396,6 +395,8 @@ func _show_play_screen(level: Dictionary) -> void:
 	_memory_input = []
 	_memory_slot_labels = {}
 	_last_direct_memory_tile_id = ""
+	_direct_memory_flash_label = null
+	_direct_memory_flash_generation += 1
 	_physics_choice = ""
 	_last_physics_result = ""
 	_physics_choice_label = null
@@ -659,8 +660,13 @@ func _handle_physics_draw(draw_id: String) -> void:
 
 
 func _handle_physics_release() -> void:
-	_tap_count += 1
-	_trigger_feedback("tap")
+	_resolve_physics_release(true)
+
+
+func _resolve_physics_release(count_action: bool) -> void:
+	if count_action:
+		_tap_count += 1
+		_trigger_feedback("tap")
 
 	var solution := _solution()
 	if _physics_choice == str(solution.get("draw_id", "")):
@@ -1041,7 +1047,7 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 
 
 func _render_pattern_grid(stage_box: VBoxContainer) -> void:
-	if _uses_direct_pattern_grid():
+	if _uses_direct_pattern_grid() or not _pattern_solution_cells().is_empty():
 		_render_direct_pattern_grid(stage_box)
 		return
 
@@ -1070,7 +1076,7 @@ func _render_pattern_grid(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Mark the whole broken row.", 17, COLOR_INK)
+	_add_label(stage_box, _direct_pattern_prompt(), 17, COLOR_INK)
 
 	var grid := GridContainer.new()
 	grid.name = "pattern_mark_grid"
@@ -1087,13 +1093,13 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 				continue
 
 			var cell_id := str(cell.get("id", ""))
-			var cell_button := _make_button(str(cell.get("label", "?")), _target_color(cell), Vector2(86, 64))
+			var cell_button := _make_button(str(cell.get("label", "?")), _concealed_play_piece_color(cell), Vector2(86, 64))
 			cell_button.name = "pattern_mark_cell_%s" % cell_id
 			cell_button.pressed.connect(Callable(self, "_handle_pattern_mark_cell").bind(cell_id, cell_button))
 			grid.add_child(cell_button)
 			_pattern_cell_buttons[cell_id] = cell_button
 
-	_add_feedback(stage_box, "Mark cells in the row that broke the pattern. It will judge you automatically.")
+	_add_feedback(stage_box, "Tap evidence on the grid. It judges as soon as you commit enough cells.")
 
 
 func _render_memory_flash(stage_box: VBoxContainer) -> void:
@@ -1153,6 +1159,8 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 	flash_label.size = Vector2(320, 30)
 	flash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(flash_label)
+	_direct_memory_flash_label = flash_label
+	_arm_direct_memory_flash_hide()
 
 	_render_memory_recall_slots(surface)
 	_render_memory_tile_bank(surface)
@@ -1161,16 +1169,19 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 
 func _render_memory_recall_slots(surface: Control) -> void:
 	var sequence := _memory_solution_sequence()
+	var slot_count := maxi(sequence.size(), 1)
+	var slot_size := _memory_tile_size(slot_count, 70.0)
+	var slot_step := _memory_tile_step(slot_count, slot_size.x)
 	for index in range(sequence.size()):
 		var slot := PanelContainer.new()
 		slot.name = "memory_recall_slot_%d" % index
-		slot.position = Vector2(18 + (index * 102), 70)
-		slot.size = Vector2(96, 70)
+		slot.position = Vector2(18 + (index * slot_step), 70)
+		slot.size = slot_size
 		slot.custom_minimum_size = slot.size
 		slot.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
 		surface.add_child(slot)
 
-		var label := _new_label("_", 22, COLOR_TEXT)
+		var label := _new_label("_", 20 if slot_size.x < 84.0 else 22, COLOR_TEXT)
 		label.name = "memory_recall_slot_label_%d" % index
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1183,20 +1194,22 @@ func _render_memory_tile_bank(surface: Control) -> void:
 	if typeof(choices) == TYPE_ARRAY:
 		for index in range(choices.size()):
 			var item_id := str(choices[index])
-			var tile := _make_memory_tile(item_id, index)
+			var tile := _make_memory_tile(item_id, index, false, choices.size())
 			surface.add_child(tile)
 
-	var clear_tile := _make_memory_tile("CLEAR", 0, true)
+	var clear_tile := _make_memory_tile("CLEAR", 0, true, maxi(_memory_solution_sequence().size(), 3))
 	clear_tile.name = "memory_tile_clear"
 	clear_tile.position = Vector2(18, 242)
 	surface.add_child(clear_tile)
 
 
-func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> PanelContainer:
+func _make_memory_tile(item_id: String, index: int, is_clear: bool = false, tile_count: int = 3) -> PanelContainer:
+	var tile_size := _memory_tile_size(tile_count, 62.0)
+	var tile_step := _memory_tile_step(tile_count, tile_size.x)
 	var tile := PanelContainer.new()
 	tile.name = "memory_tile_%s" % item_id.to_lower()
-	tile.position = Vector2(18 + (index * 102), 164)
-	tile.size = Vector2(96, 62)
+	tile.position = Vector2(18 + (index * tile_step), 164)
+	tile.size = tile_size
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
 	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_ORANGE if is_clear else COLOR_BLUE, 8))
@@ -1205,7 +1218,7 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> P
 	else:
 		tile.gui_input.connect(Callable(self, "_handle_direct_memory_tile_input").bind(item_id, tile))
 
-	var label := _new_label(item_id, 18 if is_clear else 17, COLOR_TEXT)
+	var label := _new_label(item_id, 14 if tile_size.x < 84.0 else (18 if is_clear else 17), COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -1263,11 +1276,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_result_label)
 
-	var release_button := _make_button("Release Ball", COLOR_GREEN)
-	release_button.pressed.connect(Callable(self, "_handle_physics_release"))
-	stage_box.add_child(release_button)
-
-	_add_feedback(stage_box, "Draw the ramp, then release the ball.")
+	_add_feedback(stage_box, "Draw the ramp, then lift your finger to test it.")
 
 
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
@@ -1313,7 +1322,11 @@ func _uses_direct_text_tiles() -> bool:
 
 
 func _uses_direct_memory_tiles() -> bool:
-	return str(_rules().get("interaction_model", "")) == "direct_memory_tiles"
+	if str(_rules().get("interaction_model", "")) == "direct_memory_tiles":
+		return true
+	return str(_current_level.get("template", "")) == "Memory Flash" \
+		and not _memory_solution_sequence().is_empty() \
+		and _rules().has("choices")
 
 
 func _uses_direct_physics_draw() -> bool:
@@ -1332,8 +1345,10 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	pad.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
 	pad.gui_input.connect(Callable(self, "_handle_direct_tap_scene_input").bind(target_id, pad))
 
-	var label := _new_label(str(target.get("label", "Tap")), 25, COLOR_TEXT)
+	var label := _new_label(str(target.get("label", "Tap")), 20, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pad.add_child(label)
 	return pad
@@ -1370,12 +1385,13 @@ func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	tile.custom_minimum_size = Vector2(136, 62)
 	tile.size = tile.custom_minimum_size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
-	tile.add_theme_stylebox_override("panel", _flat_box(_target_color(object), 8))
+	tile.add_theme_stylebox_override("panel", _flat_box(_concealed_play_piece_color(object), 8))
 	tile.set_meta("object_id", str(object.get("id", "")))
 	tile.gui_input.connect(Callable(self, "_handle_drag_tile_input").bind(str(object.get("id", "")), tile))
 
 	var label := _new_label(str(object.get("label", "Object")), 21, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tile.add_child(label)
 	return tile
 
@@ -1400,6 +1416,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_dragging_object_id = object_id
 		_dragging_tile = tile
 		_drag_offset = _event_position_in_control(event, tile, tile)
+		_drag_origin = tile.position
 		tile.move_to_front()
 		_feedback_label.text = "Dragging %s. Drop it where truth will tolerate it." % object_id
 		_mark_input_handled()
@@ -1412,12 +1429,12 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 
 	if _is_primary_release(event) and _dragging_tile == tile:
 		var canvas_position := _event_canvas_position(event, tile)
-		var drop_target_id := _drop_target_at_canvas_position(canvas_position)
+		var drop_target_id := _drop_target_for_released_tile(canvas_position, tile)
 		_dragging_object_id = ""
 		_dragging_tile = null
 		_drag_offset = Vector2.ZERO
 		if drop_target_id.is_empty():
-			_handle_direct_drag_miss(object_id)
+			_handle_direct_drag_miss(object_id, tile)
 		else:
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
@@ -1458,6 +1475,7 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 	if not _is_primary_press(event):
 		return
 
+	_hide_direct_memory_flash(_direct_memory_flash_generation)
 	_last_direct_memory_tile_id = item_id
 	if tile != null and is_instance_valid(tile):
 		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
@@ -1471,6 +1489,7 @@ func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void
 	if not _is_primary_press(event):
 		return
 
+	_hide_direct_memory_flash(_direct_memory_flash_generation)
 	_last_direct_memory_tile_id = "CLEAR"
 	if tile != null and is_instance_valid(tile):
 		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
@@ -1502,10 +1521,45 @@ func _drop_target_at_canvas_position(canvas_position: Vector2) -> String:
 	return ""
 
 
-func _handle_direct_drag_miss(object_id: String) -> void:
+func _drop_target_for_released_tile(canvas_position: Vector2, tile: Control) -> String:
+	var point_target := _drop_target_at_canvas_position(canvas_position)
+	if not point_target.is_empty():
+		return point_target
+	if tile == null or not is_instance_valid(tile):
+		return ""
+
+	var tile_rect := tile.get_global_rect()
+	var best_target_id := ""
+	var best_overlap_area := 0.0
+	for target_id in _drag_drop_zones.keys():
+		var zone = _drag_drop_zones[target_id] as Control
+		if zone == null or not is_instance_valid(zone):
+			continue
+
+		var overlap_area := _rect_overlap_area(tile_rect, zone.get_global_rect())
+		if overlap_area > best_overlap_area:
+			best_overlap_area = overlap_area
+			best_target_id = str(target_id)
+
+	return best_target_id
+
+
+func _rect_overlap_area(a: Rect2, b: Rect2) -> float:
+	var left = max(a.position.x, b.position.x)
+	var top = max(a.position.y, b.position.y)
+	var right = min(a.position.x + a.size.x, b.position.x + b.size.x)
+	var bottom = min(a.position.y + a.size.y, b.position.y + b.size.y)
+	if right <= left or bottom <= top:
+		return 0.0
+	return (right - left) * (bottom - top)
+
+
+func _handle_direct_drag_miss(object_id: String, tile: Control = null) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_last_drag_drop_target_id = ""
+	if tile != null and is_instance_valid(tile):
+		_animate_control_position(tile, _drag_origin)
 	_feedback_label.text = "%s hit empty space. The floor is not a valid argument." % object_id
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -1533,11 +1587,11 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 
 	if _is_primary_release(event) and _physics_is_drawing:
 		_physics_draw_end = _event_position_in_control(event, surface, surface)
-		_record_physics_drawn_line()
+		_record_physics_drawn_line(true)
 		_mark_input_handled()
 
 
-func _record_physics_drawn_line() -> void:
+func _record_physics_drawn_line(auto_release: bool = false) -> void:
 	_physics_is_drawing = false
 	_physics_has_drawn_line = true
 	_tap_count += 1
@@ -1547,6 +1601,8 @@ func _record_physics_drawn_line() -> void:
 	_last_physics_result = "selected"
 	_update_physics_choice_label()
 	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(_physics_choice)
+	if auto_release:
+		_resolve_physics_release(false)
 
 
 func _simulate_physics_draw_line(start: Vector2, end: Vector2) -> void:
@@ -1687,6 +1743,20 @@ func _target_color(target: Dictionary) -> Color:
 	return COLOR_PANEL_ALT
 
 
+func _concealed_play_piece_color(_target: Dictionary) -> Color:
+	return COLOR_BLUE
+
+
+func _animate_control_position(control: Control, target_position: Vector2) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	if is_inside_tree():
+		var tween := create_tween()
+		tween.tween_property(control, "position", target_position, 0.08)
+	else:
+		control.position = target_position
+
+
 func _handle_dur_level(level: Dictionary) -> void:
 	if _profile.spend_dur_token(level):
 		_trigger_feedback("dur_spend")
@@ -1781,10 +1851,16 @@ func _uses_direct_pattern_grid() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_mark_cells"
 
 
+func _direct_pattern_prompt() -> String:
+	if _pattern_solution_cells().size() > 1:
+		return "Mark the whole broken set."
+	return "Tap the cell that breaks the pattern."
+
+
 func _pattern_solution_cells() -> Array[String]:
 	var solution := _solution()
 	var cell_ids = solution.get("cell_ids", [])
-	if typeof(cell_ids) == TYPE_ARRAY:
+	if typeof(cell_ids) == TYPE_ARRAY and not cell_ids.is_empty():
 		return _string_array(cell_ids)
 
 	var cell_id := str(solution.get("cell_id", ""))
@@ -1825,9 +1901,40 @@ func _resolve_direct_memory_if_full() -> void:
 	_trigger_feedback("fail")
 
 
+func _memory_tile_size(tile_count: int, height: float) -> Vector2:
+	var width := 96.0
+	if tile_count >= 4:
+		width = 72.0
+	return Vector2(width, height)
+
+
+func _memory_tile_step(tile_count: int, tile_width: float) -> float:
+	if tile_count <= 1:
+		return 0.0
+	return (300.0 - tile_width) / float(tile_count - 1)
+
+
+func _arm_direct_memory_flash_hide() -> void:
+	if not is_inside_tree():
+		return
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
+		return
+	var generation := _direct_memory_flash_generation
+	var delay := maxf(float(_rules().get("flash_seconds", 1.0)), 0.8)
+	get_tree().create_timer(delay).timeout.connect(Callable(self, "_hide_direct_memory_flash").bind(generation))
+
+
+func _hide_direct_memory_flash(generation: int = -1) -> void:
+	if generation >= 0 and generation != _direct_memory_flash_generation:
+		return
+	if _direct_memory_flash_label == null or not is_instance_valid(_direct_memory_flash_label):
+		return
+	_direct_memory_flash_label.text = "flash hidden - rebuild it from memory"
+
+
 func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
 	var is_marked := _pattern_marked_cells.has(cell_id)
-	var color := COLOR_YELLOW if is_marked else _target_color(_pattern_cell_by_id(cell_id))
+	var color := COLOR_YELLOW if is_marked else _concealed_play_piece_color(_pattern_cell_by_id(cell_id))
 	button.add_theme_stylebox_override("normal", _flat_box(color, 8))
 	button.add_theme_stylebox_override("hover", _flat_box(color.lightened(0.08), 8))
 	button.add_theme_stylebox_override("pressed", _flat_box(color.darkened(0.08), 8))
