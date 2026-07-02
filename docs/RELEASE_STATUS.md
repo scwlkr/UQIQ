@@ -4,12 +4,12 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; next release prep needs a scoped App Store/TestFlight PRD.
+Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; App Store/TestFlight release-prep PRD is the active slice.
 
 ## Active Next Step
 
-- GitHub issue: [#27 Internal TestFlight install and launch](https://github.com/scwlkr/UQIQ/issues/27)
-- Branch: `codex/issue-27-testflight-install-launch-proof`
+- GitHub issue: [#28 App Store/TestFlight release prep PRD](https://github.com/scwlkr/UQIQ/issues/28)
+- Branch: `codex/issue-28-release-prep-prd`
 
 ## Latest Proof
 
@@ -21,6 +21,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; next re
 - Issue #27 verified scwlkr accepted TestFlight, installed UQIQ `0.1.0 (1)`, and launched it on physical iPhone `17 Hoe Max`.
 - Device proof: `xcrun devicectl device info apps --bundle-id com.wlkrlabs.uqiq` shows version `0.1.0`, build `1`.
 - Launch screenshot: `/tmp/uqiq-testflight-installed-launch-proof.png`.
+- Release-prep PRD added: `docs/prd/0004-app-store-testflight-release-prep.md`.
 - Physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
 - `com.wlkrlabs.uqiq` device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png`.
 - Device smoke covered 60-spec load, isolated Local Profile, Level List, Play -> Score Roastcard, save/load, Dur spend/recovery, and no launch crash.
@@ -31,7 +32,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; next re
 - Issue #19 scoring/Roastcard slice closed with proof: `90c2cec`.
 - Polish Pass PRD added for next slices: `69f0cdf`.
 - Latest full floor passed through `verify_issue_23_ui_readability.gd`.
-- GitHub `next-step` label points to issue #27.
+- GitHub `next-step` label points to issue #28.
 
 ## Known Blockers
 
@@ -39,4 +40,4 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; next re
 
 ## Next Gate Needing scwlkr
 
-External beta start, App Store Connect submission, live hosting/DNS, and manual App Store release still need explicit scwlkr approval/action.
+Finish the release-prep PRD, then draft App Store metadata/privacy/age-rating answers without submitting anything.
