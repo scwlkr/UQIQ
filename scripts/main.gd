@@ -1079,10 +1079,26 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	button.add_theme_stylebox_override("hover", _flat_box(color.lightened(0.08), 8))
 	button.add_theme_stylebox_override("pressed", _flat_box(color.darkened(0.08), 8))
 	button.add_theme_stylebox_override("disabled", _flat_box(Color(0.22, 0.23, 0.25), 8))
-	button.button_down.connect(Callable(self, "_animate_control_scale").bind(button, Vector2(0.97, 0.97), 0.04))
+	button.button_down.connect(Callable(self, "_handle_button_down_feedback").bind(button))
 	button.button_up.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	button.mouse_exited.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	return button
+
+
+func _handle_button_down_feedback(button: Button) -> void:
+	if button == null or not is_instance_valid(button):
+		return
+	button.set_meta("press_feedback_count", int(button.get_meta("press_feedback_count", 0)) + 1)
+	_animate_control_scale(button, Vector2(0.97, 0.97), 0.04)
+	_play_button_press_feedback()
+
+
+func _play_button_press_feedback() -> void:
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
+		return
+	_play_feedback_tone("button_press")
+	if DisplayServer.get_name() != "headless":
+		Input.vibrate_handheld(6)
 
 
 func _apply_button_frame(button: Button, accent: Color, fill: Color = COLOR_PANEL_ALT) -> void:
@@ -3081,6 +3097,8 @@ func _pulse_feedback(kind: String) -> void:
 
 func _feedback_spec(kind: String) -> Dictionary:
 	match kind:
+		"button_press":
+			return {"frequency": 520.0, "duration": 0.018, "volume": 0.06, "volume_db": -24.0, "haptic_ms": 0}
 		"tap":
 			return {"frequency": 620.0, "duration": 0.025, "volume": 0.08, "volume_db": -22.0, "haptic_ms": 8}
 		"fail":
