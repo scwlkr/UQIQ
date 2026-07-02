@@ -1697,6 +1697,7 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 		_apply_direct_selected_panel_style(tile)
 	if _direct_text_answer_label != null:
 		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
+		_pulse_control(_direct_text_answer_label.get_parent() as Control, 0.985, 0.04)
 
 	_tap_count += 1
 	_trigger_feedback("tap")
@@ -1714,6 +1715,7 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 		_apply_direct_selected_panel_style(tile)
 	_handle_memory_choice(item_id)
 	_update_memory_recall_slots()
+	_pulse_memory_recall_slot(_memory_input.size() - 1)
 	_resolve_direct_memory_if_full()
 	_mark_input_handled()
 
@@ -2233,6 +2235,18 @@ func _update_memory_recall_slots() -> void:
 			label.text = _memory_input[int(index)]
 		else:
 			label.text = "_"
+
+
+func _pulse_memory_recall_slot(index: int) -> void:
+	var label = _memory_slot_labels.get(index) as Label
+	if label == null or not is_instance_valid(label):
+		return
+
+	var slot_box := label.get_parent() as Control
+	if slot_box == null or not is_instance_valid(slot_box):
+		return
+
+	_pulse_control(slot_box.get_parent() as Control, 0.985, 0.04)
 
 
 func _resolve_direct_memory_if_full() -> void:
