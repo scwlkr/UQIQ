@@ -1010,7 +1010,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 	playfield.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(playfield)
 
-	var hint := _new_label("drag tiles -> drop zones", 15, COLOR_INK)
+	var hint := _new_label("drag tiles to drop zones", 15, COLOR_INK)
 	hint.position = Vector2(18, 16)
 	hint.size = Vector2(260, 28)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1565,7 +1565,7 @@ func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	zone.custom_minimum_size = Vector2(132, 74)
 	zone.size = zone.custom_minimum_size
 	zone.mouse_filter = Control.MOUSE_FILTER_PASS
-	zone.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
+	zone.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
 	zone.set_meta("target_id", str(target.get("id", "")))
 
 	var box := VBoxContainer.new()
@@ -1574,13 +1574,13 @@ func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	zone.add_child(box)
 
-	var action_label := _new_label("DROP", 10, COLOR_MUTED)
+	var action_label := _new_label("DROP", 10, COLOR_PANEL_ALT)
 	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(action_label)
 
-	var label := _new_label(str(target.get("label", "Target")), 15, COLOR_TEXT)
+	var label := _new_label(str(target.get("label", "Target")), 15, COLOR_INK)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(label)
@@ -1713,7 +1713,7 @@ func _refresh_drag_drop_zone_styles() -> void:
 			continue
 
 		var is_hovered := str(target_id) == _drag_hover_target_id
-		var color := COLOR_YELLOW.darkened(0.16) if is_hovered else COLOR_PANEL_ALT
+		var color := COLOR_YELLOW.darkened(0.16) if is_hovered else COLOR_PLAYFIELD.darkened(0.05)
 		var border_color := COLOR_YELLOW if is_hovered else COLOR_BLUE
 		zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
 
