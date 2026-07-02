@@ -52,6 +52,9 @@ var _selected_drag_id := ""
 var _selected_pattern_cell := ""
 var _memory_input: Array[String] = []
 var _physics_choice := ""
+var _last_physics_result := ""
+var _physics_choice_label: Label
+var _physics_result_label: Label
 
 
 func _ready() -> void:
@@ -296,6 +299,9 @@ func _show_play_screen(level: Dictionary) -> void:
 	_selected_pattern_cell = ""
 	_memory_input = []
 	_physics_choice = ""
+	_last_physics_result = ""
+	_physics_choice_label = null
+	_physics_result_label = null
 
 	var root := _make_screen(COLOR_PANEL, "play_screen")
 
@@ -502,7 +508,9 @@ func _handle_physics_draw(draw_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_physics_choice = draw_id
-	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % draw_id
+	_last_physics_result = "selected"
+	_update_physics_choice_label()
+	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(draw_id)
 
 
 func _handle_physics_release() -> void:
@@ -511,9 +519,13 @@ func _handle_physics_release() -> void:
 
 	var solution := _solution()
 	if _physics_choice == str(solution.get("draw_id", "")):
+		_last_physics_result = "success"
+		_update_physics_result_label(true)
 		_complete_current_level()
 		return
 
+	_last_physics_result = "fail"
+	_update_physics_result_label(false)
 	_feedback_label.text = _first_roast("failure", "The ball saw your line and requested a different universe.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -838,6 +850,22 @@ func _render_memory_flash(stage_box: VBoxContainer) -> void:
 func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
 
+	var surface := PanelContainer.new()
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	stage_box.add_child(surface)
+
+	var surface_box := VBoxContainer.new()
+	surface_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	surface_box.add_theme_constant_override("separation", 6)
+	surface.add_child(surface_box)
+
+	_add_label(surface_box, "BALL -> selected line -> CUP", 18, COLOR_INK)
+	_physics_choice_label = _new_label("Selected line: none", 16, COLOR_INK)
+	surface_box.add_child(_physics_choice_label)
+	_physics_result_label = _new_label("Release result: waiting on fake gravity", 16, COLOR_INK)
+	surface_box.add_child(_physics_result_label)
+
 	var options = _rules().get("draw_options", [])
 	if typeof(options) == TYPE_ARRAY:
 		for option in options:
@@ -1005,6 +1033,31 @@ func _score_component_text(components: Dictionary, key: String, title: String, f
 	if detail.is_empty():
 		return "%s: %s (%+d)" % [title, label, delta]
 	return "%s: %s (%+d) | %s" % [title, label, delta, detail]
+
+
+func _physics_draw_label(draw_id: String) -> String:
+	var options = _rules().get("draw_options", [])
+	if typeof(options) == TYPE_ARRAY:
+		for option in options:
+			if typeof(option) == TYPE_DICTIONARY and str(option.get("id", "")) == draw_id:
+				return str(option.get("label", draw_id))
+	return draw_id
+
+
+func _update_physics_choice_label() -> void:
+	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
+		_physics_choice_label.text = "Selected line: %s" % _physics_draw_label(_physics_choice)
+	if _physics_result_label != null and is_instance_valid(_physics_result_label):
+		_physics_result_label.text = "Release result: ready to test"
+
+
+func _update_physics_result_label(success: bool) -> void:
+	if _physics_result_label == null or not is_instance_valid(_physics_result_label):
+		return
+	if success:
+		_physics_result_label.text = "Release result: ball reached the cup"
+	else:
+		_physics_result_label.text = "Release result: fake gravity rejected %s" % _physics_draw_label(_physics_choice)
 
 
 func _set_judge_state(state: String) -> void:

@@ -142,6 +142,7 @@ godot --headless --path . --script res://scripts/verify_issue_16_pack_6_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_19_scoring.gd
 godot --headless --path . --script res://scripts/verify_issue_20_feedback.gd
 godot --headless --path . --script res://scripts/verify_issue_21_judge_transitions.gd
+godot --headless --path . --script res://scripts/verify_issue_22_physics_draw.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -175,6 +176,8 @@ godot --headless --path . --script res://scripts/verify_issue_21_judge_transitio
 `verify_issue_20_feedback.gd` is the minimal feedback polish check. It verifies tap, fail, success, Roast, Dur Token spend, and Dur Token recovery hooks in headless mode without changing action counts, scoring, unlock order, or persistence.
 
 `verify_issue_21_judge_transitions.gd` is the Judge Face and transition polish check. It verifies list/play/score transition hooks, start/fail/Roast/success/score Judge Face reactions, replay, and Level List navigation.
+
+`verify_issue_22_physics_draw.gd` is the Physics Draw polish check. It verifies selected-line state, release-result state, wrong release, correct release, action count, scoring, and persistence stay deterministic.
 
 ## Desktop Smoke
 
