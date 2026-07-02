@@ -1820,6 +1820,20 @@ func _set_drag_hover_target(target_id: String) -> void:
 		return
 	_drag_hover_target_id = target_id
 	_refresh_drag_drop_zone_styles()
+	_refresh_drag_hover_feedback()
+
+
+func _refresh_drag_hover_feedback() -> void:
+	if _feedback_label == null or not is_instance_valid(_feedback_label) or _dragging_object_id.is_empty():
+		return
+
+	if _drag_hover_target_id.is_empty():
+		_feedback_label.text = "Dragging %s. Find its box." % _drag_object_label(_dragging_object_id)
+	else:
+		_feedback_label.text = "Over %s. Release to drop %s." % [
+			_drop_target_label(_drag_hover_target_id),
+			_drag_object_label(_dragging_object_id),
+		]
 
 
 func _refresh_drag_drop_zone_styles() -> void:

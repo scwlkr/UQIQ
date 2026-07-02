@@ -72,7 +72,7 @@ func _verify_direct_drag_drop() -> void:
 	_require(_screen_has_label_text("RIGHT missed every box."), "Tiny edge overlap should fall back to miss feedback.")
 
 	_main.call("_show_play_screen", level)
-	_drag_tile_to_zone("word_right", "confidence_box")
+	_drag_tile_to_zone("word_right", "confidence_box", "Over Confidence Box. Release to drop RIGHT.")
 	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
 	_require(str(_main.get("_last_failed_drag_return_id")) == "word_right", "Wrong direct drag/drop should schedule the dragged tile to return to origin.")
@@ -124,7 +124,7 @@ func _verify_direct_physics_draw() -> void:
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Draw-release should persist as one direct action.")
 
 
-func _drag_tile_to_zone(object_id: String, target_id: String) -> void:
+func _drag_tile_to_zone(object_id: String, target_id: String, expected_hover_text: String = "") -> void:
 	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
 	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
 	_require(tile != null, "Expected draggable tile for %s." % object_id)
@@ -139,6 +139,8 @@ func _drag_tile_to_zone(object_id: String, target_id: String) -> void:
 	motion.position = tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	_main.call("_handle_drag_tile_input", motion, object_id, tile)
 	_require(str(_main.get("_drag_hover_target_id")) == target_id, "Dragging over a drop zone should mark it as the current hover target.")
+	if not expected_hover_text.is_empty():
+		_require(_screen_has_label_text(expected_hover_text), "Dragging over a drop zone should show release guidance with visible labels.")
 	target_center = zone.get_global_rect().get_center()
 	var release_position := tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	var release := _mouse_button_event(release_position, false)
