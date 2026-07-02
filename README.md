@@ -143,6 +143,7 @@ godot --headless --path . --script res://scripts/verify_issue_19_scoring.gd
 godot --headless --path . --script res://scripts/verify_issue_20_feedback.gd
 godot --headless --path . --script res://scripts/verify_issue_21_judge_transitions.gd
 godot --headless --path . --script res://scripts/verify_issue_22_physics_draw.gd
+godot --headless --path . --script res://scripts/verify_issue_23_ui_readability.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -178,6 +179,8 @@ godot --headless --path . --script res://scripts/verify_issue_22_physics_draw.gd
 `verify_issue_21_judge_transitions.gd` is the Judge Face and transition polish check. It verifies list/play/score transition hooks, start/fail/Roast/success/score Judge Face reactions, replay, and Level List navigation.
 
 `verify_issue_22_physics_draw.gd` is the Physics Draw polish check. It verifies selected-line state, release-result state, wrong release, correct release, action count, scoring, and persistence stay deterministic.
+
+`verify_issue_23_ui_readability.gd` is the phone UI readability check. It verifies long labels and buttons use portrait-safe wrapping and ellipsis settings across the Level List, Play Screen, Physics Draw, and Score Roastcard surfaces.
 
 ## Desktop Smoke
 

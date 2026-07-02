@@ -683,6 +683,7 @@ func _add_judge_face(parent: Node, state: String) -> PanelContainer:
 func _new_label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -697,6 +698,7 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	button.custom_minimum_size = min_size
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.clip_text = true
+	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	button.add_theme_font_size_override("font_size", 18)
 	button.add_theme_color_override("font_color", COLOR_TEXT)
 	button.add_theme_stylebox_override("normal", _flat_box(color, 8))
