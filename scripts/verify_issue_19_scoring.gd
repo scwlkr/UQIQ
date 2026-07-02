@@ -121,7 +121,7 @@ func _verify_score_roastcard_rows() -> void:
 	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
 
 	_require(_screen_has_label_text("Score Roastcard"), "Score Roastcard screen should render after completion.")
-	_require(_screen_has_label_text("Total Delta:"), "Score Roastcard should show total score delta.")
+	_require(_screen_has_label_text("Score change:"), "Score Roastcard should show total score delta.")
 	_require(_screen_has_label_text("Speed:"), "Score Roastcard should show Speed delta row.")
 	_require(_screen_has_label_text("Actions:"), "Score Roastcard should show Actions delta row.")
 	_require(_screen_has_label_text("Roasts:"), "Score Roastcard should show Roasts delta row.")

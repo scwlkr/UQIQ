@@ -754,14 +754,15 @@ func _show_score_roastcard() -> void:
 	if not _profile.last_error.is_empty():
 		_add_status(root, _profile.last_error, COLOR_RED)
 	else:
-		var action_label := "action" if action_count == 1 else "actions"
-		_add_status(root, "Saved | %d %s | Best %dA/%dR | L%02d open" % [
-			action_count,
-			action_label,
-			best_action_count,
-			best_roast_count,
-			int(_profile.data.get("unlocked_level", 1)),
-		], COLOR_GREEN)
+		_add_status(
+			root,
+			"Saved. Best: %s, %s. Level %02d open." % [
+				_count_label(best_action_count, "action", "actions"),
+				_count_label(best_roast_count, "roast", "roasts"),
+				int(_profile.data.get("unlocked_level", 1)),
+			],
+			COLOR_GREEN
+		)
 
 	var score_before := int(_last_score_result.get("score_before", _profile.current_uqiq_score()))
 	var score_after := int(_last_score_result.get("score_after", _profile.current_uqiq_score()))
@@ -782,9 +783,9 @@ func _show_score_roastcard() -> void:
 	score_panel.add_child(score_box)
 
 	_add_label(score_box, "UQIQ %d" % score_after, 32, COLOR_YELLOW)
-	_add_label(score_box, "Total Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 17, COLOR_MUTED)
+	_add_label(score_box, "Score change: %+d (%d to %d)" % [score_delta, score_before, score_after], 17, COLOR_MUTED)
 	if attempt_score_delta != score_delta:
-		_add_label(score_box, "Attempt Delta: %+d before score cap" % attempt_score_delta, 15, COLOR_MUTED)
+		_add_label(score_box, "Run value: %+d before score cap" % attempt_score_delta, 15, COLOR_MUTED)
 
 	var stat_grid := GridContainer.new()
 	stat_grid.columns = 2
@@ -802,10 +803,13 @@ func _show_score_roastcard() -> void:
 		_add_score_stat_chip(stat_grid, {
 			"raw": {
 				"delta": 0,
-				"label": "Attempt raw",
-				"detail": "%d action(s), %d Roast(s)" % [action_count, roast_count],
+				"label": "Run details",
+				"detail": "%s, %s" % [
+					_count_label(action_count, "action", "actions"),
+					_count_label(roast_count, "Roast", "Roasts"),
+				],
 			},
-		}, "raw", "Raw", "Attempt raw", COLOR_MUTED)
+		}, "raw", "Run", "Run details", COLOR_MUTED)
 
 	var note_panel := PanelContainer.new()
 	note_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2387,6 +2391,10 @@ func _add_score_stat_chip(parent: Node, components: Dictionary, key: String, tit
 	_add_label(box, label, 15, COLOR_TEXT)
 	if not detail.is_empty():
 		_add_label(box, detail, 13, COLOR_MUTED)
+
+
+func _count_label(count: int, singular: String, plural: String) -> String:
+	return "%d %s" % [count, singular if count == 1 else plural]
 
 
 func _physics_draw_label(draw_id: String) -> String:
