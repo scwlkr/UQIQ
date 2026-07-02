@@ -8,8 +8,8 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Active Next Step
 
-- GitHub issue: [#42 Build interactive Pattern Grid prototype](https://github.com/scwlkr/UQIQ/issues/42)
-- Branch: `codex/issue-42-interactive-pattern-grid`
+- GitHub issue: [#43 Build tactile Tap Logic prototype](https://github.com/scwlkr/UQIQ/issues/43)
+- Branch: `codex/issue-43-tactile-tap-logic`
 
 ## Product Direction From scwlkr
 
@@ -33,6 +33,7 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 - Issue #42 adds direct row-marking interaction for Level 4 Pattern Grid.
 - `verify_issue_42_pattern_grid_interaction.gd` proves Level 4 rejects a wrong row and completes from marked grid state without `Submit Pattern`.
 - Full documented verification floor passed after the Pattern Grid slice.
+- Issue #42 closed with proof in commit `5a09e83`.
 - Issue #39 was superseded by product-direction feedback and the new interaction-core issue.
 
 ## Known Blockers
@@ -42,4 +43,4 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Next Gate
 
-Close issue #42 with proof, then choose the next gameplay-depth issue before release work resumes.
+Build one tactile Tap Logic prototype so the first levels are not only answer-choice buttons.
