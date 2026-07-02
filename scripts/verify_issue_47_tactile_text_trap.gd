@@ -74,10 +74,12 @@ func _verify_tactile_text_trap() -> void:
 
 	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true, blank_touch_position), "blank", "", blank_tile)
 	_require(int(_main.get("_tap_count")) == 0, "Direct Text Trap press should preview without spending an action.")
+	var selected_border := _panel_border_color(blank_tile)
 	_main.call("_handle_direct_text_tile_input", _screen_touch_event(false, blank_touch_position), "blank", "", blank_tile)
 	_require(not _profile.is_level_completed(level_id), "Wrong direct Text Trap tile should not complete Level 3.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct Text Trap tile should count as one action.")
 	_require(str(_main.get("_last_direct_text_tile_id")) == "blank", "Direct Text Trap handler should record the wrong tile.")
+	_require(_panel_border_color(blank_tile) != selected_border, "Wrong direct Text Trap tile should return to its base frame instead of staying selected.")
 
 	_main.call("_show_play_screen", level)
 	nothing_tile = _node_named(_main, "text_tile_nothing") as Control
@@ -112,6 +114,18 @@ func _screen_touch_event(pressed: bool, position: Vector2 = Vector2(16, 16)) -> 
 
 func _touch_position(control: Control) -> Vector2:
 	return control.get_global_rect().position + Vector2(16, 16)
+
+
+func _panel_border_color(control: Control) -> Color:
+	var panel := control as PanelContainer
+	_require(panel != null, "Expected a framed direct text tile.")
+	if panel == null:
+		return Color.TRANSPARENT
+	var style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+	_require(style != null, "Expected direct text tile style.")
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
 
 
 func _level_by_number(level_number: int) -> Dictionary:

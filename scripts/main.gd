@@ -621,23 +621,26 @@ func _handle_text_submit() -> void:
 
 
 func _resolve_text_answer(raw_answer: String) -> void:
-	var answer := _normalize_answer(raw_answer)
-	var rules := _rules()
-	var accepted = rules.get("accepted_inputs", [])
-	if typeof(accepted) == TYPE_ARRAY:
-		for accepted_answer in accepted:
-			if answer == _normalize_answer(str(accepted_answer)):
-				_complete_current_level()
-				return
-
-	var solution := _solution()
-	if answer == _normalize_answer(str(solution.get("answer", ""))):
+	if _is_text_answer_correct(raw_answer):
 		_complete_current_level()
 		return
 
 	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
+
+
+func _is_text_answer_correct(raw_answer: String) -> bool:
+	var answer := _normalize_answer(raw_answer)
+	var rules := _rules()
+	var accepted = rules.get("accepted_inputs", [])
+	if typeof(accepted) == TYPE_ARRAY:
+		for accepted_answer in accepted:
+			if answer == _normalize_answer(str(accepted_answer)):
+				return true
+
+	var solution := _solution()
+	return answer == _normalize_answer(str(solution.get("answer", "")))
 
 
 func _handle_text_submitted(_submitted_text: String) -> void:
@@ -1747,9 +1750,13 @@ func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: 
 
 func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Control = null) -> void:
 	_last_direct_text_tile_id = tile_id
+	var is_correct := _is_text_answer_correct(answer)
 	if tile != null and is_instance_valid(tile):
 		_pulse_control(tile)
-		_apply_direct_selected_panel_style(tile)
+		if is_correct:
+			_apply_direct_selected_panel_style(tile)
+		else:
+			_apply_direct_base_panel_style(tile)
 	if _direct_text_answer_label != null:
 		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
 		_pulse_control(_direct_text_answer_label.get_parent() as Control, 0.985, 0.04)
