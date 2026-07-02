@@ -107,6 +107,12 @@ func _verify_direct_physics_draw() -> void:
 	_require(not _profile.is_level_completed(level_id), "A tiny Physics Draw stroke should not complete Level 6.")
 	_require(_screen_has_label_text("Line too short."), "A tiny Physics Draw stroke should ask for a longer line.")
 
+	_draw_curved_line_on_surface(Vector2(48, 220), [Vector2(112, 204), Vector2(184, 218)], Vector2(260, 220))
+	_require(str(_main.get("_last_physics_result")) == "fail", "A wrong curved Physics Draw stroke should fail without completing.")
+	_require(_drawn_line_point_count() >= 4, "Physics Draw should preserve a multi-point finger path instead of snapping to start/end.")
+	_require(not _profile.is_level_completed(level_id), "A wrong curved Physics Draw stroke should not complete Level 6.")
+
+	_main.call("_show_play_screen", level)
 	_draw_line_on_surface(Vector2(48, 220), Vector2(260, 110))
 	_require(str(_main.get("_physics_choice")) == "ramp_to_cup", "A rising line from ball to cup should classify as the ramp.")
 	_require(str(_main.get("_last_physics_result")) == "success", "Correct drawn ramp release should record success state.")
@@ -193,6 +199,29 @@ func _draw_line_on_surface(start: Vector2, end: Vector2) -> void:
 	motion.position = end
 	_main.call("_handle_physics_surface_input", motion, surface)
 	_main.call("_handle_physics_surface_input", _mouse_button_event(end, false), surface)
+
+
+func _draw_curved_line_on_surface(start: Vector2, midpoints: Array, end: Vector2) -> void:
+	var surface := _node_named(_main, "physics_draw_surface") as Control
+	_require(surface != null, "Expected physics drawing surface.")
+	if _failed:
+		return
+
+	_main.call("_handle_physics_surface_input", _mouse_button_event(start, true), surface)
+	for midpoint in midpoints:
+		var motion := InputEventMouseMotion.new()
+		motion.position = midpoint
+		_main.call("_handle_physics_surface_input", motion, surface)
+	var release := _mouse_button_event(end, false)
+	_main.call("_handle_physics_surface_input", release, surface)
+
+
+func _drawn_line_point_count() -> int:
+	var line := _node_named(_main, "player_drawn_line") as Line2D
+	_require(line != null, "Expected Physics Draw player line.")
+	if line == null:
+		return 0
+	return line.points.size()
 
 
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:

@@ -24,6 +24,7 @@ const SCREENSHOT_CAPTURE_ENV := "UQIQ_SCREENSHOT_CAPTURE"
 const FEEDBACK_MIX_RATE := 22050.0
 const MIN_DRAG_DROP_OVERLAP_RATIO := 0.28
 const MIN_PHYSICS_DRAW_LENGTH := 36.0
+const MIN_PHYSICS_POINT_DISTANCE := 4.0
 const SCREEN_TRANSITION_DURATION := 0.14
 const SCREEN_TRANSITION_OFFSET_Y := 10.0
 const SUPPORTED_LEVEL_TEMPLATES := [
@@ -89,6 +90,7 @@ var _physics_is_drawing := false
 var _physics_has_drawn_line := false
 var _physics_draw_start := Vector2.ZERO
 var _physics_draw_end := Vector2.ZERO
+var _physics_draw_points := PackedVector2Array()
 
 
 func _ready() -> void:
@@ -452,6 +454,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_physics_has_drawn_line = false
 	_physics_draw_start = Vector2.ZERO
 	_physics_draw_end = Vector2.ZERO
+	_physics_draw_points = PackedVector2Array()
 
 	var root := _make_screen(COLOR_PANEL, "play_screen", true)
 
@@ -1875,20 +1878,20 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 		_last_physics_result = "drawing"
 		_physics_draw_start = _event_position_in_control(event, surface, surface)
 		_physics_draw_end = _physics_draw_start
-		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		_physics_draw_points = PackedVector2Array([_physics_draw_start])
+		_set_physics_line_points(_physics_draw_points)
 		_update_physics_choice_label()
 		_feedback_label.text = "Drawing. Aim like gravity is watching."
 		_mark_input_handled()
 		return
 
 	if _is_pointer_drag(event) and _physics_is_drawing:
-		_physics_draw_end = _event_position_in_control(event, surface, surface)
-		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		_append_physics_draw_point(_event_position_in_control(event, surface, surface))
 		_mark_input_handled()
 		return
 
 	if _is_primary_release(event) and _physics_is_drawing:
-		_physics_draw_end = _event_position_in_control(event, surface, surface)
+		_append_physics_draw_point(_event_position_in_control(event, surface, surface), true)
 		if (_physics_draw_end - _physics_draw_start).length() < MIN_PHYSICS_DRAW_LENGTH:
 			_cancel_short_physics_stroke()
 			_mark_input_handled()
@@ -1903,7 +1906,9 @@ func _record_physics_drawn_line(auto_release: bool = false) -> void:
 	_physics_has_drawn_line = true
 	_tap_count += 1
 	_trigger_feedback("tap")
-	_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+	if _physics_draw_points.size() < 2:
+		_physics_draw_points = PackedVector2Array([_physics_draw_start, _physics_draw_end])
+	_set_physics_line_points(_physics_draw_points)
 	_physics_choice = _classify_physics_line(_physics_draw_start, _physics_draw_end)
 	_last_physics_result = "selected"
 	_update_physics_choice_label()
@@ -1915,13 +1920,32 @@ func _record_physics_drawn_line(auto_release: bool = false) -> void:
 func _simulate_physics_draw_line(start: Vector2, end: Vector2) -> void:
 	_physics_draw_start = start
 	_physics_draw_end = end
+	_physics_draw_points = PackedVector2Array([start, end])
 	_record_physics_drawn_line()
 
 
-func _set_physics_line_points(start: Vector2, end: Vector2) -> void:
+func _append_physics_draw_point(point: Vector2, force: bool = false) -> void:
+	_physics_draw_end = point
+	if _physics_draw_points.is_empty():
+		_physics_draw_points = PackedVector2Array([point])
+		_set_physics_line_points(_physics_draw_points)
+		return
+
+	var last_index := _physics_draw_points.size() - 1
+	var last_point := _physics_draw_points[last_index]
+	if last_point.distance_to(point) < 0.5:
+		_physics_draw_points[last_index] = point
+	elif force or _physics_draw_points.size() == 1 or last_point.distance_to(point) >= MIN_PHYSICS_POINT_DISTANCE:
+		_physics_draw_points.append(point)
+	else:
+		_physics_draw_points[last_index] = point
+	_set_physics_line_points(_physics_draw_points)
+
+
+func _set_physics_line_points(points: PackedVector2Array) -> void:
 	if _physics_line == null or not is_instance_valid(_physics_line):
 		return
-	_physics_line.points = PackedVector2Array([start, end])
+	_physics_line.points = points
 
 
 func _clear_physics_line() -> void:
@@ -1935,6 +1959,7 @@ func _cancel_short_physics_stroke() -> void:
 	_physics_has_drawn_line = false
 	_physics_choice = ""
 	_last_physics_result = "short"
+	_physics_draw_points = PackedVector2Array()
 	_clear_physics_line()
 	_update_physics_choice_label()
 	_feedback_label.text = "Line too short."
