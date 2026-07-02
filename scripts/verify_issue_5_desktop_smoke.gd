@@ -78,10 +78,9 @@ func _run_clean_six_level_flow() -> void:
 
 	_start_level(_levels[1])
 	_use_roast()
-	_main.call("_handle_drag_select", "word_right")
-	_main.call("_handle_drag_drop", "confidence_box")
-	_main.call("_handle_drag_select", "word_wrong")
-	_complete_with_scorecard(_levels[1], Callable(self, "_drag_logic_win").bind(_levels[1]))
+	_main.call("_handle_physics_draw", "ramp_to_cup")
+	_main.call("_handle_physics_release")
+	_complete_with_scorecard(_levels[1], Callable(self, "_physics_draw_win").bind(_levels[1]))
 	_require(_profile.is_level_unlocked(3), "Level 3 should unlock after Level 2 completion.")
 
 	_spend_dur_on_level(_levels[2])

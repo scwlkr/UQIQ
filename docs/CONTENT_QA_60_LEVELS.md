@@ -8,7 +8,7 @@ Scope: Packs 1-6, Levels 1-60. Subagent C deep-audited Packs 5-6 and summarized 
 
 | Pack | Levels | Primary | Mix |
 | --- | --- | --- | --- |
-| Orientation Is a Trap | 1-10 | Mixed tactile core | Tap Logic 3, Text Trap 2, Drag Logic 1, Pattern Grid 1, Memory Flash 1, Physics Draw 2 |
+| Orientation Is a Trap | 1-10 | Mixed tactile core | Tap Logic 3, Text Trap 2, Pattern Grid 1, Memory Flash 1, Physics Draw 3 |
 | Words Are Lying | 11-20 | Text Trap | Text Trap 7, Tap Logic 1, Pattern Grid 1, Memory Flash 1 |
 | Move the Wrong Thing | 21-30 | Drag Logic | Drag Logic 8, Pattern Grid 1, Memory Flash 1 |
 | Pattern Crimes | 31-40 | Pattern Grid | Pattern Grid 8, Tap Logic 1, Memory Flash 1 |

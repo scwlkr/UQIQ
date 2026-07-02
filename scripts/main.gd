@@ -88,10 +88,12 @@ var _physics_draw_start := Vector2.ZERO
 var _physics_draw_end := Vector2.ZERO
 var _freehand_physics_runtime: Node2D = null
 var _freehand_stroke_body: StaticBody2D = null
+var _freehand_built_in_body: StaticBody2D = null
 var _freehand_ball_body: RigidBody2D = null
 var _freehand_goal_area: Area2D = null
 var _freehand_ball_visual: Control = null
 var _freehand_cup_visual: Control = null
+var _freehand_built_in_lines: Array[Line2D] = []
 var _freehand_stroke_points: Array[Vector2] = []
 var _freehand_ball_start := Vector2.ZERO
 var _freehand_last_ball_position := Vector2.ZERO
@@ -432,10 +434,12 @@ func _show_play_screen(level: Dictionary) -> void:
 	_physics_draw_end = Vector2.ZERO
 	_freehand_physics_runtime = null
 	_freehand_stroke_body = null
+	_freehand_built_in_body = null
 	_freehand_ball_body = null
 	_freehand_goal_area = null
 	_freehand_ball_visual = null
 	_freehand_cup_visual = null
+	_freehand_built_in_lines = []
 	_freehand_stroke_points = []
 	_freehand_ball_start = Vector2.ZERO
 	_freehand_last_ball_position = Vector2.ZERO
@@ -684,12 +688,10 @@ func _handle_memory_submit() -> void:
 
 func _handle_physics_draw(draw_id: String) -> void:
 	if _uses_freehand_physics_draw():
-		var start := Vector2(42, 232)
-		var end := Vector2(288, 176)
-		if draw_id == "flat_line":
-			end = Vector2(288, 232)
-		elif draw_id == "wall":
-			end = Vector2(58, 174)
+		var points := _freehand_verifier_points(draw_id)
+		var start := points[0]
+		var end := points[points.size() - 1]
+		_freehand_stroke_points = points
 		_simulate_physics_draw_line(start, end)
 		return
 
@@ -1431,6 +1433,7 @@ func _render_freehand_physics_draw(stage_box: VBoxContainer) -> void:
 	_freehand_physics_runtime.name = "freehand_physics_runtime"
 	surface.add_child(_freehand_physics_runtime)
 
+	_create_freehand_built_in_geometry(surface)
 	_create_freehand_goal(surface)
 	_create_freehand_ball(surface)
 
@@ -1505,6 +1508,54 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	stage_box.add_child(release_button)
 
 	_add_feedback(stage_box, "Deterministic choice fallback until this Level gets a direct drawing spec.")
+
+
+func _create_freehand_built_in_geometry(surface: Control) -> void:
+	_freehand_built_in_lines = []
+
+	var geometries = _rules().get("built_in_geometry", [])
+	if typeof(geometries) != TYPE_ARRAY or geometries.is_empty():
+		return
+	if _freehand_physics_runtime == null or not is_instance_valid(_freehand_physics_runtime):
+		return
+
+	_freehand_built_in_body = StaticBody2D.new()
+	_freehand_built_in_body.name = "freehand_built_in_body"
+	_freehand_physics_runtime.add_child(_freehand_built_in_body)
+
+	var collision_index := 0
+	for geometry in geometries:
+		if typeof(geometry) != TYPE_DICTIONARY:
+			continue
+		var geometry_id := str(geometry.get("id", "geometry"))
+		var points := _vector2_points_from_pairs(geometry.get("points", []))
+		if points.size() < 2:
+			continue
+		var thickness := float(geometry.get("collision_thickness_px", _freehand_collision_thickness()))
+
+		var line := Line2D.new()
+		line.name = "freehand_built_in_geometry_%s" % geometry_id
+		line.points = PackedVector2Array(points)
+		line.width = thickness
+		line.default_color = Color(0.12, 0.13, 0.16, 0.46)
+		line.joint_mode = Line2D.LINE_JOINT_ROUND
+		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		line.end_cap_mode = Line2D.LINE_CAP_ROUND
+		line.z_index = 1
+		surface.add_child(line)
+		_freehand_built_in_lines.append(line)
+
+		for index in range(points.size() - 1):
+			collision_index = _add_segment_collision_shape(
+				_freehand_built_in_body,
+				"freehand_built_in_collision",
+				points[index],
+				points[index + 1],
+				thickness,
+				collision_index
+			)
+
+	_freehand_built_in_body.set_meta("collision_shape_count", collision_index)
 
 
 func _create_freehand_goal(surface: Control) -> void:
@@ -1996,13 +2047,13 @@ func _record_freehand_physics_stroke() -> void:
 	if length < _freehand_min_length():
 		_last_physics_result = "too_short"
 		_clear_freehand_stroke_collision()
-		_set_freehand_status_text("Stroke: too short", "Release result: give the ball more ramp")
-		_feedback_label.text = "Too short. Give the ball something real to roll on."
+		_set_freehand_status_text("Stroke: too short", "Release result: too short")
+		_feedback_label.text = _freehand_too_short_message()
 		return
 
 	_build_freehand_stroke_collision()
 	_last_physics_result = "ready"
-	_set_freehand_status_text("Stroke: solid ramp", "Release result: ready")
+	_set_freehand_status_text("Stroke: solid %s" % _freehand_stroke_noun(), "Release result: ready")
 	_feedback_label.text = "Stroke is solid. Tap Release."
 
 
@@ -2011,7 +2062,7 @@ func _handle_freehand_physics_release() -> void:
 	_trigger_feedback("tap")
 
 	if not _physics_has_drawn_line or _freehand_stroke_points.size() < 2:
-		_fail_freehand_physics("Draw a ramp before Release.", "no_line")
+		_fail_freehand_physics("Draw a %s before Release." % _freehand_stroke_noun(), "no_line")
 		return
 
 	var failure_text := _freehand_release_failure_text()
@@ -2022,12 +2073,12 @@ func _handle_freehand_physics_release() -> void:
 	_move_freehand_ball_to_goal()
 	if _freehand_ball_overlaps_goal():
 		_last_physics_result = "success"
-		_set_freehand_status_text("Stroke: ramp accepted", "Release result: ball reached the cup")
+		_set_freehand_status_text("Stroke: %s accepted" % _freehand_stroke_noun(), "Release result: ball reached the cup")
 		_feedback_label.text = "Ball reached the cup."
 		_complete_current_level()
 		return
 
-	_fail_freehand_physics("Missed the cup. Try lifting the end closer to the goal.", "fail")
+	_fail_freehand_physics(_freehand_missed_goal_message(), "fail")
 
 
 func _handle_freehand_physics_reset() -> void:
@@ -2056,7 +2107,7 @@ func _reset_freehand_physics_attempt(count_action: bool = true) -> void:
 	_set_freehand_ball_center(_freehand_ball_start)
 	_set_freehand_status_text("Stroke: none", "Release result: waiting")
 	if _feedback_label != null and is_instance_valid(_feedback_label):
-		_feedback_label.text = "Reset. Draw one ramp, then release the ball."
+		_feedback_label.text = "Reset. Draw one %s, then release the ball." % _freehand_stroke_noun()
 
 
 func _fail_freehand_physics(message: String, result: String) -> void:
@@ -2068,9 +2119,15 @@ func _fail_freehand_physics(message: String, result: String) -> void:
 
 
 func _freehand_release_failure_text() -> String:
+	if _freehand_solution_kind() == "stopper":
+		return _freehand_stopper_release_failure_text()
+	return _freehand_ramp_release_failure_text()
+
+
+func _freehand_ramp_release_failure_text() -> String:
 	var length := _freehand_stroke_length(_freehand_stroke_points)
 	if length < _freehand_min_length():
-		return "Too short. Give the ball something real to roll on."
+		return _freehand_too_short_message()
 
 	var start := _freehand_stroke_points[0]
 	var end := _freehand_stroke_points[_freehand_stroke_points.size() - 1]
@@ -2094,6 +2151,24 @@ func _freehand_release_failure_text() -> String:
 	return ""
 
 
+func _freehand_stopper_release_failure_text() -> String:
+	var length := _freehand_stroke_length(_freehand_stroke_points)
+	if length < _freehand_min_length():
+		return _freehand_too_short_message()
+
+	var bounds := _freehand_stroke_bounds()
+	if bounds.size.x > 96.0 or bounds.size.x > bounds.size.y * 1.25:
+		return "Overshot. The ball did not need encouragement."
+	if bounds.size.y < 36.0:
+		return "Too flat. Draw a stopper the ball can actually hit."
+
+	var sweet_spot := _freehand_stopper_sweet_spot_rect().grow(28.0)
+	if not _freehand_stroke_overlaps_rect(sweet_spot):
+		return "Missed the cup. Draw the stopper just past the cup."
+
+	return ""
+
+
 func _build_freehand_stroke_collision() -> void:
 	_clear_freehand_stroke_collision()
 	if _freehand_physics_runtime == null or not is_instance_valid(_freehand_physics_runtime):
@@ -2109,22 +2184,33 @@ func _build_freehand_stroke_collision() -> void:
 	for index in range(_freehand_stroke_points.size() - 1):
 		var start := _freehand_stroke_points[index]
 		var end := _freehand_stroke_points[index + 1]
-		var delta := end - start
-		var length := delta.length()
-		if length < 2.0:
-			continue
-
-		var shape := RectangleShape2D.new()
-		shape.size = Vector2(length, _freehand_collision_thickness())
-		var collision := CollisionShape2D.new()
-		collision.name = "freehand_stroke_collision_%02d" % segment_count
-		collision.shape = shape
-		collision.position = start + (delta * 0.5)
-		collision.rotation = delta.angle()
-		_freehand_stroke_body.add_child(collision)
-		segment_count += 1
+		segment_count = _add_segment_collision_shape(
+			_freehand_stroke_body,
+			"freehand_stroke_collision",
+			start,
+			end,
+			_freehand_collision_thickness(),
+			segment_count
+		)
 
 	_freehand_stroke_body.set_meta("collision_shape_count", segment_count)
+
+
+func _add_segment_collision_shape(parent: Node, name_prefix: String, start: Vector2, end: Vector2, thickness: float, segment_index: int) -> int:
+	var delta := end - start
+	var length := delta.length()
+	if length < 2.0:
+		return segment_index
+
+	var shape := RectangleShape2D.new()
+	shape.size = Vector2(length, thickness)
+	var collision := CollisionShape2D.new()
+	collision.name = "%s_%02d" % [name_prefix, segment_index]
+	collision.shape = shape
+	collision.position = start + (delta * 0.5)
+	collision.rotation = delta.angle()
+	parent.add_child(collision)
+	return segment_index + 1
 
 
 func _clear_freehand_stroke_collision() -> void:
@@ -2158,6 +2244,33 @@ func _freehand_ball_overlaps_goal() -> bool:
 	return _circle_overlaps_rect(_freehand_last_ball_position, _freehand_ball_radius(), _freehand_goal_rect().grow(_freehand_goal_forgiveness()))
 
 
+func _freehand_stroke_noun() -> String:
+	if _freehand_solution_kind() == "stopper":
+		return "stopper"
+	return "ramp"
+
+
+func _freehand_solution_kind() -> String:
+	var kind := str(_rules().get("freehand_solution_kind", "")).strip_edges().to_lower()
+	if not kind.is_empty():
+		return kind
+	if _rules().has("stopper_sweet_spot"):
+		return "stopper"
+	return "ramp"
+
+
+func _freehand_too_short_message() -> String:
+	if _freehand_solution_kind() == "stopper":
+		return "Too short. Draw something the ball can actually hit."
+	return "Too short. Give the ball something real to roll on."
+
+
+func _freehand_missed_goal_message() -> String:
+	if _freehand_solution_kind() == "stopper":
+		return "Overshot. The ball did not need encouragement."
+	return "Missed the cup. Try lifting the end closer to the goal."
+
+
 func _circle_overlaps_rect(center: Vector2, radius: float, rect: Rect2) -> bool:
 	var closest := Vector2(
 		clampf(center.x, rect.position.x, rect.position.x + rect.size.x),
@@ -2180,6 +2293,40 @@ func _freehand_stroke_length(points: Array[Vector2]) -> float:
 	for index in range(points.size() - 1):
 		length += points[index].distance_to(points[index + 1])
 	return length
+
+
+func _freehand_stroke_bounds() -> Rect2:
+	if _freehand_stroke_points.is_empty():
+		return Rect2()
+
+	var min_x := _freehand_stroke_points[0].x
+	var max_x := min_x
+	var min_y := _freehand_stroke_points[0].y
+	var max_y := min_y
+	for point in _freehand_stroke_points:
+		min_x = minf(min_x, point.x)
+		max_x = maxf(max_x, point.x)
+		min_y = minf(min_y, point.y)
+		max_y = maxf(max_y, point.y)
+	return Rect2(min_x, min_y, max_x - min_x, max_y - min_y)
+
+
+func _freehand_stroke_overlaps_rect(rect: Rect2) -> bool:
+	for point in _freehand_stroke_points:
+		if rect.has_point(point):
+			return true
+
+	for index in range(_freehand_stroke_points.size() - 1):
+		var segment_rect := _segment_bounds(_freehand_stroke_points[index], _freehand_stroke_points[index + 1]).grow(_freehand_collision_thickness() * 0.5)
+		if segment_rect.intersects(rect, true):
+			return true
+	return false
+
+
+func _segment_bounds(start: Vector2, end: Vector2) -> Rect2:
+	var min_x := minf(start.x, end.x)
+	var min_y := minf(start.y, end.y)
+	return Rect2(min_x, min_y, absf(end.x - start.x), absf(end.y - start.y))
 
 
 func _set_freehand_status_text(stroke_text: String, result_text: String) -> void:
@@ -2223,6 +2370,32 @@ func _freehand_goal_rect() -> Rect2:
 func _freehand_goal_forgiveness() -> float:
 	var goal_zone := _dictionary_from(_rules().get("goal_zone", {}))
 	return float(goal_zone.get("forgiveness_px", 14.0))
+
+
+func _freehand_stopper_sweet_spot_rect() -> Rect2:
+	var sweet_spot := _dictionary_from(_rules().get("stopper_sweet_spot", {}))
+	if sweet_spot.has("rect"):
+		return _rect2_from_array(sweet_spot.get("rect", []), Rect2(268, 166, 36, 72))
+	return _rect2_from_array(_rules().get("stopper_sweet_spot", []), Rect2(268, 166, 36, 72))
+
+
+func _freehand_verifier_points(draw_id: String) -> Array[Vector2]:
+	if _freehand_solution_kind() == "stopper":
+		if draw_id == "flat_line" or draw_id == "ramp_to_cup":
+			return [Vector2(42, 232), Vector2(288, 176)]
+		if draw_id == "wall":
+			return [Vector2(170, 164), Vector2(170, 230)]
+		if draw_id == "too_short":
+			return [Vector2(284, 184), Vector2(288, 210)]
+		return [Vector2(286, 168), Vector2(286, 234)]
+
+	var start := Vector2(42, 232)
+	var end := Vector2(288, 176)
+	if draw_id == "flat_line":
+		end = Vector2(288, 232)
+	elif draw_id == "wall":
+		end = Vector2(58, 174)
+	return [start, end]
 
 
 func _classify_physics_line(start: Vector2, end: Vector2) -> String:
@@ -2563,6 +2736,17 @@ func _vector2_from_array(value: Variant, fallback: Vector2) -> Vector2:
 	if values.size() < 2:
 		return fallback
 	return Vector2(float(values[0]), float(values[1]))
+
+
+func _vector2_points_from_pairs(value: Variant) -> Array[Vector2]:
+	var points: Array[Vector2] = []
+	if typeof(value) != TYPE_ARRAY:
+		return points
+
+	for item in value:
+		if typeof(item) == TYPE_ARRAY:
+			points.append(_vector2_from_array(item, Vector2.ZERO))
+	return points
 
 
 func _rect2_from_array(value: Variant, fallback: Rect2) -> Rect2:

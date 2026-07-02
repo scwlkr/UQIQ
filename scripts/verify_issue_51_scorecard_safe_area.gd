@@ -74,7 +74,7 @@ func _complete_level_01_to_next_level() -> void:
 
 func _complete_level_02_to_level_list() -> void:
 	var level := _level_by_number(2)
-	_complete_drag_logic(level)
+	_complete_freehand_physics(level)
 	_require(str(_main.get("_last_transition_name")) == "score_roastcard", "Level 02 should route to Score Roastcard.")
 	_require(_screen_has_button_text("Level List"), "Level 02 Score Roastcard should expose a Level List action.")
 	_require(_button_min_height("Level List") >= 58.0, "Level List action should be touch-sized.")

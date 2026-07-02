@@ -5,7 +5,7 @@ const LocalProfileScript := preload("res://scripts/local_profile.gd")
 const TEST_SAVE_PATH := "user://issue_4_profile_verify.json"
 const REQUIRED_TEMPLATES := [
 	"Physics Draw",
-	"Drag Logic",
+	"Physics Draw",
 	"Text Trap",
 	"Pattern Grid",
 	"Memory Flash",

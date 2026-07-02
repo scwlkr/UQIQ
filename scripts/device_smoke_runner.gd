@@ -93,7 +93,7 @@ func _run_smoke_path() -> bool:
 
 	if not _start_level(_levels[1]):
 		return false
-	if not _complete_with_scorecard(_levels[1], Callable(self, "_drag_logic_win").bind(_levels[1])):
+	if not _complete_with_scorecard(_levels[1], Callable(self, "_physics_draw_win").bind(_levels[1])):
 		return false
 	if not _require(_profile.is_level_unlocked(3), "Level 03 should unlock after Level 02 completion."):
 		return false

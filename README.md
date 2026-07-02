@@ -158,6 +158,7 @@ godot --headless --path . --script res://scripts/verify_issue_53_physics_draw_io
 godot --headless --path . --script res://scripts/verify_issue_54_neutral_targets.gd
 godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitboxes.gd
 godot --headless --path . --script res://scripts/verify_issue_64_first_ramp_freehand_physics.gd
+godot --headless --path . --script res://scripts/verify_issue_65_brake_check_freehand_stopper.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6 match the current playable Pack 1 prototype templates, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -223,6 +224,8 @@ godot --headless --path . --script res://scripts/verify_issue_64_first_ramp_free
 `verify_issue_55_phone_ui_hitboxes.gd` is the Pack 1 phone UI hitbox/readability check. It verifies Level 07 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with `portrait`, and notched-phone margins remain applied.
 
 `verify_issue_64_first_ramp_freehand_physics.gd` is the Level 1 First Ramp freehand physics check. It verifies no answer-choice draw UI, touch-created thick stroke geometry, StaticBody2D collision, Release motion, success by ball/cup overlap, too-short and flat failures, and Reset cleanup.
+
+`verify_issue_65_brake_check_freehand_stopper.gd` is the Level 2 Brake Check freehand stopper check. It verifies the built-in starter chute, touch-created stopper collision, ramp/short/misplaced failures, Reset cleanup, and valid stopper completion by ball/cup overlap.
 
 ## Desktop Smoke
 

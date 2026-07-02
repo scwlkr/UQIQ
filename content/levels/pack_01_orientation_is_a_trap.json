@@ -83,45 +83,78 @@
       "uqiq_moment": "The player learns that a drawn line becomes physical enough to move the ball."
     },
     {
-      "id": "p01_l02_move_the_word",
+      "id": "p01_l02_brake_check",
       "pack_id": "pack_01_orientation_is_a_trap",
       "level_number": 2,
-      "title": "Move the Word",
-      "template": "Drag Logic",
-      "challenge_type": "logic trap",
-      "completion_mode": "auto_complete_on_correct_drop",
-      "prompt": "Move the word WRONG into the only place a smart person would hide it.",
+      "title": "Brake Check",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "auto_complete_on_goal_overlap",
+      "prompt": "Draw one line so the ball does not miss the cup.",
       "rules": {
-        "draggable_objects": [
+        "interaction_model": "freehand_physics_then_release",
+        "freehand_solution_kind": "stopper",
+        "scene_prompt": "Draw one stopper, then release the ball.",
+        "moving_object": {
+          "id": "ball",
+          "shape": "circle",
+          "start": [
+            74,
+            118
+          ],
+          "radius": 16,
+          "initial_state": "resting_on_starter_chute"
+        },
+        "built_in_geometry": [
           {
-            "id": "word_right",
-            "label": "RIGHT",
-            "role": "decoy"
-          },
-          {
-            "id": "word_wrong",
-            "label": "WRONG",
-            "role": "correct"
+            "id": "starter_chute",
+            "type": "static_segment",
+            "points": [
+              [
+                42,
+                134
+              ],
+              [
+                170,
+                166
+              ]
+            ],
+            "collision_thickness_px": 12
           }
         ],
-        "drop_targets": [
-          {
-            "id": "truth_box",
-            "label": "Truth Box",
-            "role": "correct"
-          },
-          {
-            "id": "confidence_box",
-            "label": "Confidence Box",
-            "role": "decoy"
-          }
-        ],
-    "interaction_model": "direct_drag_drop"
+        "goal_zone": {
+          "id": "cup",
+          "rect": [
+            210,
+            224,
+            58,
+            52
+          ],
+          "forgiveness_px": 16
+        },
+        "stopper_sweet_spot": {
+          "rect": [
+            268,
+            166,
+            36,
+            72
+          ]
+        },
+        "draw_limit": {
+          "strokes": 1,
+          "min_length_px": 48,
+          "max_sampled_points": 24,
+          "collision_thickness_px": 12
+        },
+        "simulation_limit_seconds": 4,
+        "reset_on_failure": true
       },
       "solution": {
-        "object_id": "word_wrong",
-        "drop_target_id": "truth_box",
-        "explanation": "The wrong word belongs in the Truth Box because this pack is allergic to honest labels."
+        "success_condition": "ball overlaps cup goal zone after release",
+        "intended_strategy": "draw a short stopper just beyond the cup so the rolling ball loses forward motion and drops into the goal",
+        "common_wrong_strategy": "draw a ramp, bridge, or long guide under the ball, which sends it past the cup",
+        "not_allowed": "answer-choice draw option",
+        "explanation": "The right line is a stopper, not a path; it slows the ball so it drops into the cup."
       },
       "scoring": {
         "speed_seconds": {
@@ -136,25 +169,27 @@
       },
       "roasts": {
         "failure": [
-          "You moved confidence instead of truth. Boldly wrong, like a tiny executive.",
-          "Wrong object, wrong box, fully on brand."
+          "The ball had momentum. You gave it a highway.",
+          "That line encouraged the problem instead of stopping it."
         ],
         "delay": [
-          "Try moving the suspicious word before it unionizes."
+          "It does not need more path. It needs consequences."
         ],
         "scorecard": [
-          "You moved one word and called it spatial reasoning. Inspiringly small."
+          "You solved physics by becoming a wall."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "word_tiles",
-          "two_drop_zones",
-          "judge_face_stub"
+          "ball",
+          "cup",
+          "starter_chute",
+          "freehand_stopper",
+          "overshoot_path"
         ]
       },
-      "uqiq_moment": "The player must move WRONG into the Truth Box instead of trusting RIGHT."
+      "uqiq_moment": "The obvious ramp or bridge answer is wrong; the correct draw is a stopper that makes the ball drop into the cup."
     },
     {
       "id": "p01_l03_type_nothing",

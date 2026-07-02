@@ -93,7 +93,7 @@ func _verify_dur_spend_and_recovery_feedback() -> void:
 	_require(_profile.dur_tokens() == LocalProfileScript.MAX_DUR_TOKENS, "DUR'D completion should recover one Dur Token.")
 
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(best_attempt.get("action_count", 0)) == 2, "Feedback should not change Drag Logic action count.")
+	_require(int(best_attempt.get("action_count", 0)) == 2, "Feedback should not change Level 2 action count.")
 	_require(bool(best_attempt.get("dur_token_recovered", false)), "DUR recovery should still persist in Attempt Metrics.")
 
 

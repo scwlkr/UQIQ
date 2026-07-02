@@ -46,23 +46,23 @@ func _boot_main_scene() -> void:
 
 
 func _verify_direct_drag_drop() -> void:
-	var level := _level_by_number(2)
+	var level := _level_by_number(21)
 	var level_id := str(level.get("id", ""))
 	_main.call("_show_play_screen", level)
 
 	_require(_node_named(_main, "drag_playfield") != null, "Drag Logic should render a named direct-manipulation playfield.")
-	_require(_node_named(_main, "drag_tile_word_wrong") != null, "Drag Logic should render the correct word as a draggable tile.")
-	_require(_node_named(_main, "drop_zone_truth_box") != null, "Drag Logic should render the Truth Box as a drop zone.")
+	_require(_node_named(_main, "drag_tile_tile_wrong") != null, "Drag Logic should render the correct draggable tile.")
+	_require(_node_named(_main, "drop_zone_winner_box") != null, "Drag Logic should render the winner box as a drop zone.")
 	_require(not _has_button_prefix(_main, "Move:"), "Drag Logic should not expose Move: choice buttons as the primary interaction.")
 	_require(not _has_button_prefix(_main, "Drop on:"), "Drag Logic should not expose Drop on: choice buttons as the primary interaction.")
 
-	_drag_tile_to_zone("word_right", "confidence_box")
-	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
+	_drag_tile_to_zone("tile_right", "obvious_box")
+	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 21.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
 
 	_main.call("_show_play_screen", level)
-	_drag_tile_to_zone("word_wrong", "truth_box")
-	_require(_profile.is_level_completed(level_id), "Correct direct drag/drop should complete Level 2.")
+	_drag_tile_to_zone("tile_wrong", "winner_box")
+	_require(_profile.is_level_completed(level_id), "Correct direct drag/drop should complete Level 21.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct drag/drop should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct drag/drop should persist as one direct action.")
