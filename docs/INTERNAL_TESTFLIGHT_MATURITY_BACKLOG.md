@@ -12,8 +12,8 @@ Status: Internal-only. scwlkr is the only tester until UQIQ is more advanced.
 ## Maturity Gaps Before External Beta
 
 1. Physical-device portrait proof
-   - Confirm the TestFlight build presents the app in the intended phone-only portrait orientation.
-   - Current proof screenshot exists, but final portrait-oriented proof should be captured intentionally.
+   - Done: CoreDevice set/read the physical iPhone orientation as `portrait`.
+   - Done: portrait screenshot captured at `/tmp/uqiq-issue-36-portrait-proof.png` with size `1320 x 2868`.
 
 2. Real playtest notes from scwlkr
    - Collect short notes from internal play only: confusing Levels, unfun Levels, unreadable UI, roasts that go too far, save/progress issues, and crashes.
