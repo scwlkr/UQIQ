@@ -174,6 +174,8 @@ func _show_level_list() -> void:
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	root.add_child(scroll)
 
 	var list := VBoxContainer.new()
@@ -816,6 +818,7 @@ func _make_screen(background_color: Color, transition_name: String = "", use_scr
 		var scroll := ScrollContainer.new()
 		scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 		add_child(scroll)
 
 		var margin := MarginContainer.new()
