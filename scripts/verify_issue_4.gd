@@ -7,7 +7,7 @@ const REQUIRED_TEMPLATES := [
 	"Physics Draw",
 	"Physics Draw",
 	"Rearrange Level",
-	"Pattern Grid",
+	"Rearrange Level",
 	"Memory Flash",
 	"Physics Draw",
 ]
@@ -132,13 +132,22 @@ func _level_has_template_solution(level: Dictionary) -> bool:
 			return _has_array(rules, "accepted_inputs") and not str(solution.get("answer", "")).is_empty()
 		"Rearrange Level":
 			var moving_object := _dictionary_from(rules.get("moving_object", {}))
-			var target_placement := _dictionary_from(rules.get("target_placement", {}))
-			return str(rules.get("interaction_model", "")) == "physics_linked_rearrange_then_release" \
-				and _has_array(moving_object, "start") \
-				and _has_array(rules, "built_in_geometry") \
-				and _has_array(rules, "draggable_objects") \
-				and _has_array(target_placement, "rect") \
-				and not str(solution.get("success_condition", "")).is_empty()
+			var mode := str(rules.get("rearrange_mode", ""))
+			if str(rules.get("interaction_model", "")) != "physics_linked_rearrange_then_release":
+				return false
+			if not _has_array(moving_object, "start") or not _has_array(rules, "draggable_objects"):
+				return false
+			if mode == "move_goal_marker":
+				var target_placement := _dictionary_from(rules.get("target_placement", {}))
+				return _has_array(rules, "built_in_geometry") \
+					and _has_array(target_placement, "rect") \
+					and not str(solution.get("success_condition", "")).is_empty()
+			if mode == "move_rule_tile":
+				var goal_zone := _dictionary_from(rules.get("goal_zone", {}))
+				return _has_array(goal_zone, "rect") \
+					and _has_array(rules, "drop_targets") \
+					and not str(solution.get("success_condition", "")).is_empty()
+			return false
 		"Pattern Grid":
 			return _has_array(rules, "cells") and not str(solution.get("cell_id", "")).is_empty()
 		"Memory Flash":

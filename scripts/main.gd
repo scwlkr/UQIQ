@@ -113,6 +113,14 @@ var _rearrange_target_rect := Rect2()
 var _rearrange_ball_start := Vector2.ZERO
 var _rearrange_last_ball_position := Vector2.ZERO
 var _rearrange_cup_moved := false
+var _rearrange_goal_rect := Rect2()
+var _rearrange_rule_tile: Control = null
+var _rearrange_rule_tile_start_rect := Rect2()
+var _rearrange_rule_tile_rect := Rect2()
+var _rearrange_rule_tile_moved := false
+var _rearrange_gravity_slots := {}
+var _rearrange_selected_gravity_slot_id := ""
+var _rearrange_selected_gravity_vector := Vector2.ZERO
 var _rearrange_released := false
 var _rearrange_ball_moved := false
 var _rearrange_dragging_object_id := ""
@@ -478,6 +486,14 @@ func _show_play_screen(level: Dictionary) -> void:
 	_rearrange_ball_start = Vector2.ZERO
 	_rearrange_last_ball_position = Vector2.ZERO
 	_rearrange_cup_moved = false
+	_rearrange_goal_rect = Rect2()
+	_rearrange_rule_tile = null
+	_rearrange_rule_tile_start_rect = Rect2()
+	_rearrange_rule_tile_rect = Rect2()
+	_rearrange_rule_tile_moved = false
+	_rearrange_gravity_slots = {}
+	_rearrange_selected_gravity_slot_id = ""
+	_rearrange_selected_gravity_vector = Vector2.ZERO
 	_rearrange_released = false
 	_rearrange_ball_moved = false
 	_rearrange_dragging_object_id = ""
@@ -1145,6 +1161,9 @@ func _render_rearrange_level(stage_box: VBoxContainer) -> void:
 		_add_label(stage_box, "Future rearrange physics. Your cup is waiting on paperwork.", 18, COLOR_INK)
 		_add_feedback(stage_box, "Return when this Level has a physics-linked rearrange spec.")
 		return
+	if _rearrange_mode() == "move_rule_tile":
+		_render_rearrange_rule_tile_level(stage_box)
+		return
 
 	_add_label(stage_box, str(_rules().get("scene_prompt", _current_level.get("prompt", "Move the cup before release."))), 17, COLOR_INK)
 
@@ -1197,6 +1216,63 @@ func _render_rearrange_level(stage_box: VBoxContainer) -> void:
 
 	_reset_rearrange_attempt(false)
 	_add_feedback(stage_box, "Move the cup, then release the ball.")
+
+
+func _render_rearrange_rule_tile_level(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, str(_rules().get("scene_prompt", _current_level.get("prompt", "Move GRAVITY to the wall with the cup."))), 17, COLOR_INK)
+
+	var playfield := Panel.new()
+	playfield.name = "rearrange_playfield"
+	playfield.custom_minimum_size = Vector2(0, 300)
+	playfield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	playfield.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	playfield.mouse_filter = Control.MOUSE_FILTER_STOP
+	stage_box.add_child(playfield)
+
+	_rearrange_physics_runtime = Node2D.new()
+	_rearrange_physics_runtime.name = "rearrange_physics_runtime"
+	playfield.add_child(_rearrange_physics_runtime)
+
+	_rearrange_goal_rect = _rearrange_rule_goal_rect()
+	_rearrange_rule_tile_start_rect = _rearrange_rule_tile_start_rect_from_rules()
+	_rearrange_rule_tile_rect = _rearrange_rule_tile_start_rect
+	_rearrange_gravity_slots = {}
+	_rearrange_selected_gravity_slot_id = _rearrange_default_gravity_slot_id()
+	_rearrange_selected_gravity_vector = _rearrange_gravity_vector_for_slot(_rearrange_selected_gravity_slot_id)
+
+	_create_rearrange_rule_goal(playfield)
+	_create_rearrange_gravity_slots(playfield)
+	_create_rearrange_rule_tile(playfield)
+	_create_rearrange_ball(playfield)
+
+	_physics_choice_label = _new_label("Gravity: floor", 16, COLOR_INK)
+	_physics_choice_label.position = Vector2(18, 16)
+	_physics_choice_label.size = Vector2(304, 26)
+	_physics_choice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	playfield.add_child(_physics_choice_label)
+
+	_physics_result_label = _new_label("Release result: waiting", 16, COLOR_INK)
+	_physics_result_label.name = "rearrange_release_result_label"
+	_physics_result_label.position = Vector2(18, 48)
+	_physics_result_label.size = Vector2(320, 26)
+	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	playfield.add_child(_physics_result_label)
+
+	var actions := HBoxContainer.new()
+	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_theme_constant_override("separation", 10)
+	stage_box.add_child(actions)
+
+	var release_button := _make_button("Release", COLOR_GREEN)
+	release_button.pressed.connect(Callable(self, "_handle_rearrange_release"))
+	actions.add_child(release_button)
+
+	var reset_button := _make_button("Reset", COLOR_BLUE)
+	reset_button.pressed.connect(Callable(self, "_handle_rearrange_reset"))
+	actions.add_child(reset_button)
+
+	_reset_rearrange_attempt(false)
+	_add_feedback(stage_box, "Move GRAVITY to the wall with the cup.")
 
 
 func _create_rearrange_built_in_geometry(surface: Control) -> void:
@@ -1290,6 +1366,106 @@ func _create_rearrange_goal(surface: Control) -> void:
 	_set_rearrange_cup_rect(_rearrange_cup_rect)
 
 
+func _create_rearrange_rule_goal(surface: Control) -> void:
+	var cup := Panel.new()
+	cup.name = "rearrange_right_wall_cup"
+	cup.position = _rearrange_goal_rect.position
+	cup.size = _rearrange_goal_rect.size
+	cup.custom_minimum_size = _rearrange_goal_rect.size
+	cup.z_index = 3
+	cup.add_theme_stylebox_override("panel", _flat_box(COLOR_GREEN, 8))
+	surface.add_child(cup)
+
+	var label := _new_label("CUP", 15, COLOR_INK)
+	label.name = "rearrange_right_wall_cup_label"
+	label.position = Vector2.ZERO
+	label.size = _rearrange_goal_rect.size
+	label.custom_minimum_size = _rearrange_goal_rect.size
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cup.add_child(label)
+
+	if _rearrange_physics_runtime == null or not is_instance_valid(_rearrange_physics_runtime):
+		return
+
+	_rearrange_goal_area = Area2D.new()
+	_rearrange_goal_area.name = "rearrange_goal_area"
+	_rearrange_goal_area.position = _rearrange_goal_rect.grow(_rearrange_goal_forgiveness()).get_center()
+	_rearrange_goal_area.set_meta("goal_rect", _rearrange_goal_rect)
+	_rearrange_goal_area.set_meta("forgiveness_px", _rearrange_goal_forgiveness())
+	_rearrange_physics_runtime.add_child(_rearrange_goal_area)
+
+	var collision := CollisionShape2D.new()
+	collision.name = "rearrange_goal_collision"
+	collision.shape = RectangleShape2D.new()
+	(collision.shape as RectangleShape2D).size = _rearrange_goal_rect.grow(_rearrange_goal_forgiveness()).size
+	_rearrange_goal_area.add_child(collision)
+
+
+func _create_rearrange_gravity_slots(surface: Control) -> void:
+	var targets = _rules().get("drop_targets", [])
+	if typeof(targets) != TYPE_ARRAY:
+		return
+
+	for target in targets:
+		if typeof(target) != TYPE_DICTIONARY:
+			continue
+		var target_id := str(target.get("id", ""))
+		var rect := _rect2_from_array(target.get("rect", []), Rect2())
+		if target_id.is_empty() or rect.size.x <= 0.0 or rect.size.y <= 0.0:
+			continue
+
+		var slot := Panel.new()
+		slot.name = "rearrange_gravity_slot_%s" % target_id
+		slot.position = rect.position
+		slot.size = rect.size
+		slot.custom_minimum_size = rect.size
+		slot.z_index = 1
+		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_theme_stylebox_override("panel", _flat_box(Color(0.17, 0.22, 0.28, 0.22), 8))
+		surface.add_child(slot)
+
+		var label := _new_label(_gravity_slot_symbol(target_id), 20, COLOR_INK)
+		label.position = Vector2.ZERO
+		label.size = rect.size
+		label.custom_minimum_size = rect.size
+		label.autowrap_mode = TextServer.AUTOWRAP_OFF
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_child(label)
+
+		_rearrange_gravity_slots[target_id] = {
+			"rect": rect,
+			"gravity_vector": _vector2_from_array(target.get("gravity_vector", []), Vector2.ZERO),
+			"role": str(target.get("role", "decoy")),
+		}
+
+
+func _create_rearrange_rule_tile(surface: Control) -> void:
+	_rearrange_rule_tile = Panel.new()
+	_rearrange_rule_tile.name = "rearrange_gravity_tile"
+	_rearrange_rule_tile.custom_minimum_size = _rearrange_rule_tile_rect.size
+	_rearrange_rule_tile.mouse_filter = Control.MOUSE_FILTER_STOP
+	_rearrange_rule_tile.z_index = 5
+	_rearrange_rule_tile.set_meta("object_id", "gravity_tile")
+	_rearrange_rule_tile.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
+	_rearrange_rule_tile.gui_input.connect(Callable(self, "_handle_rearrange_object_input").bind("gravity_tile", _rearrange_rule_tile))
+	surface.add_child(_rearrange_rule_tile)
+
+	var label := _new_label("GRAVITY", 16, COLOR_TEXT)
+	label.name = "rearrange_gravity_tile_label"
+	label.position = Vector2.ZERO
+	label.size = _rearrange_rule_tile_rect.size
+	label.custom_minimum_size = _rearrange_rule_tile_rect.size
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rearrange_rule_tile.add_child(label)
+
+	_set_rearrange_rule_tile_rect(_rearrange_rule_tile_rect)
+
+
 func _create_rearrange_ball(surface: Control) -> void:
 	var radius := _rearrange_ball_radius()
 	_rearrange_ball_start = _rearrange_ball_start_from_rules()
@@ -1331,8 +1507,12 @@ func _handle_rearrange_object_input(event: InputEvent, object_id: String, tile: 
 		_rearrange_dragging_tile = tile
 		_rearrange_drag_offset = _event_position_in_control(event, tile, tile)
 		tile.move_to_front()
-		_set_rearrange_status_text("Cup: dragging", "Release result: waiting")
-		_feedback_label.text = "Dragging the cup. Put it where the ball is actually going."
+		if object_id == "gravity_tile":
+			_set_rearrange_status_text("Gravity: dragging", "Release result: waiting")
+			_feedback_label.text = "Dragging GRAVITY. Put it on the wall with the cup."
+		else:
+			_set_rearrange_status_text("Cup: dragging", "Release result: waiting")
+			_feedback_label.text = "Dragging the cup. Put it where the ball is actually going."
 		_mark_input_handled()
 		return
 
@@ -1358,10 +1538,18 @@ func _move_rearrange_tile(event: InputEvent, tile: Control) -> void:
 		next_position,
 		tile.size
 	)
+	if _rearrange_dragging_object_id == "gravity_tile":
+		_set_rearrange_rule_tile_rect(_clamped_rearrange_rule_tile_rect(next_rect, playfield))
+		return
+
 	_set_rearrange_cup_rect(_clamped_rearrange_cup_rect(next_rect))
 
 
 func _finish_rearrange_drag() -> void:
+	if _rearrange_dragging_object_id == "gravity_tile":
+		_finish_rearrange_rule_tile_drag()
+		return
+
 	if _rearrange_cup_rect.intersects(_rearrange_target_rect.grow(_rearrange_goal_forgiveness()), true):
 		_set_rearrange_cup_center(_rearrange_target_rect.get_center())
 
@@ -1376,6 +1564,10 @@ func _finish_rearrange_drag() -> void:
 
 
 func _handle_rearrange_release() -> void:
+	if _rearrange_mode() == "move_rule_tile":
+		_handle_rearrange_rule_tile_release()
+		return
+
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_rearrange_released = true
@@ -1404,6 +1596,10 @@ func _handle_rearrange_reset() -> void:
 
 
 func _reset_rearrange_attempt(count_action: bool = true) -> void:
+	if _rearrange_mode() == "move_rule_tile":
+		_reset_rearrange_rule_tile_attempt(count_action)
+		return
+
 	if count_action:
 		_tap_count += 1
 		_trigger_feedback("tap")
@@ -1424,9 +1620,76 @@ func _reset_rearrange_attempt(count_action: bool = true) -> void:
 		_feedback_label.text = "Reset. Move the cup, then release the ball."
 
 
+func _finish_rearrange_rule_tile_drag() -> void:
+	var selected_slot_id := _rearrange_slot_id_for_rect(_rearrange_rule_tile_rect)
+	if selected_slot_id.is_empty():
+		selected_slot_id = _rearrange_selected_gravity_slot_id
+	if selected_slot_id.is_empty():
+		selected_slot_id = _rearrange_default_gravity_slot_id()
+
+	_set_rearrange_rule_tile_slot(selected_slot_id)
+	_rearrange_rule_tile_moved = _rearrange_rule_tile_rect.position.distance_to(_rearrange_rule_tile_start_rect.position) > 1.0
+	_rearrange_dragging_object_id = ""
+	_rearrange_dragging_tile = null
+	_rearrange_drag_offset = Vector2.ZERO
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_set_rearrange_status_text("Gravity: %s" % _rearrange_gravity_label(), "Release result: ready")
+	_feedback_label.text = "GRAVITY moved. Release the ball."
+
+
+func _handle_rearrange_rule_tile_release() -> void:
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_rearrange_released = true
+	_move_rearrange_ball_with_gravity()
+
+	if _rearrange_selected_gravity_slot_id.is_empty() or _rearrange_selected_gravity_slot_id == _rearrange_default_gravity_slot_id():
+		_fail_rearrange("Move GRAVITY to the wall with the cup.")
+		return
+	if not _rearrange_selected_gravity_slot_is_correct():
+		_fail_rearrange("Wrong wall. Excellent confidence, poor universe.")
+		return
+
+	_move_rearrange_ball_to(_rearrange_goal_rect.get_center())
+	if _rearrange_ball_overlaps_rule_goal():
+		_last_physics_result = "success"
+		_set_rearrange_status_text("Gravity: right wall", "Release result: ball reached the cup")
+		_feedback_label.text = "The ball fell sideways into the cup."
+		_complete_current_level()
+		return
+
+	_fail_rearrange("Gravity went that way. The cup did not.")
+
+
+func _reset_rearrange_rule_tile_attempt(count_action: bool = true) -> void:
+	if count_action:
+		_tap_count += 1
+		_trigger_feedback("tap")
+
+	_last_physics_result = "reset"
+	_rearrange_released = false
+	_rearrange_rule_tile_moved = false
+	_rearrange_ball_moved = false
+	_rearrange_dragging_object_id = ""
+	_rearrange_dragging_tile = null
+	_rearrange_drag_offset = Vector2.ZERO
+	_rearrange_ball_start = _rearrange_ball_start_from_rules()
+	_rearrange_last_ball_position = _rearrange_ball_start
+	_set_rearrange_rule_tile_rect(_rearrange_rule_tile_start_rect)
+	_set_rearrange_rule_tile_slot(_rearrange_default_gravity_slot_id())
+	_set_rearrange_ball_center(_rearrange_ball_start)
+	_set_rearrange_status_text("Gravity: floor", "Release result: waiting")
+	if _feedback_label != null and is_instance_valid(_feedback_label):
+		_feedback_label.text = "Reset. Move GRAVITY to the wall with the cup."
+
+
 func _fail_rearrange(message: String) -> void:
 	_last_physics_result = "fail"
-	_set_rearrange_status_text("Cup: needs work", "Release result: %s" % message)
+	if _rearrange_mode() == "move_rule_tile":
+		_set_rearrange_status_text("Gravity: needs work", "Release result: %s" % message)
+	else:
+		_set_rearrange_status_text("Cup: needs work", "Release result: %s" % message)
 	_feedback_label.text = message
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -1471,10 +1734,61 @@ func _set_rearrange_cup_rect(rect: Rect2) -> void:
 			(collision.shape as RectangleShape2D).size = visible_rect.size
 
 
+func _set_rearrange_rule_tile_slot(slot_id: String) -> void:
+	if not _rearrange_gravity_slots.has(slot_id):
+		return
+
+	var slot := _dictionary_from(_rearrange_gravity_slots.get(slot_id, {}))
+	var slot_rect := _rect2_from_variant(slot.get("rect", Rect2()))
+	if slot_id == _rearrange_default_gravity_slot_id():
+		_set_rearrange_rule_tile_rect(_rearrange_rule_tile_start_rect)
+	else:
+		_set_rearrange_rule_tile_rect(Rect2(slot_rect.get_center() - (_rearrange_rule_tile_rect.size * 0.5), _rearrange_rule_tile_rect.size))
+	_rearrange_selected_gravity_slot_id = slot_id
+	_rearrange_selected_gravity_vector = _vector2_from_variant(slot.get("gravity_vector", Vector2.ZERO))
+
+
+func _set_rearrange_rule_tile_rect(rect: Rect2) -> void:
+	_rearrange_rule_tile_rect = rect
+	if _rearrange_rule_tile != null and is_instance_valid(_rearrange_rule_tile):
+		_rearrange_rule_tile.position = rect.position
+		_rearrange_rule_tile.size = rect.size
+		_rearrange_rule_tile.custom_minimum_size = rect.size
+		_rearrange_rule_tile.set_meta("rule_tile_rect", rect)
+		var label := _rearrange_rule_tile.get_node_or_null("rearrange_gravity_tile_label") as Label
+		if label != null:
+			label.size = rect.size
+			label.custom_minimum_size = rect.size
+
+
+func _clamped_rearrange_rule_tile_rect(rect: Rect2, playfield: Control) -> Rect2:
+	var bounds := Rect2(Vector2.ZERO, playfield.size)
+	if bounds.size.x <= 0.0 or bounds.size.y <= 0.0:
+		bounds = Rect2(0, 0, 340, 300)
+	var max_x := bounds.position.x + maxf(bounds.size.x - rect.size.x, 0.0)
+	var max_y := bounds.position.y + maxf(bounds.size.y - rect.size.y, 0.0)
+	return Rect2(
+		Vector2(
+			clampf(rect.position.x, bounds.position.x, max_x),
+			clampf(rect.position.y, bounds.position.y, max_y)
+		),
+		rect.size
+	)
+
+
 func _move_rearrange_ball_to(center: Vector2) -> void:
 	_rearrange_ball_moved = _rearrange_ball_start_from_rules().distance_to(center) > 1.0
 	_rearrange_last_ball_position = center
 	_set_rearrange_ball_center(center)
+
+
+func _move_rearrange_ball_with_gravity() -> void:
+	var vector := _rearrange_selected_gravity_vector
+	if vector.length() <= 0.1:
+		vector = Vector2(0, 720)
+	var direction := vector.normalized()
+	var miss_center := _rearrange_ball_start_from_rules() + (direction * 142.0)
+	_move_rearrange_ball_to(miss_center)
 
 
 func _set_rearrange_ball_center(center: Vector2) -> void:
@@ -1487,6 +1801,10 @@ func _set_rearrange_ball_center(center: Vector2) -> void:
 
 func _rearrange_ball_overlaps_goal() -> bool:
 	return _circle_overlaps_rect(_rearrange_last_ball_position, _rearrange_ball_radius(), _rearrange_cup_rect.grow(_rearrange_goal_forgiveness()))
+
+
+func _rearrange_ball_overlaps_rule_goal() -> bool:
+	return _circle_overlaps_rect(_rearrange_last_ball_position, _rearrange_ball_radius(), _rearrange_goal_rect.grow(_rearrange_goal_forgiveness()))
 
 
 func _rearrange_cup_in_target() -> bool:
@@ -1503,8 +1821,9 @@ func _set_rearrange_status_text(cup_text: String, result_text: String) -> void:
 func _rearrange_draggable_object() -> Dictionary:
 	var objects = _rules().get("draggable_objects", [])
 	if typeof(objects) == TYPE_ARRAY:
+		var expected_id := "gravity_tile" if _rearrange_mode() == "move_rule_tile" else "cup"
 		for object in objects:
-			if typeof(object) == TYPE_DICTIONARY and str(object.get("id", "")) == "cup":
+			if typeof(object) == TYPE_DICTIONARY and str(object.get("id", "")) == expected_id:
 				return object
 		for object in objects:
 			if typeof(object) == TYPE_DICTIONARY:
@@ -1528,6 +1847,9 @@ func _rearrange_target_placement_rect() -> Rect2:
 
 
 func _rearrange_goal_forgiveness() -> float:
+	if _rearrange_mode() == "move_rule_tile":
+		var goal_zone := _dictionary_from(_rules().get("goal_zone", {}))
+		return float(goal_zone.get("forgiveness_px", 16.0))
 	var target := _dictionary_from(_rules().get("target_placement", {}))
 	return float(target.get("forgiveness_px", 18.0))
 
@@ -1540,6 +1862,86 @@ func _rearrange_ball_start_from_rules() -> Vector2:
 func _rearrange_ball_radius() -> float:
 	var moving_object := _dictionary_from(_rules().get("moving_object", {}))
 	return float(moving_object.get("radius", 16.0))
+
+
+func _rearrange_mode() -> String:
+	return str(_rules().get("rearrange_mode", "move_goal_marker"))
+
+
+func _rearrange_rule_tile_start_rect_from_rules() -> Rect2:
+	var object := _rearrange_draggable_object()
+	return _rect2_from_array(object.get("start_rect", []), Rect2(132, 236, 96, 46))
+
+
+func _rearrange_rule_goal_rect() -> Rect2:
+	var goal_zone := _dictionary_from(_rules().get("goal_zone", {}))
+	return _rect2_from_array(goal_zone.get("rect", []), Rect2(274, 128, 52, 64))
+
+
+func _rearrange_default_gravity_slot_id() -> String:
+	if _rearrange_gravity_slots.has("floor_slot"):
+		return "floor_slot"
+	var targets = _rules().get("drop_targets", [])
+	if typeof(targets) == TYPE_ARRAY:
+		for target in targets:
+			if typeof(target) == TYPE_DICTIONARY:
+				return str(target.get("id", ""))
+	return ""
+
+
+func _rearrange_gravity_vector_for_slot(slot_id: String) -> Vector2:
+	if _rearrange_gravity_slots.has(slot_id):
+		return _vector2_from_variant(_dictionary_from(_rearrange_gravity_slots.get(slot_id, {})).get("gravity_vector", Vector2.ZERO))
+
+	var targets = _rules().get("drop_targets", [])
+	if typeof(targets) == TYPE_ARRAY:
+		for target in targets:
+			if typeof(target) == TYPE_DICTIONARY and str(target.get("id", "")) == slot_id:
+				return _vector2_from_array(target.get("gravity_vector", []), Vector2.ZERO)
+	return Vector2.ZERO
+
+
+func _rearrange_selected_gravity_slot_is_correct() -> bool:
+	var slot := _dictionary_from(_rearrange_gravity_slots.get(_rearrange_selected_gravity_slot_id, {}))
+	return str(slot.get("role", "decoy")) == "correct"
+
+
+func _rearrange_slot_id_for_rect(rect: Rect2) -> String:
+	var best_slot_id := ""
+	var best_area := 0.0
+	for slot_id in _rearrange_gravity_slots.keys():
+		var slot := _dictionary_from(_rearrange_gravity_slots.get(slot_id, {}))
+		var slot_rect := _rect2_from_variant(slot.get("rect", Rect2()))
+		var overlap := rect.intersection(slot_rect)
+		var area := overlap.size.x * overlap.size.y
+		if area > best_area:
+			best_area = area
+			best_slot_id = str(slot_id)
+	return best_slot_id
+
+
+func _rearrange_gravity_label() -> String:
+	match _rearrange_selected_gravity_slot_id:
+		"left_wall_slot":
+			return "left wall"
+		"right_wall_slot":
+			return "right wall"
+		"floor_slot":
+			return "floor"
+		_:
+			return "unset"
+
+
+func _gravity_slot_symbol(slot_id: String) -> String:
+	match slot_id:
+		"left_wall_slot":
+			return "<"
+		"right_wall_slot":
+			return ">"
+		"floor_slot":
+			return "v"
+		_:
+			return "."
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
@@ -3077,7 +3479,7 @@ func _uses_direct_pattern_grid() -> bool:
 func _pattern_solution_cells() -> Array[String]:
 	var solution := _solution()
 	var cell_ids = solution.get("cell_ids", [])
-	if typeof(cell_ids) == TYPE_ARRAY:
+	if typeof(cell_ids) == TYPE_ARRAY and not cell_ids.is_empty():
 		return _string_array(cell_ids)
 
 	var cell_id := str(solution.get("cell_id", ""))
@@ -3185,6 +3587,12 @@ func _vector2_from_array(value: Variant, fallback: Vector2) -> Vector2:
 	return Vector2(float(values[0]), float(values[1]))
 
 
+func _vector2_from_variant(value: Variant) -> Vector2:
+	if value is Vector2:
+		return value
+	return _vector2_from_array(value, Vector2.ZERO)
+
+
 func _vector2_points_from_pairs(value: Variant) -> Array[Vector2]:
 	var points: Array[Vector2] = []
 	if typeof(value) != TYPE_ARRAY:
@@ -3204,6 +3612,12 @@ func _rect2_from_array(value: Variant, fallback: Rect2) -> Rect2:
 	if values.size() < 4:
 		return fallback
 	return Rect2(float(values[0]), float(values[1]), float(values[2]), float(values[3]))
+
+
+func _rect2_from_variant(value: Variant) -> Rect2:
+	if value is Rect2:
+		return value
+	return _rect2_from_array(value, Rect2())
 
 
 func _score_component_text(components: Dictionary, key: String, title: String, fallback_label: String) -> String:

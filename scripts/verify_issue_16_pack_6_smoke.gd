@@ -701,9 +701,7 @@ func _complete_level_by_template(level: Dictionary) -> void:
 			text_input.text = answer
 			_main.call("_handle_text_submit")
 		"Rearrange Level":
-			_main.call("_set_rearrange_cup_center", Vector2(225, 243))
-			_main.call("_finish_rearrange_drag")
-			_main.call("_handle_rearrange_release")
+			_complete_rearrange_level(level)
 		"Pattern Grid":
 			_main.call("_handle_pattern_cell", str(_solution(level).get("cell_id", "")))
 			_main.call("_handle_pattern_submit")
@@ -722,6 +720,16 @@ func _complete_level_by_template(level: Dictionary) -> void:
 		_:
 			if not _require(false, "Unsupported Level Template in Pack 6 smoke: %s" % str(level.get("template", ""))):
 				return
+
+
+func _complete_rearrange_level(level: Dictionary) -> void:
+	var rules := _dictionary_from(level.get("rules", {}))
+	if str(rules.get("rearrange_mode", "")) == "move_rule_tile":
+		_main.call("_set_rearrange_rule_tile_slot", "right_wall_slot")
+	else:
+		_main.call("_set_rearrange_cup_center", Vector2(225, 243))
+	_main.call("_finish_rearrange_drag")
+	_main.call("_handle_rearrange_release")
 
 
 func _use_roast() -> void:

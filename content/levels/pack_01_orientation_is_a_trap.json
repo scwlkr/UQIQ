@@ -305,79 +305,111 @@
       "uqiq_moment": "The player realizes the target is movable and solves by relocating the cup into the physical path."
     },
     {
-      "id": "p01_l04_one_square_panicked",
+      "id": "p01_l04_gravity_has_handles",
       "pack_id": "pack_01_orientation_is_a_trap",
       "level_number": 4,
-      "title": "One Square Panicked",
-      "template": "Pattern Grid",
-      "challenge_type": "pattern puzzle",
-      "completion_mode": "auto_complete_on_marked_cells",
-      "prompt": "Mark the row containing the square that forgot the pattern.",
+      "title": "Gravity Has Handles",
+      "template": "Rearrange Level",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "auto_complete_on_goal_overlap",
+      "prompt": "Move GRAVITY to the wall with the cup.",
       "rules": {
-        "columns": 3,
-        "cells": [
+        "interaction_model": "physics_linked_rearrange_then_release",
+        "rearrange_mode": "move_rule_tile",
+        "scene_prompt": "Move GRAVITY to the wall with the cup.",
+        "moving_object": {
+          "id": "ball",
+          "shape": "circle",
+          "start": [
+            112,
+            150
+          ],
+          "radius": 16
+        },
+        "goal_zone": {
+          "id": "right_wall_cup",
+          "rect": [
+            274,
+            128,
+            52,
+            64
+          ],
+          "forgiveness_px": 16
+        },
+        "draggable_objects": [
           {
-            "id": "r1c1",
-            "label": "A",
-            "role": "decoy"
-          },
-          {
-            "id": "r1c2",
-            "label": "A",
-            "role": "decoy"
-          },
-          {
-            "id": "r1c3",
-            "label": "A",
-            "role": "decoy"
-          },
-          {
-            "id": "r2c1",
-            "label": "B",
-            "role": "decoy"
-          },
-          {
-            "id": "r2c2",
-            "label": "8",
-            "role": "correct"
-          },
-          {
-            "id": "r2c3",
-            "label": "B",
-            "role": "decoy"
-          },
-          {
-            "id": "r3c1",
-            "label": "C",
-            "role": "decoy"
-          },
-          {
-            "id": "r3c2",
-            "label": "C",
-            "role": "decoy"
-          },
-          {
-            "id": "r3c3",
-            "label": "C",
-            "role": "decoy"
+            "id": "gravity_tile",
+            "label": "GRAVITY",
+            "role": "rule_tile",
+            "start_rect": [
+              132,
+              236,
+              96,
+              46
+            ]
           }
         ],
-        "interaction_model": "direct_mark_cells",
-        "mark_count": 3
+        "drop_targets": [
+          {
+            "id": "floor_slot",
+            "label": "down",
+            "rect": [
+              122,
+              238,
+              116,
+              46
+            ],
+            "gravity_vector": [
+              0,
+              720
+            ],
+            "role": "decoy"
+          },
+          {
+            "id": "left_wall_slot",
+            "label": "left",
+            "rect": [
+              18,
+              126,
+              72,
+              70
+            ],
+            "gravity_vector": [
+              -720,
+              0
+            ],
+            "role": "decoy"
+          },
+          {
+            "id": "right_wall_slot",
+            "label": "right",
+            "rect": [
+              250,
+              126,
+              72,
+              70
+            ],
+            "gravity_vector": [
+              720,
+              0
+            ],
+            "role": "correct"
+          }
+        ],
+        "simulation_limit_seconds": 4,
+        "reset_on_failure": true
       },
       "solution": {
-        "cell_id": "r2c2",
-        "cell_ids": [
-          "r2c1",
-          "r2c2",
-          "r2c3"
-        ],
-        "explanation": "Every row repeats one letter except the middle cell, which is a number pretending to be helpful."
+        "success_condition": "ball overlaps the right-wall cup after release under the selected gravity vector",
+        "intended_strategy": "drag GRAVITY into the right-wall slot before release",
+        "common_wrong_strategy": "leave gravity on the floor or move it to the opposite wall",
+        "not_allowed": "text-only rule choice without physics motion",
+        "explanation": "Move the GRAVITY rule to the right wall so the ball falls sideways into the cup."
       },
       "scoring": {
         "speed_seconds": {
-          "great": 10,
-          "ok": 25
+          "great": 8,
+          "ok": 20
         },
         "action_count": {
           "great": 2,
@@ -387,25 +419,27 @@
       },
       "roasts": {
         "failure": [
-          "The pattern was three rows deep and you still fell into the kiddie pool.",
-          "You selected a normal square. Brave commitment to boring."
+          "Gravity obeyed you. That is the concerning part.",
+          "Wrong wall. Excellent confidence, poor universe."
         ],
         "delay": [
-          "One tile is wearing a fake mustache. Stare less dramatically."
+          "The cup is on the wall. Try making falling stupider."
         ],
         "scorecard": [
-          "You found the impostor square. The alphabet is shaken."
+          "You moved a word and bullied physics into compliance."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "three_by_three_grid",
-          "selected_cell_state",
-          "judge_face_stub"
+          "ball",
+          "right_wall_cup",
+          "gravity_tile",
+          "gravity_slots",
+          "direction_pulse"
         ]
       },
-      "uqiq_moment": "The center cell is 8, breaking a grid where every row otherwise repeats a letter."
+      "uqiq_moment": "The player drags the GRAVITY label to the right wall and the ball falls sideways into the cup."
     },
     {
       "id": "p01_l05_blink_tax",

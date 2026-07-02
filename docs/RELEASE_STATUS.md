@@ -10,7 +10,7 @@ Release prep is paused. The active priority is implementing the Polished Six-Lev
 
 ## Active Next Step
 
-- GitHub issue: [Implement Level 4 Gravity Has Handles physics-linked rearrange runner](https://github.com/scwlkr/UQIQ/issues/67)
+- GitHub issue: [Implement reveal layer and Level 5 Cup Blinks First runner](https://github.com/scwlkr/UQIQ/issues/68)
 - PRD: [`docs/prd/0005-polished-six-level-core.md`](prd/0005-polished-six-level-core.md)
 - Branch: none assigned yet.
 
@@ -43,21 +43,22 @@ Design source: [Wayfinder map: UQIQ tactile six-level core](https://github.com/s
 - Existing Pack 1 direct-touch prototypes are playable on phone.
 - Level 1 and Level 2 prove realish freehand physics drawing with collision-backed ramp/stopper solves.
 - Level 3 proves physics-linked rearrange: touch drag moves the cup, `Release` moves the ball, and completion comes from ball/cup overlap.
-- Current physical iPhone proof exists for Level 3: UQIQ `0.1.1 (20260702115314)` installed/launched on `17 Hoe Max`.
+- Level 4 proves physics-linked rule rearrange: touch drag moves `GRAVITY`, `Release` changes ball motion, and completion comes from right-wall gravity into the cup.
+- Current physical iPhone proof exists for Level 4: UQIQ `0.1.1 (20260702121834)` installed/launched on `17 Hoe Max`.
 
 ## Latest Verification
 
-- Level 3 focused verifier passed: `godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearrange.gd`.
-- README/local verification floor passed through `verify_issue_66_goalposts_rearrange.gd`.
-- `git diff --check` passed for the Level 3 implementation.
-- Level 3 iPhone smoke passed on `17 Hoe Max` with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702115314.png`.
+- Level 4 focused verifier passed: `godot --headless --path . --script res://scripts/verify_issue_67_gravity_handles_rearrange.gd`.
+- README/local verification floor passed through `verify_issue_67_gravity_handles_rearrange.gd`.
+- `git diff --check` passed for the Level 4 implementation.
+- Level 4 iPhone smoke passed on `17 Hoe Max` with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702121834.png`.
 
 ## Known Blockers
 
 - No current owner decision blocker for the prototype path.
-- No current physical iPhone blocker; Level 4 will need a fresh phone proof after implementation.
+- No current physical iPhone blocker; Level 5 will need a fresh phone proof after implementation.
 - App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until the six-Level core is stronger and scwlkr approves.
 
 ## Next Gate
 
-Implement Level 4 `Gravity Has Handles`: dragging `GRAVITY` changes the physics direction, `Release` starts the ball, wrong slots fail visibly, and the right-wall slot completes by ball/cup overlap.
+Implement Level 5 `Cup Blinks First`: reveal the hidden cup, hide it before drawing, let touch drawing affect physics, and complete by ball/hidden-cup overlap after `Release`.

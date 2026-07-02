@@ -96,7 +96,7 @@ func _run_clean_six_level_flow() -> void:
 	_use_roast()
 	_main.call("_handle_pattern_cell", "r1c1")
 	_main.call("_handle_pattern_submit")
-	_complete_with_scorecard(_levels[3], Callable(self, "_pattern_grid_win").bind(_levels[3]))
+	_complete_with_scorecard(_levels[3], Callable(self, "_rearrange_win").bind(_levels[3]))
 	_require(_profile.is_level_unlocked(5), "Level 5 should unlock after Level 4 completion.")
 
 	_start_level(_levels[4])
@@ -241,8 +241,16 @@ func _text_trap_wrong(level: Dictionary) -> void:
 	_main.call("_handle_text_submit")
 
 
-func _rearrange_win(_level: Dictionary) -> void:
-	_main.call("_set_rearrange_cup_center", Vector2(225, 243))
+func _rearrange_win(level: Dictionary) -> void:
+	_complete_rearrange_level(level)
+
+
+func _complete_rearrange_level(level: Dictionary) -> void:
+	var rules := _dictionary_from(level.get("rules", {}))
+	if str(rules.get("rearrange_mode", "")) == "move_rule_tile":
+		_main.call("_set_rearrange_rule_tile_slot", "right_wall_slot")
+	else:
+		_main.call("_set_rearrange_cup_center", Vector2(225, 243))
 	_main.call("_finish_rearrange_drag")
 	_main.call("_handle_rearrange_release")
 

@@ -334,6 +334,8 @@
       "prompt": "Find the cell that breaks the word-only pattern.",
       "rules": {
         "columns": 3,
+        "interaction_model": "direct_mark_cells",
+        "mark_count": 1,
         "cells": [
           {
             "id": "r1c1",

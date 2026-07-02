@@ -160,6 +160,7 @@ godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitbox
 godot --headless --path . --script res://scripts/verify_issue_64_first_ramp_freehand_physics.gd
 godot --headless --path . --script res://scripts/verify_issue_65_brake_check_freehand_stopper.gd
 godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearrange.gd
+godot --headless --path . --script res://scripts/verify_issue_67_gravity_handles_rearrange.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6 match the current playable Pack 1 prototype templates, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -204,7 +205,7 @@ godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearr
 
 `verify_issue_41_pack_6_direct_drawing.gd` is the Pack 6 direct drawing check. It verifies every Pack 6 Physics Draw Level renders a direct drawing surface instead of `Draw:` fallback buttons, rejects a bad short line, and completes through its encoded drawing gesture.
 
-`verify_issue_42_pattern_grid_interaction.gd` is the direct Pattern Grid check. It verifies Level 4 renders a markable grid instead of the old single-cell `Submit Pattern` flow, rejects a wrong row, and completes from marked grid state.
+`verify_issue_42_pattern_grid_interaction.gd` is the direct Pattern Grid check. It verifies Level 17 renders a markable grid instead of the old single-cell `Submit Pattern` flow, rejects a wrong row, and completes from marked grid state.
 
 `verify_issue_43_tactile_tap_logic.gd` is the tactile Tap Logic check. It verifies Level 7 renders a direct tap scene instead of answer-choice buttons, rejects a wrong direct tap, accepts mouse/touch-shaped input, and completes through Score Roastcard.
 
@@ -220,7 +221,7 @@ godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearr
 
 `verify_issue_53_physics_draw_ios_path.gd` is the Physics Draw iOS-path check. It verifies screen-touch drawing stays inside the draw surface, invalid flat lines fail, and a rising ramp classifies as `ramp_to_cup` before Release Ball completes Level 06.
 
-`verify_issue_54_neutral_targets.gd` is the neutral target styling check. It verifies Level 04 grid cells and Levels 07/08/10 tap targets start with role-neutral colors while wrong/correct input feedback still works.
+`verify_issue_54_neutral_targets.gd` is the neutral target styling check. It verifies Level 17 grid cells and Levels 07/08/10 tap targets start with role-neutral colors while wrong/correct input feedback still works.
 
 `verify_issue_55_phone_ui_hitboxes.gd` is the Pack 1 phone UI hitbox/readability check. It verifies Level 07 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with `portrait`, and notched-phone margins remain applied.
 
@@ -229,6 +230,8 @@ godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearr
 `verify_issue_65_brake_check_freehand_stopper.gd` is the Level 2 Brake Check freehand stopper check. It verifies the built-in starter chute, touch-created stopper collision, ramp/short/misplaced failures, Reset cleanup, and valid stopper completion by ball/cup overlap.
 
 `verify_issue_66_goalposts_rearrange.gd` is the Level 3 Goalposts Are Portable rearrange check. It verifies the fixed starter chute/ball, draggable cup, catch hint, touch drag bounds, Release-gated ball motion, wrong/no-move failures, Reset cleanup, and valid cup placement completion by ball/cup overlap.
+
+`verify_issue_67_gravity_handles_rearrange.gd` is the Level 4 Gravity Has Handles rearrange check. It verifies the fixed ball, right-wall cup, draggable `GRAVITY` rule tile, large gravity slots, touch drag snapping, Release-gated motion, wrong/no-slot failures, Reset cleanup, and valid right-wall gravity completion by ball/cup overlap.
 
 ## Desktop Smoke
 
@@ -275,6 +278,7 @@ Useful overrides:
 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_43_tactile_tap_logic.gd scripts/deploy_phone.sh
 UQIQ_PLAYTEST_LEVEL=5 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_45_tactile_memory_flash.gd scripts/deploy_phone.sh
 UQIQ_PLAYTEST_LEVEL=3 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_66_goalposts_rearrange.gd scripts/deploy_phone.sh
+UQIQ_PLAYTEST_LEVEL=4 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_67_gravity_handles_rearrange.gd scripts/deploy_phone.sh
 UQIQ_PLAYTEST_LEVEL=9 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_47_tactile_text_trap.gd scripts/deploy_phone.sh
 UQIQ_PLAYTEST_UNLOCK_ALL=1 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_48_debug_playtest_all.gd scripts/deploy_phone.sh
 UQIQ_DEVICE_ID=9820C039-3903-5542-9D4A-388ED65AEFDE scripts/deploy_phone.sh

@@ -22,12 +22,13 @@ func _initialize() -> void:
 	_boot_main_scene()
 	if _failed:
 		return
+	await process_frame
 
-	_verify_direct_pattern_grid()
+	await _verify_direct_pattern_grid()
 	if _failed:
 		return
 
-	print("Issue #42 Pattern Grid verification passed: Level 4 renders a direct mark-grid interaction, rejects a wrong row, and completes from marked grid state.")
+	print("Issue #42 Pattern Grid verification passed: Level 17 renders a direct mark-grid interaction, rejects a wrong row, and completes from marked grid state.")
 	_cleanup()
 	quit(0)
 
@@ -42,24 +43,28 @@ func _boot_main_scene() -> void:
 
 
 func _verify_direct_pattern_grid() -> void:
-	var level := _level_by_number(4)
+	var level := _level_by_number(17)
 	var level_id := str(level.get("id", ""))
+	var rules := _dictionary_from(level.get("rules", {}))
+	_require(str(rules.get("interaction_model", "")) == "direct_mark_cells", "Level 17 should carry the direct Pattern Grid interaction model.")
 
 	_main.call("_show_play_screen", level)
+	await process_frame
 	_require(_node_named(_main, "pattern_mark_grid") != null, "Pattern Grid should render a direct mark-grid container.")
 	_require(_node_named(_main, "pattern_mark_cell_r2c2") != null, "Pattern Grid should render named markable cells.")
 	_require(not _has_button_text(_main, "Submit Pattern"), "Direct Pattern Grid should not use Submit Pattern as the primary interaction.")
 
-	_press_cells(["r1c1", "r1c2", "r1c3"])
-	_require(not _profile.is_level_completed(level_id), "Wrong marked row should not complete Level 4.")
-	_require(int(_main.get("_tap_count")) == 3, "Wrong row should count one action per marked cell.")
+	_press_cells(["r1c1"])
+	_require(not _profile.is_level_completed(level_id), "Wrong marked cell should not complete Level 17.")
+	_require(int(_main.get("_tap_count")) == 1, "Wrong cell should count one action.")
 
 	_main.call("_show_play_screen", level)
-	_press_cells(["r2c1", "r2c2", "r2c3"])
-	_require(_profile.is_level_completed(level_id), "Marked broken row should complete Level 4.")
-	_require(_screen_has_label_text("Score Roastcard"), "Marked broken row should route to Score Roastcard.")
+	await process_frame
+	_press_cells(["r2c2"])
+	_require(_profile.is_level_completed(level_id), "Marked broken cell should complete Level 17.")
+	_require(_screen_has_label_text("Score Roastcard"), "Marked broken cell should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(best_attempt.get("action_count", 0)) == 3, "Three marked cells should persist as three actions.")
+	_require(int(best_attempt.get("action_count", 0)) == 1, "One marked cell should persist as one action.")
 
 
 func _press_cells(cell_ids: Array[String]) -> void:
@@ -68,7 +73,7 @@ func _press_cells(cell_ids: Array[String]) -> void:
 		_require(button != null, "Expected markable Pattern Grid cell %s." % cell_id)
 		if _failed:
 			return
-		button.emit_signal("pressed")
+		button.pressed.emit()
 
 
 func _level_by_number(level_number: int) -> Dictionary:
@@ -107,6 +112,12 @@ func _node_has_label_text(node: Node, text: String) -> bool:
 		if _node_has_label_text(child, text):
 			return true
 	return false
+
+
+func _dictionary_from(value: Variant) -> Dictionary:
+	if typeof(value) == TYPE_DICTIONARY:
+		return value
+	return {}
 
 
 func _require(condition: bool, message: String) -> void:

@@ -23,8 +23,9 @@ func _initialize() -> void:
 	_boot_main_scene()
 	if _failed:
 		return
+	await process_frame
 
-	_verify_pattern_grid_neutral_then_feedback()
+	await _verify_pattern_grid_neutral_then_feedback()
 	if _failed:
 		return
 
@@ -33,7 +34,7 @@ func _initialize() -> void:
 		if _failed:
 			return
 
-	print("Issue #54 neutral target verification passed: Level 04 grid and Levels 07/08/10 tap targets start role-neutral while wrong/correct input feedback still works.")
+	print("Issue #54 neutral target verification passed: Level 17 grid and Levels 07/08/10 tap targets start role-neutral while wrong/correct input feedback still works.")
 	_cleanup()
 	quit(0)
 
@@ -49,22 +50,24 @@ func _boot_main_scene() -> void:
 
 
 func _verify_pattern_grid_neutral_then_feedback() -> void:
-	var level := _level_by_number(4)
+	var level := _level_by_number(17)
 	var level_id := str(level.get("id", ""))
 	_main.call("_show_play_screen", level)
+	await process_frame
 
 	var cell_ids := ["r1c1", "r1c2", "r1c3", "r2c1", "r2c2", "r2c3", "r3c1", "r3c2", "r3c3"]
-	_require(_buttons_share_normal_color(cell_ids.map(func(cell_id): return "pattern_mark_cell_%s" % cell_id)), "Level 04 grid cells should start with one neutral color.")
-	_require(not _button_is_color(_node_named(_main, "pattern_mark_cell_r2c2") as Button, COLOR_RED), "Level 04 correct cell should not start red.")
+	_require(_buttons_share_normal_color(cell_ids.map(func(cell_id): return "pattern_mark_cell_%s" % cell_id)), "Level 17 grid cells should start with one neutral color.")
+	_require(not _button_is_color(_node_named(_main, "pattern_mark_cell_r2c2") as Button, COLOR_RED), "Level 17 correct cell should not start red.")
 
-	_press_pattern_cells(["r1c1", "r1c2", "r1c3"])
-	_require(not _profile.is_level_completed(level_id), "Wrong Level 04 row should not complete.")
-	_require(str(_main.get("_judge_state")) == "fail", "Wrong Level 04 row should still show fail feedback.")
+	_press_pattern_cells(["r1c1"])
+	_require(not _profile.is_level_completed(level_id), "Wrong Level 17 cell should not complete.")
+	_require(str(_main.get("_judge_state")) == "fail", "Wrong Level 17 cell should still show fail feedback.")
 
 	_main.call("_show_play_screen", level)
-	_press_pattern_cells(["r2c1", "r2c2", "r2c3"])
-	_require(_profile.is_level_completed(level_id), "Correct Level 04 row should still complete.")
-	_require(_screen_has_label_text("Score Roastcard"), "Correct Level 04 row should route to Score Roastcard.")
+	await process_frame
+	_press_pattern_cells(["r2c2"])
+	_require(_profile.is_level_completed(level_id), "Correct Level 17 cell should still complete.")
+	_require(_screen_has_label_text("Score Roastcard"), "Correct Level 17 cell should route to Score Roastcard.")
 
 
 func _verify_tap_targets_neutral_then_feedback(level_number: int) -> void:
