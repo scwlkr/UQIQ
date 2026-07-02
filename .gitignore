@@ -1,6 +1,7 @@
 # Godot
 .godot/
 .import/
+docs/app-store/screenshots/*.import
 export.cfg
 export_presets.cfg
 
@@ -17,3 +18,4 @@ exports/
 # Agents
 AGENTS.md
 .agent-board/
+.agents/
