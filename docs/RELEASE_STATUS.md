@@ -4,12 +4,12 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; external testers are paused until the app is more advanced.
+Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; internal-only maturity backlog is the active slice.
 
 ## Active Next Step
 
-- GitHub issue: [#34 External TestFlight beta approval and tester details](https://github.com/scwlkr/UQIQ/issues/34)
-- Branch: `codex/issue-34-external-beta-blocker`
+- GitHub issue: [#35 Internal-only app maturity gaps](https://github.com/scwlkr/UQIQ/issues/35)
+- Branch: `codex/issue-35-internal-maturity-audit`
 
 ## Latest Proof
 
@@ -30,6 +30,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; externa
 - scwlkr confirmed `dev@wlkrlabs.com` as the support/feedback email.
 - External testers are intentionally deferred; scwlkr is the only tester for the foreseeable future.
 - UQIQ `0.1.0 (1)` remains internal-TestFlight-only and valid for internal testing.
+- Internal-only maturity backlog added: `docs/INTERNAL_TESTFLIGHT_MATURITY_BACKLOG.md`.
 - Physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
 - `com.wlkrlabs.uqiq` device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png`.
 - Device smoke covered 60-spec load, isolated Local Profile, Level List, Play -> Score Roastcard, save/load, Dur spend/recovery, and no launch crash.
@@ -40,7 +41,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; externa
 - Issue #19 scoring/Roastcard slice closed with proof: `90c2cec`.
 - Polish Pass PRD added for next slices: `69f0cdf`.
 - Latest full floor passed through `verify_issue_23_ui_readability.gd`.
-- GitHub `next-step` label points to issue #34.
+- GitHub `next-step` label points to issue #35.
 
 ## Known Blockers
 
@@ -49,4 +50,4 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; externa
 
 ## Next Gate Needing scwlkr
 
-Finish recording the internal-only beta decision, then continue app-readiness work before any external tester path.
+Finish the maturity backlog, then verify TestFlight portrait orientation before any external tester path.
