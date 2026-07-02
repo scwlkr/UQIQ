@@ -63,6 +63,7 @@ var _feedback_label: Label
 var _text_input: LineEdit
 var _pressed_direct_tap_target_id := ""
 var _direct_text_answer_label: Label
+var _direct_text_answer_slot: PanelContainer
 var _last_direct_text_tile_id := ""
 var _pressed_direct_text_tile_id := ""
 var _selected_drag_id := ""
@@ -436,6 +437,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_text_input = null
 	_pressed_direct_tap_target_id = ""
 	_direct_text_answer_label = null
+	_direct_text_answer_slot = null
 	_last_direct_text_tile_id = ""
 	_pressed_direct_text_tile_id = ""
 	_last_direct_tap_target_id = ""
@@ -1281,6 +1283,7 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 	answer_slot.custom_minimum_size = answer_slot.size
 	answer_slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
 	surface.add_child(answer_slot)
+	_direct_text_answer_slot = answer_slot
 
 	_direct_text_answer_label = _new_label("_", 24, COLOR_INK)
 	_direct_text_answer_label.name = "text_answer_slot_label"
@@ -1861,6 +1864,7 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: String, tile: Control) -> void:
 	if _is_primary_press(event):
 		_reset_direct_sibling_panel_styles(tile, "text_tile_")
+		_reset_direct_text_answer_slot()
 		_pressed_direct_text_tile_id = tile_id
 		if tile != null and is_instance_valid(tile):
 			_pulse_control(tile)
@@ -1889,7 +1893,14 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 			_apply_direct_fail_panel_style(tile)
 	if _direct_text_answer_label != null:
 		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
-		_pulse_control(_direct_text_answer_label.get_parent() as Control, 0.985, 0.04)
+		if _direct_text_answer_slot != null and is_instance_valid(_direct_text_answer_slot):
+			if is_correct:
+				_apply_direct_selected_panel_style(_direct_text_answer_slot)
+			else:
+				_apply_direct_fail_panel_style(_direct_text_answer_slot)
+			_pulse_control(_direct_text_answer_slot, 0.985, 0.04)
+		else:
+			_pulse_control(_direct_text_answer_label.get_parent() as Control, 0.985, 0.04)
 
 	_tap_count += 1
 	_trigger_feedback("tap")
@@ -2388,6 +2399,12 @@ func _apply_direct_fail_panel_style(panel: Control) -> void:
 		return
 	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_RED.darkened(0.18), COLOR_RED, 8))
 	_shake_control(panel)
+
+
+func _reset_direct_text_answer_slot() -> void:
+	if _direct_text_answer_slot == null or not is_instance_valid(_direct_text_answer_slot):
+		return
+	_direct_text_answer_slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
 
 
 func _reset_direct_sibling_panel_styles(panel: Control, name_prefix: String) -> void:

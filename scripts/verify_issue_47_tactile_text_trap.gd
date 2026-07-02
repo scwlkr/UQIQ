@@ -86,9 +86,12 @@ func _verify_tactile_text_trap() -> void:
 	_require(_panel_border_color(blank_tile) != selected_border, "Wrong direct Text Trap tile should leave selected contact feedback.")
 	_require(_panel_border_color(blank_tile).is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct Text Trap tile should frame the tile as a fail state.")
 	_require(_failure_shake_count(blank_tile) > 0, "Wrong direct Text Trap tile should shake the failed tile.")
+	_require(_panel_border_color(slot).is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct Text Trap tile should frame the answer slot as a fail state.")
+	_require(_failure_shake_count(slot) > 0, "Wrong direct Text Trap tile should shake the answer slot.")
 	var empty_touch_position := _touch_position(empty_tile)
 	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true, empty_touch_position), "empty", "empty", empty_tile)
 	_require(_panel_border_color(blank_tile).is_equal_approx(Color(0.12, 0.58, 0.92)), "Starting a new direct Text Trap press should reset the previous fail frame.")
+	_require(_panel_border_color(slot).is_equal_approx(Color(0.12, 0.58, 0.92)), "Starting a new direct Text Trap press should reset the answer slot fail frame.")
 	_main.call("_handle_direct_text_tile_input", _screen_touch_event(false, Vector2(-500, -500)), "empty", "empty", empty_tile)
 
 	_main.call("_show_play_screen", level)
