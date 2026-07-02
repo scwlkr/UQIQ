@@ -75,6 +75,7 @@ func _verify_tactile_memory_flash() -> void:
 	_require(int(_main.get("_tap_count")) == 0, "Direct Memory Flash empty clear should not spend an action.")
 	_require(str(_main.get("_last_direct_memory_tile_id")).is_empty(), "Direct Memory Flash empty clear should not record CLEAR as a tile.")
 	_require(_screen_has_label_text("Recall row ready."), "Direct Memory Flash empty clear should keep ready-state feedback.")
+	_require(_memory_tile_has_border("CLEAR", Color(0.96, 0.43, 0.13)), "Direct Memory Flash empty clear should keep CLEAR on its orange idle frame.")
 
 	_press_tile_with_touch("SUN")
 	_press_clear_with_touch()
@@ -82,6 +83,7 @@ func _verify_tactile_memory_flash() -> void:
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "CLEAR", "Direct Memory Flash non-empty clear should record the CLEAR tile.")
 	var memory_after_clear: Array = _main.get("_memory_input")
 	_require(memory_after_clear.is_empty(), "Direct Memory Flash non-empty clear should reset recall input.")
+	_require(_memory_tile_has_border("CLEAR", Color(0.96, 0.43, 0.13)), "Direct Memory Flash non-empty clear should return CLEAR to its orange idle frame.")
 
 	_main.call("_show_play_screen", level)
 	_press_tiles_with_touch(["DUR", "SUN", "MOON"])
@@ -163,6 +165,14 @@ func _memory_tiles_have_selected_border(item_ids: Array[String]) -> bool:
 		if _panel_border_color(tile).is_equal_approx(Color(1.00, 0.78, 0.15)):
 			return true
 	return false
+
+
+func _memory_tile_has_border(item_id: String, expected_color: Color) -> bool:
+	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+	_require(tile != null, "Expected direct memory tile %s." % item_id)
+	if tile == null:
+		return false
+	return _panel_border_color(tile).is_equal_approx(expected_color)
 
 
 func _panel_border_color(control: Control) -> Color:

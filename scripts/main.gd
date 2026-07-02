@@ -1819,10 +1819,7 @@ func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void
 			_last_direct_memory_tile_id = "CLEAR"
 		if tile != null and is_instance_valid(tile):
 			_pulse_control(tile)
-			if had_memory_input:
-				_apply_direct_selected_panel_style(tile)
-			else:
-				_apply_direct_base_panel_style(tile, COLOR_ORANGE)
+			_apply_direct_base_panel_style(tile, COLOR_ORANGE)
 		_handle_memory_clear()
 		_update_memory_recall_slots()
 		_mark_input_handled()
