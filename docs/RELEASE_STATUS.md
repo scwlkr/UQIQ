@@ -81,6 +81,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Thirty-third local polish loop changed marked Pattern Grid cells to the same framed yellow contact feedback used by other direct selections; screenshot capture stayed stable and full verification floor passed again.
 - Thirty-fourth local polish loop framed the play header UQIQ and Dur counters as compact status chips so score state matches the app's tactile chrome; play screenshots refreshed and full verification floor passed again.
 - Thirty-fifth local polish loop made Drag Logic drop zones read as recessed slots instead of movable tiles and removed the ASCII arrow hint; Drag Logic screenshot refreshed and full verification floor passed again.
+- Thirty-sixth local polish loop strengthened Physics Draw guide-line and lift/draw cue contrast so the drawing gesture reads naturally on the playfield; Physics Draw screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

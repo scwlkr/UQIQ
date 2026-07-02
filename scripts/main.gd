@@ -1357,13 +1357,13 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(guide)
 
-	var draw_hint := _new_label("DRAW", 11, COLOR_MUTED)
+	var draw_hint := _new_label("DRAW", 11, COLOR_PANEL_ALT)
 	draw_hint.position = Vector2(20, 84)
 	draw_hint.size = Vector2(80, 22)
 	draw_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(draw_hint)
 
-	var lift_hint := _new_label("LIFT TO TEST", 11, COLOR_MUTED)
+	var lift_hint := _new_label("LIFT TO TEST", 11, COLOR_PANEL_ALT)
 	lift_hint.position = Vector2(176, 216)
 	lift_hint.size = Vector2(138, 22)
 	lift_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -1371,8 +1371,8 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 
 	var guide_line := Line2D.new()
 	guide_line.name = "physics_draw_hint_line"
-	guide_line.width = 3.0
-	guide_line.default_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.28)
+	guide_line.width = 4.0
+	guide_line.default_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.52)
 	guide_line.add_point(Vector2(78, 218))
 	guide_line.add_point(Vector2(154, 156))
 	guide_line.add_point(Vector2(240, 108))
