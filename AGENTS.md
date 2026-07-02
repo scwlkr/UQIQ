@@ -8,4 +8,9 @@
 ## Goal Handling
 
 - For `/goal` prompts, do not call `create_goal`; read the objective file and continue under the active goal.
-- Default reusable release objective: `docs/goals/app-store-release-goal.md`.
+
+## Skill Files
+
+- before beginning a task always read the `.agents/` skills folder names, and see if any might be applicable to the given task. 
+
+ 
