@@ -8,14 +8,16 @@ Polish Pass.
 
 ## Active Next Step
 
-- GitHub issue: [#19 Tune UQIQ Score and Score Roastcards](https://github.com/scwlkr/UQIQ/issues/19)
-- Branch: `codex/issue-19-tune-uqiq-score`
+- GitHub issue: [#20 Add minimal audio and haptics](https://github.com/scwlkr/UQIQ/issues/20)
+- Branch: `codex/issue-20-add-minimal-audio-haptics`
 
 ## Latest Proof
 
-- Issue #19 local implementation verified on 2026-07-01 with Godot `4.7.stable.official.5b4e0cb0f`.
+- Issue #19 scoring/Roastcard slice closed with proof: `90c2cec`.
+- Polish Pass PRD added for next slices: `69f0cdf`.
+- Verified on 2026-07-01 with Godot `4.7.stable.official.5b4e0cb0f`.
 - Passed: Godot import/run checks plus README verification floor through `verify_issue_19_scoring.gd`.
-- Latest pushed commit: pending.
+- GitHub `next-step` label now points only to open issue #20.
 
 ## Known Blockers
 
