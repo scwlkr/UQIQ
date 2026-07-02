@@ -32,6 +32,14 @@ _Avoid_: Tap level, button puzzle
 A Level Template where the solution depends on dragging an object, text, or UI element into a meaningful position.
 _Avoid_: Drag level, move puzzle
 
+**Rearrange Level**:
+A tactile Level where the player drags objects, labels, goal markers, buttons, obstacles, or screen pieces to change what the playfield means. Rearrange should feel like manipulating the puzzle interface itself, not filling a matching worksheet.
+_Avoid_: Static matching minigame, drag-and-drop quiz, inventory sorting
+
+**Physics-Linked Rearrange**:
+The preferred Rearrange pattern: dragging changes the physics setup or meaning of the playfield, such as moving a goal, gravity label, obstacle, launch control, rule tile, or screen piece before the physics action resolves.
+_Avoid_: Rearrange with no effect on motion, disconnected matching task, decorative drag
+
 **Text Trap**:
 A Level Template where the solution depends on interpreting, disobeying, or reframing a written prompt.
 _Avoid_: Word problem, trick question
@@ -43,6 +51,10 @@ _Avoid_: Pattern puzzle, grid puzzle
 **Memory Flash**:
 A Level Template where the player briefly sees information, then must recall order, position, identity, or count.
 _Avoid_: Memory puzzle, recall level
+
+**Memory/Reveal Level**:
+A tactile Level where briefly revealed information changes how the player draws, rearranges, or interprets the physics setup. Memory/Reveal should support the tactile puzzle rather than become pure recall.
+_Avoid_: Simon-style recall, standalone memory quiz, memorization with no physical consequence
 
 **Physics Draw**:
 A Level Template where the player draws or places simple geometry so a physics object reaches a target. UQIQ should treat Draw/Shape play as the strongest Level family: the interaction style the game is most known for and spends the most design energy on.
@@ -160,6 +172,10 @@ _Avoid_: Global leaderboard, Game Center score, online ranking
 The compact post-Level score breakdown showing funny scoring deltas such as speed, action count, Roast penalty, and absurd flavor labels without exposing the full formula.
 _Avoid_: Score report, detailed formula, result screen
 
+**Core-First Feedback**:
+The current feedback priority while proving the Polished Six-Level Core: keep completion and failure feedback lightweight, but deprioritize Dur Token loops, detailed UQIQ Score tuning, and Score Roastcard polish until the six Levels feel excellent.
+_Avoid_: Scoring-first polish, reward-system churn, Roastcard work before core play
+
 **Final Roastcard**:
 The post-Level-60 ending screen showing final UQIQ Score, a savage certificate-style result, and a replay prompt.
 _Avoid_: Ending cutscene, story finale, credits sequence
@@ -197,8 +213,20 @@ The v1.0 difficulty posture: average players should be able to finish all 60 Lev
 _Avoid_: Stuck forever, trivial, hardcore puzzle difficulty
 
 **Polished Six-Level Core**:
-The current product-definition target before scaling: perfect six total Levels across the strongest tactile Level families before adding a large content set. The current target mix is two Draw/Shape Levels, two Rearrange Levels, and two Memory/Reveal Levels. Text, Tap, and Pattern ideas can appear as modifiers inside those Levels rather than equal headline families.
+The current product-definition target before scaling: perfect six total Levels across the strongest tactile Level families before adding a large content set. The current target mix is two Draw/Shape Levels, two Rearrange Levels, and two Memory/Reveal Levels. Text, Tap, and Pattern ideas can appear as modifiers inside those Levels rather than equal headline families. This is a prototype/TestFlight milestone before deciding the final v1.0 level count, not the v1.0 launch scope itself.
 _Avoid_: 60-Level content push, broad content factory, adding levels before the core feels good
+
+**Six-Level Progression**:
+The Polished Six-Level Core should feel like a small progression, not six disconnected demos. Each Level should build on the previous feel: learn the touch grammar, encounter a twist, then transfer that tactile logic into Rearrange and Memory/Reveal variants.
+_Avoid_: Showcase sampler, mechanic demo set, disconnected prototypes
+
+**Draw-First Opening**:
+The first playable Level should introduce Freehand Physics Drawing immediately. It should be simple enough to solve by drawing a ramp, bridge, blocker, or guide that moves an object into a goal, proving the core interaction in the first minute.
+_Avoid_: Non-drawing tutorial opener, answer-choice first impression, delayed core mechanic
+
+**Second-Level Drawing Twist**:
+The second playable Level should reuse Freehand Physics Drawing but require a concept twist instead of harder execution. The player should realize the obvious ramp/bridge answer is wrong and solve by drawing a stopper, counterweight, shield, blocker, redirect, or similar idea.
+_Avoid_: Early dexterity spike, same ramp but harder, precision-only physics
 
 **12+ Rating Target**:
 The intended App Store age-rating posture for v1.0. The final rating comes from Apple's questionnaire, but UQIQ should avoid content that would push the game toward 17+.
