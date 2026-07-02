@@ -1138,8 +1138,10 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 				continue
 
 			var cell_id := str(cell.get("id", ""))
-			var cell_button := _make_button(str(cell.get("label", "?")), _concealed_play_piece_color(cell), Vector2(86, 64))
+			var cell_button := _make_button("TAP\n%s" % str(cell.get("label", "?")), COLOR_PANEL_ALT, Vector2(86, 70))
 			cell_button.name = "pattern_mark_cell_%s" % cell_id
+			cell_button.add_theme_font_size_override("font_size", 16)
+			_apply_pattern_button_style(cell_button, COLOR_PANEL_ALT, COLOR_BLUE)
 			cell_button.pressed.connect(Callable(self, "_handle_pattern_mark_cell").bind(cell_id, cell_button))
 			grid.add_child(cell_button)
 			_pattern_cell_buttons[cell_id] = cell_button
@@ -1922,6 +1924,16 @@ func _flat_box(color: Color, radius: int) -> StyleBoxFlat:
 	return box
 
 
+func _framed_box(color: Color, border_color: Color, radius: int) -> StyleBoxFlat:
+	var box := _flat_box(color, radius)
+	box.border_width_left = 2
+	box.border_width_top = 2
+	box.border_width_right = 2
+	box.border_width_bottom = 2
+	box.border_color = border_color
+	return box
+
+
 func _target_color(target: Dictionary) -> Color:
 	var role := str(target.get("role", "neutral"))
 	if role == "correct":
@@ -2166,10 +2178,15 @@ func _hide_direct_memory_flash(generation: int = -1) -> void:
 
 func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
 	var is_marked := _pattern_marked_cells.has(cell_id)
-	var color := COLOR_YELLOW if is_marked else _concealed_play_piece_color(_pattern_cell_by_id(cell_id))
-	button.add_theme_stylebox_override("normal", _flat_box(color, 8))
-	button.add_theme_stylebox_override("hover", _flat_box(color.lightened(0.08), 8))
-	button.add_theme_stylebox_override("pressed", _flat_box(color.darkened(0.08), 8))
+	var color := COLOR_YELLOW if is_marked else COLOR_PANEL_ALT
+	var border_color := COLOR_YELLOW.darkened(0.18) if is_marked else COLOR_BLUE
+	_apply_pattern_button_style(button, color, border_color)
+
+
+func _apply_pattern_button_style(button: Button, color: Color, border_color: Color) -> void:
+	button.add_theme_stylebox_override("normal", _framed_box(color, border_color, 8))
+	button.add_theme_stylebox_override("hover", _framed_box(color.lightened(0.08), border_color, 8))
+	button.add_theme_stylebox_override("pressed", _framed_box(color.darkened(0.08), border_color, 8))
 
 
 func _pattern_cell_by_id(cell_id: String) -> Dictionary:
