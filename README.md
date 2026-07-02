@@ -222,6 +222,31 @@ Physical iPhone proof requires Apple signing access, Xcode, and a connected iPho
 
 Current setup/proof status is tracked in [`docs/IOS_TESTING_STATUS.md`](docs/IOS_TESTING_STATUS.md).
 
+Quick phone deploy loop:
+
+```sh
+scripts/deploy_phone.sh
+```
+
+The script requires Godot, Xcode command-line tools, `xcrun`, `xcodebuild`, and `jq`. It runs a targeted verifier, exports a temporary iOS project under `/tmp/uqiq-ios-quick`, builds with Xcode automatic signing, installs with `devicectl`, launches UQIQ, and captures screenshot proof. It does not commit generated iOS export artifacts.
+
+One-time wireless setup:
+
+1. Plug the iPhone into the Mac.
+2. Open Xcode's Devices window and enable network connection for the phone.
+3. Trust the Mac, keep Developer Mode enabled, unlock the phone, then confirm `xcrun devicectl list devices` still shows the physical iPhone after unplugging.
+
+Useful overrides:
+
+```sh
+UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_43_tactile_tap_logic.gd scripts/deploy_phone.sh
+UQIQ_DEVICE_ID=9820C039-3903-5542-9D4A-388ED65AEFDE scripts/deploy_phone.sh
+UQIQ_XCODE_DEVICE_ID=00008150-001435EA1480401C scripts/deploy_phone.sh
+UQIQ_BUILD_NUMBER=3 scripts/deploy_phone.sh
+```
+
+If launch fails with a locked-device error, unlock the iPhone and rerun the same command.
+
 Godot/Xcode path:
 
 1. Install Godot iOS export templates for the same Godot 4.x version used locally.

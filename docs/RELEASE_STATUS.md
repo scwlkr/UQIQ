@@ -8,8 +8,8 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Active Next Step
 
-- GitHub issue: [#43 Build tactile Tap Logic prototype](https://github.com/scwlkr/UQIQ/issues/43)
-- Branch: `codex/issue-43-tactile-tap-logic`
+- GitHub issue: [#44 Add quick wireless iPhone deploy loop](https://github.com/scwlkr/UQIQ/issues/44)
+- Branch: `codex/issue-44-quick-phone-deploy`
 
 ## Current Gameplay Proof
 
@@ -20,9 +20,11 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Latest Verification
 
+- Issue #43 closed with proof in commit `ada873e` and merge `42dcafd`.
 - `verify_issue_43_tactile_tap_logic.gd` passed.
 - Affected checks passed: `verify_issue_40_interaction_core.gd`, `verify_issue_42_pattern_grid_interaction.gd`, `verify_issue_4.gd`, `verify_issue_5_desktop_smoke.gd`, `verify_issue_7_pack_1_smoke.gd`.
 - Full README verification floor passed through `verify_issue_43_tactile_tap_logic.gd`.
+- `scripts/deploy_phone.sh` passed on physical iPhone `17 Hoe Max`: installed/launched UQIQ `0.1.1 (20260701224540)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701224540.png`.
 
 ## Known Blockers
 
@@ -31,4 +33,4 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Next Gate
 
-Close #43 with proof, then route the next `next-step` issue to the fastest phone-feel iteration path.
+Close #44 with proof, then route the next `next-step` back to gameplay-feel iteration.
