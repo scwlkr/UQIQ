@@ -467,10 +467,15 @@ func _show_play_screen(level: Dictionary) -> void:
 
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	actions.add_theme_constant_override("separation", 10)
 	root.add_child(actions)
 
-	var roast_button := _make_button("Roast", COLOR_ORANGE)
+	var roast_button := _make_button("Roast", COLOR_PANEL_ALT, Vector2(148, 46))
+	roast_button.add_theme_color_override("font_color", COLOR_ORANGE)
+	roast_button.add_theme_stylebox_override("normal", _framed_box(COLOR_PANEL_ALT, COLOR_ORANGE, 8))
+	roast_button.add_theme_stylebox_override("hover", _framed_box(COLOR_PANEL_ALT.lightened(0.04), COLOR_ORANGE, 8))
+	roast_button.add_theme_stylebox_override("pressed", _framed_box(COLOR_PANEL_ALT.darkened(0.04), COLOR_ORANGE.darkened(0.08), 8))
 	roast_button.pressed.connect(Callable(self, "_handle_roast_action"))
 	actions.add_child(roast_button)
 
