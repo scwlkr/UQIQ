@@ -75,7 +75,7 @@ func _assert_level_list() -> bool:
 	_main.call("_show_level_list")
 	if not _require(_screen_has_label_text("UQIQ"), "Level List should render UQIQ title."):
 		return false
-	if not _require(_screen_has_label_containing("Loaded 60 Level Specs"), "Level List should render the 60-Level load status."):
+	if not _require(_screen_has_label_containing("60 levels ready across 6 packs"), "Level List should render the 60-Level ready status."):
 		return false
 
 	_checks.append("Level List rendered on device")

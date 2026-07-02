@@ -352,7 +352,7 @@ func _add_level_row(parent: Node, level: Dictionary) -> void:
 	var level_number := int(level.get("level_number", 0))
 	var title := str(level.get("title", "Untitled"))
 	var is_playable := _is_level_playable(level)
-	var button_text := "%02d  %s  |  %s" % [level_number, title, _level_state_text(level)]
+	var button_text := _level_row_button_text(level)
 	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 8)
@@ -2086,6 +2086,17 @@ func _level_state_text(level: Dictionary) -> String:
 		return "playable"
 
 	return "future placeholder"
+
+
+func _level_row_button_text(level: Dictionary) -> String:
+	var level_number := int(level.get("level_number", 0))
+	var title := str(level.get("title", "Untitled"))
+	var state := _level_state_text(level)
+	if state == "playable":
+		return "%02d  %s" % [level_number, title]
+	if state.begins_with("completed - replay"):
+		return "%02d  %s  |  replay" % [level_number, title]
+	return "%02d  %s  |  %s" % [level_number, title, state]
 
 
 func _level_button_color(level: Dictionary) -> Color:
