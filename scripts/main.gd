@@ -1732,7 +1732,7 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 			return
 		_last_direct_tap_target_id = target_id
 		if not _is_tap_solution(target_id):
-			_apply_direct_base_panel_style(pad)
+			_apply_direct_fail_panel_style(pad)
 		_handle_tap_target(target_id)
 		_mark_input_handled()
 
@@ -1764,7 +1764,7 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 		if is_correct:
 			_apply_direct_selected_panel_style(tile)
 		else:
-			_apply_direct_base_panel_style(tile)
+			_apply_direct_fail_panel_style(tile)
 	if _direct_text_answer_label != null:
 		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
 		_pulse_control(_direct_text_answer_label.get_parent() as Control, 0.985, 0.04)
@@ -2228,6 +2228,12 @@ func _apply_direct_selected_panel_style(panel: Control) -> void:
 	if panel == null or not is_instance_valid(panel):
 		return
 	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_YELLOW.darkened(0.16), COLOR_YELLOW, 8))
+
+
+func _apply_direct_fail_panel_style(panel: Control) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
+	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_RED.darkened(0.18), COLOR_RED, 8))
 
 
 func _target_color(target: Dictionary) -> Color:

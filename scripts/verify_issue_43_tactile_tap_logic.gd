@@ -76,7 +76,8 @@ func _verify_tactile_tap_logic() -> void:
 	_require(not _profile.is_level_completed(level_id), "Wrong direct tap should not complete Level 1.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct tap should count as one action.")
 	_require(str(_main.get("_last_direct_tap_target_id")) == "correct_button", "Direct tap handler should record the touched decoy target.")
-	_require(_panel_border_color(decoy_pad) != selected_border, "Wrong direct tap should return the target to its base frame instead of staying selected.")
+	_require(_panel_border_color(decoy_pad) != selected_border, "Wrong direct tap should leave selected contact feedback.")
+	_require(_panel_border_color(decoy_pad).is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct tap should frame the target as a fail state.")
 
 	_main.call("_show_play_screen", level)
 	correct_pad = _node_named(_main, "tap_scene_target_wrong_button") as Control

@@ -79,7 +79,8 @@ func _verify_tactile_text_trap() -> void:
 	_require(not _profile.is_level_completed(level_id), "Wrong direct Text Trap tile should not complete Level 3.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct Text Trap tile should count as one action.")
 	_require(str(_main.get("_last_direct_text_tile_id")) == "blank", "Direct Text Trap handler should record the wrong tile.")
-	_require(_panel_border_color(blank_tile) != selected_border, "Wrong direct Text Trap tile should return to its base frame instead of staying selected.")
+	_require(_panel_border_color(blank_tile) != selected_border, "Wrong direct Text Trap tile should leave selected contact feedback.")
+	_require(_panel_border_color(blank_tile).is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct Text Trap tile should frame the tile as a fail state.")
 
 	_main.call("_show_play_screen", level)
 	nothing_tile = _node_named(_main, "text_tile_nothing") as Control
