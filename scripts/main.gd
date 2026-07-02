@@ -2385,10 +2385,13 @@ func _apply_screen_transition(root: Control, transition_name: String) -> void:
 		return
 	_last_transition_name = transition_name
 	_transition_counts[transition_name] = int(_transition_counts.get(transition_name, 0)) + 1
-	root.modulate = Color(1.0, 1.0, 1.0, 0.92)
+	root.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
+		return
 	if is_inside_tree():
+		root.modulate.a = 0.0
 		var tween := create_tween()
-		tween.tween_property(root, "modulate:a", 1.0, 0.08)
+		tween.tween_property(root, "modulate:a", 1.0, 0.10)
 
 
 func _setup_feedback() -> void:
