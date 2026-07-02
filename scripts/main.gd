@@ -1042,7 +1042,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 
 			surface.add_child(_make_direct_tap_target(target, index))
 
-	_add_feedback(stage_box, "Tap what is actually true.")
+	_add_feedback(stage_box, "No object tapped.")
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
@@ -1084,7 +1084,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 			playfield.add_child(zone)
 			_drag_drop_zones[str(target.get("id", ""))] = zone
 
-	_add_feedback(stage_box, "Drop the lie where it belongs.")
+	_add_feedback(stage_box, "No tile moving.")
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
@@ -1144,7 +1144,7 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 			if typeof(tile_data) == TYPE_DICTIONARY:
 				surface.add_child(_make_text_tile(tile_data, index))
 
-	_add_feedback(stage_box, "Tap a word. The slot decides.")
+	_add_feedback(stage_box, "Slot empty.")
 
 
 func _render_pattern_grid(stage_box: VBoxContainer) -> void:
@@ -1280,7 +1280,7 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 
 	_render_memory_recall_slots(surface)
 	_render_memory_tile_bank(surface)
-	_add_feedback(stage_box, "Fill the row from memory.")
+	_add_feedback(stage_box, "Row empty.")
 
 
 func _render_memory_recall_slots(surface: Control) -> void:
@@ -1416,7 +1416,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_result_label)
 
-	_add_feedback(stage_box, "Draw, then lift to test.")
+	_add_feedback(stage_box, "No ramp drawn.")
 
 
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
