@@ -2219,6 +2219,9 @@ func _flat_box(color: Color, radius: int) -> StyleBoxFlat:
 	box.content_margin_right = 14
 	box.content_margin_top = 10
 	box.content_margin_bottom = 10
+	box.shadow_color = Color(0.0, 0.0, 0.0, 0.20)
+	box.shadow_size = 4
+	box.shadow_offset = Vector2(0, 2)
 	return box
 
 
