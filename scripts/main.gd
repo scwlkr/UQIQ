@@ -693,7 +693,7 @@ func _handle_physics_draw(draw_id: String) -> void:
 	_last_physics_result = "selected"
 	_physics_has_drawn_line = true
 	_update_physics_choice_label()
-	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(draw_id)
+	_feedback_label.text = "Drew %s. Release to test it." % _physics_draw_label(draw_id)
 
 
 func _handle_physics_release() -> void:
@@ -1381,7 +1381,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	cup.size = Vector2(76, 28)
 	surface.add_child(cup)
 
-	var guide := _new_label("Draw ramp: BALL to CUP", 18, COLOR_INK)
+	var guide := _new_label("Draw toward the cup", 18, COLOR_INK)
 	guide.position = Vector2(20, 18)
 	guide.size = Vector2(300, 30)
 	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1414,12 +1414,12 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_physics_line.default_color = COLOR_BLUE
 	surface.add_child(_physics_line)
 
-	_physics_choice_label = _new_label("Line: waiting", 16, COLOR_INK)
+	_physics_choice_label = _new_label("Path: ready", 16, COLOR_INK)
 	_physics_choice_label.position = Vector2(20, 52)
 	_physics_choice_label.size = Vector2(300, 26)
 	_physics_choice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_choice_label)
-	_physics_result_label = _new_label("Test: lift to release", 16, COLOR_INK)
+	_physics_result_label = _new_label("Waiting for a path", 16, COLOR_INK)
 	_physics_result_label.position = Vector2(20, 248)
 	_physics_result_label.size = Vector2(320, 26)
 	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1439,10 +1439,10 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	surface_box.add_theme_constant_override("separation", 6)
 	surface.add_child(surface_box)
 
-	_add_label(surface_box, "Draw ramp: BALL to CUP", 18, COLOR_INK)
-	_physics_choice_label = _new_label("Line: waiting", 16, COLOR_INK)
+	_add_label(surface_box, "Draw toward the cup", 18, COLOR_INK)
+	_physics_choice_label = _new_label("Path: ready", 16, COLOR_INK)
 	surface_box.add_child(_physics_choice_label)
-	_physics_result_label = _new_label("Test: lift to release", 16, COLOR_INK)
+	_physics_result_label = _new_label("Waiting for a path", 16, COLOR_INK)
 	surface_box.add_child(_physics_result_label)
 
 	var options = _rules().get("draw_options", [])
@@ -1870,7 +1870,7 @@ func _record_physics_drawn_line(auto_release: bool = false) -> void:
 	_physics_choice = _classify_physics_line(_physics_draw_start, _physics_draw_end)
 	_last_physics_result = "selected"
 	_update_physics_choice_label()
-	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(_physics_choice)
+	_feedback_label.text = "Drew %s. Release to test it." % _physics_draw_label(_physics_choice)
 	if auto_release:
 		_resolve_physics_release(false)
 
@@ -2403,23 +2403,23 @@ func _physics_draw_label(draw_id: String) -> String:
 func _update_physics_choice_label() -> void:
 	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
 		if _last_physics_result == "drawing":
-			_physics_choice_label.text = "Line: drawing..."
+			_physics_choice_label.text = "Path: drawing"
 		else:
-			_physics_choice_label.text = "Line: %s" % _physics_draw_label(_physics_choice)
+			_physics_choice_label.text = "Path: %s" % _physics_draw_label(_physics_choice)
 	if _physics_result_label != null and is_instance_valid(_physics_result_label):
 		if _last_physics_result == "drawing":
-			_physics_result_label.text = "Test: keep drawing"
+			_physics_result_label.text = "Keep drawing"
 		else:
-			_physics_result_label.text = "Test: ready"
+			_physics_result_label.text = "Release to test"
 
 
 func _update_physics_result_label(success: bool) -> void:
 	if _physics_result_label == null or not is_instance_valid(_physics_result_label):
 		return
 	if success:
-		_physics_result_label.text = "Test: ball reached cup"
+		_physics_result_label.text = "Ball reached the cup"
 	else:
-		_physics_result_label.text = "Test: fake gravity rejected %s" % _physics_draw_label(_physics_choice)
+		_physics_result_label.text = "Missed: %s" % _physics_draw_label(_physics_choice)
 
 
 func _set_judge_state(state: String) -> void:

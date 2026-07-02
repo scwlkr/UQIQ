@@ -90,6 +90,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Forty-second local polish loop added deterministic verifier coverage for Drag Logic failed-drop return behavior so the bounce-back movement stays protected; screenshot capture stayed stable and full verification floor passed again.
 - Forty-third local polish loop added subtle slot pulse feedback when Text Trap and Memory Flash choices land in their target slots; screenshot capture stayed stable and full verification floor passed again.
 - Forty-fourth local polish loop removed raw template-name headers from play stages and rewrote the leftover Tap Logic startup helper so Level screens read less like a test harness; screenshots refreshed and full verification floor passed again.
+- Forty-fifth local polish loop rewrote Physics Draw state copy from debug-style `Line/Test` labels into player-facing `Path` and `Lift/Release` prompts; Physics Draw screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
