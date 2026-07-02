@@ -1254,11 +1254,6 @@ func _create_rearrange_target_hint(surface: Control) -> void:
 	_rearrange_target_hint.add_theme_stylebox_override("panel", _flat_box(Color(0.12, 0.58, 0.92, 0.18), 8))
 	surface.add_child(_rearrange_target_hint)
 
-	var label := _new_label("landing", 13, COLOR_INK)
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_rearrange_target_hint.add_child(label)
-
 
 func _create_rearrange_goal(surface: Control) -> void:
 	_rearrange_cup = Panel.new()
@@ -1272,6 +1267,12 @@ func _create_rearrange_goal(surface: Control) -> void:
 	surface.add_child(_rearrange_cup)
 
 	var label := _new_label("CUP", 16, COLOR_INK)
+	label.name = "rearrange_cup_label"
+	label.position = Vector2.ZERO
+	label.size = _rearrange_cup_rect.size
+	label.custom_minimum_size = _rearrange_cup_rect.size
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_rearrange_cup.add_child(label)
@@ -1455,6 +1456,10 @@ func _set_rearrange_cup_rect(rect: Rect2) -> void:
 		_rearrange_cup.size = rect.size
 		_rearrange_cup.custom_minimum_size = rect.size
 		_rearrange_cup.set_meta("cup_rect", rect)
+		var label := _rearrange_cup.get_node_or_null("rearrange_cup_label") as Label
+		if label != null:
+			label.size = rect.size
+			label.custom_minimum_size = rect.size
 
 	if _rearrange_goal_area != null and is_instance_valid(_rearrange_goal_area):
 		var visible_rect := rect.grow(_rearrange_goal_forgiveness())

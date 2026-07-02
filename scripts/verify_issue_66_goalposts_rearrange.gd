@@ -106,7 +106,12 @@ func _assert_goalposts_surface() -> void:
 	_require(_node_named(_main, "rearrange_ball_body") is RigidBody2D, "Level 3 should create a ball physics body.")
 	_require(_node_named(_main, "rearrange_cup") != null, "Level 3 should render a draggable cup.")
 	_require(_node_named(_main, "rearrange_goal_area") is Area2D, "Level 3 should create an Area2D goal zone from the moved cup.")
-	_require(_node_named(_main, "rearrange_catch_zone_hint") != null, "Level 3 should render a subtle catch-zone hint.")
+	var catch_hint := _node_named(_main, "rearrange_catch_zone_hint")
+	_require(catch_hint != null, "Level 3 should render a subtle catch-zone hint.")
+	var cup_label := _node_named(_main, "rearrange_cup_label") as Label
+	_require(cup_label != null, "Level 3 should render a non-wrapping cup label.")
+	_require(cup_label == null or cup_label.autowrap_mode == TextServer.AUTOWRAP_OFF, "Cup label should not wrap vertically on phone.")
+	_require(catch_hint == null or not _node_has_label_text(catch_hint, "landing"), "Catch-zone hint should avoid cramped text labels.")
 	_require(_node_named(_main, "rearrange_built_in_geometry_starter_chute") is Line2D, "Level 3 should render the starter chute.")
 	_require(_node_named(_main, "rearrange_built_in_body") is StaticBody2D, "Level 3 starter chute should create StaticBody2D collision.")
 	_require(_button_with_text(_main, "Release") != null, "Level 3 should expose Release.")

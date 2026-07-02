@@ -43,20 +43,19 @@ Design source: [Wayfinder map: UQIQ tactile six-level core](https://github.com/s
 - Existing Pack 1 direct-touch prototypes are playable on phone.
 - Level 1 and Level 2 prove realish freehand physics drawing with collision-backed ramp/stopper solves.
 - Level 3 proves physics-linked rearrange: touch drag moves the cup, `Release` moves the ball, and completion comes from ball/cup overlap.
-- Physical iPhone proof exists for the old direct-touch build: UQIQ `0.1.1 (20260702073553)` installed/launched on `17 Hoe Max`.
+- Current physical iPhone proof exists for Level 3: UQIQ `0.1.1 (20260702115314)` installed/launched on `17 Hoe Max`.
 
 ## Latest Verification
 
 - Level 3 focused verifier passed: `godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearrange.gd`.
 - README/local verification floor passed through `verify_issue_66_goalposts_rearrange.gd`.
 - `git diff --check` passed for the Level 3 implementation.
-- Previous phone proof for the old direct-touch build passed with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702073553.png`.
-- Level 3 iPhone smoke was attempted, but no connected physical iPhone was available.
+- Level 3 iPhone smoke passed on `17 Hoe Max` with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702115314.png`.
 
 ## Known Blockers
 
 - No current owner decision blocker for the prototype path.
-- Physical iPhone proof is required again; current blocker is no connected physical iPhone.
+- No current physical iPhone blocker; Level 4 will need a fresh phone proof after implementation.
 - App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until the six-Level core is stronger and scwlkr approves.
 
 ## Next Gate
