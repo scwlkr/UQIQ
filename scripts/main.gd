@@ -636,7 +636,7 @@ func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
 		_pattern_marked_cells.append(cell_id)
 
 	_apply_pattern_mark_style(cell_id, button)
-	_feedback_label.text = "Marked: %s" % "  ".join(_pattern_marked_cells)
+	_feedback_label.text = "Marked: %s" % "  ".join(_pattern_marked_cell_labels())
 
 	var solution_cells := _pattern_solution_cells()
 	if _same_string_set(_pattern_marked_cells, solution_cells):
@@ -1209,7 +1209,7 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 			grid.add_child(cell_button)
 			_pattern_cell_buttons[cell_id] = cell_button
 
-	_add_feedback(stage_box, "Tap the cell that does not belong.")
+	_add_feedback(stage_box, "No cells marked.")
 
 
 func _render_memory_flash(stage_box: VBoxContainer) -> void:
@@ -2324,6 +2324,14 @@ func _pattern_cell_by_id(cell_id: String) -> Dictionary:
 	return {}
 
 
+func _pattern_marked_cell_labels() -> Array[String]:
+	var labels: Array[String] = []
+	for cell_id in _pattern_marked_cells:
+		var cell := _pattern_cell_by_id(cell_id)
+		labels.append(str(cell.get("label", cell_id)))
+	return labels
+
+
 func _same_string_set(left: Array[String], right: Array[String]) -> bool:
 	if left.size() != right.size():
 		return false
@@ -2497,6 +2505,8 @@ func _setup_feedback() -> void:
 	if _feedback_player != null:
 		return
 	if DisplayServer.get_name() == "headless":
+		return
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
 		return
 
 	_feedback_generator = AudioStreamGenerator.new()
