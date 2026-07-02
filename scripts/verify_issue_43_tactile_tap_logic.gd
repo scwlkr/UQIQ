@@ -27,6 +27,10 @@ func _initialize() -> void:
 	if _failed:
 		return
 
+	_verify_default_tap_levels_render_direct_scene()
+	if _failed:
+		return
+
 	print("Issue #43 Tap Logic verification passed: Level 1 renders a tactile direct tap scene, rejects a wrong direct tap, and completes through Score Roastcard from a direct object tap.")
 	_cleanup()
 	quit(0)
@@ -52,15 +56,37 @@ func _verify_tactile_tap_logic() -> void:
 	_require(surface != null, "Tap Logic should render a named direct tap surface.")
 	_require(decoy_pad != null, "Tap Logic should render CORRECT as a direct scene target.")
 	_require(correct_pad != null, "Tap Logic should render WRONG as a direct scene target.")
+	_require(_screen_has_label_text("Evidence board"), "Direct Tap Logic should render the playfield as an in-world evidence board.")
+	_require(not _screen_has_label_text("Tap the object, not an answer list."), "Direct Tap Logic should not repeat instruction copy above the scene.")
+	_require(not _screen_has_label_text("Tap the right object in the scene."), "Direct Tap Logic should not render fallback instruction copy above the scene.")
+	_require(not _screen_has_label_text("labels are evidence"), "Direct Tap Logic should not render old instruction-like playfield copy.")
+	_require(_screen_has_label_text("Scene waiting."), "Direct Tap Logic should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("No object tapped."), "Direct Tap Logic should not render old negative idle feedback.")
 	_require(not (decoy_pad is Button), "Direct Tap Logic targets should not be Button answer choices.")
 	_require(not (correct_pad is Button), "Direct Tap Logic targets should not be Button answer choices.")
 	_require(not _has_button_text(_main, "CORRECT"), "Direct Tap Logic should not expose CORRECT as an answer-choice button.")
 	_require(not _has_button_text(_main, "WRONG"), "Direct Tap Logic should not expose WRONG as an answer-choice button.")
 
-	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true), "correct_button", decoy_pad)
+	var decoy_touch_position := _touch_position(decoy_pad)
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true, decoy_touch_position), "correct_button", decoy_pad)
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false, Vector2(-500, -500)), "correct_button", decoy_pad)
+	_require(int(_main.get("_tap_count")) == 0, "Direct tap release outside should cancel without spending an action.")
+	_require(str(_main.get("_last_direct_tap_target_id")).is_empty(), "Direct tap release outside should not record a target.")
+
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true, decoy_touch_position), "correct_button", decoy_pad)
+	_require(int(_main.get("_tap_count")) == 0, "Direct tap press should preview without spending an action.")
+	var selected_border := _panel_border_color(decoy_pad)
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false, decoy_touch_position), "correct_button", decoy_pad)
 	_require(not _profile.is_level_completed(level_id), "Wrong direct tap should not complete Level 1.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct tap should count as one action.")
 	_require(str(_main.get("_last_direct_tap_target_id")) == "correct_button", "Direct tap handler should record the touched decoy target.")
+	_require(_panel_border_color(decoy_pad) != selected_border, "Wrong direct tap should leave selected contact feedback.")
+	_require(_panel_border_color(decoy_pad).is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct tap should frame the target as a fail state.")
+	_require(_failure_shake_count(decoy_pad) > 0, "Wrong direct tap should shake the failed target.")
+	var correct_touch_position := _touch_position(correct_pad)
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true, correct_touch_position), "wrong_button", correct_pad)
+	_require(_panel_border_color(decoy_pad).is_equal_approx(Color(0.12, 0.58, 0.92)), "Starting a new direct tap should reset the previous fail frame.")
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false, Vector2(-500, -500)), "wrong_button", correct_pad)
 
 	_main.call("_show_play_screen", level)
 	correct_pad = _node_named(_main, "tap_scene_target_wrong_button") as Control
@@ -69,11 +95,35 @@ func _verify_tactile_tap_logic() -> void:
 		return
 
 	_main.call("_handle_direct_tap_scene_input", _mouse_button_event(Vector2(16, 16), true), "wrong_button", correct_pad)
+	_require(not _profile.is_level_completed(level_id), "Correct direct tap press should not complete until release.")
+	_main.call("_handle_direct_tap_scene_input", _mouse_button_event(Vector2(16, 16), false), "wrong_button", correct_pad)
 	_require(_profile.is_level_completed(level_id), "Correct direct tap should complete Level 1.")
 	_require(str(_main.get("_last_direct_tap_target_id")) == "wrong_button", "Direct tap handler should record the touched winning target.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct tap should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct tap should persist as one direct action.")
+
+
+func _verify_default_tap_levels_render_direct_scene() -> void:
+	for level_number in [7, 8, 10, 15, 35, 44, 55]:
+		var level := _level_by_number(level_number)
+		_main.call("_show_play_screen", level)
+		var surface := _node_named(_main, "tap_scene_surface") as Control
+		_require(surface != null, "Tap Logic Level %d should render the direct tap scene by default." % level_number)
+		_require(not _has_any_tap_target_button(_main, level), "Tap Logic Level %d should not fall back to answer-choice buttons." % level_number)
+		var targets = level.get("rules", {}).get("tap_targets", [])
+		_require(typeof(targets) == TYPE_ARRAY and not targets.is_empty(), "Tap Logic Level %d should have tap targets." % level_number)
+		if typeof(targets) != TYPE_ARRAY:
+			continue
+		for target in targets:
+			if typeof(target) != TYPE_DICTIONARY:
+				continue
+			var target_id := str(target.get("id", ""))
+			var pad := _node_named(_main, "tap_scene_target_%s" % target_id) as Control
+			_require(pad != null, "Tap Logic Level %d should render direct target %s." % [level_number, target_id])
+			if pad != null:
+				_require(pad.position.x >= 0.0 and pad.position.x + pad.size.x <= 342.0, "Tap Logic Level %d direct target %s should fit inside the portrait playfield." % [level_number, target_id])
+				_require_direct_tap_label_fits(pad, str(target.get("label", "")), targets.size(), level_number)
 
 
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:
@@ -84,11 +134,55 @@ func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseBut
 	return event
 
 
-func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
+func _screen_touch_event(pressed: bool, position: Vector2 = Vector2(16, 16)) -> InputEventScreenTouch:
 	var event := InputEventScreenTouch.new()
 	event.pressed = pressed
-	event.position = Vector2(16, 16)
+	event.position = position
 	return event
+
+
+func _touch_position(control: Control) -> Vector2:
+	return control.get_global_rect().position + Vector2(16, 16)
+
+
+func _panel_border_color(control: Control) -> Color:
+	var panel := control as PanelContainer
+	_require(panel != null, "Expected a framed direct tap panel.")
+	if panel == null:
+		return Color.TRANSPARENT
+	var style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+	_require(style != null, "Expected direct tap panel style.")
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
+
+
+func _failure_shake_count(control: Control) -> int:
+	return int(control.get_meta("failure_shake_count", 0))
+
+
+func _require_direct_tap_label_fits(pad: Control, label_text: String, target_count: int, level_number: int) -> void:
+	var label := _first_label(pad)
+	_require(label != null, "Tap Logic Level %d direct target should render a label." % level_number)
+	if label == null:
+		return
+	_require(label.autowrap_mode == TextServer.AUTOWRAP_OFF, "Tap Logic Level %d direct target label should stay single-line." % level_number)
+	_require(label.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS, "Tap Logic Level %d direct target label should trim if needed." % level_number)
+	var font_size := label.get_theme_font_size("font_size")
+	if target_count >= 3 and label_text.length() > 16:
+		_require(font_size <= 12, "Tap Logic Level %d long direct target label should use compact type." % level_number)
+	elif target_count >= 3 and label_text.length() > 10:
+		_require(font_size <= 14, "Tap Logic Level %d medium direct target label should use reduced type." % level_number)
+
+
+func _first_label(node: Node) -> Label:
+	if node is Label:
+		return node
+	for child in node.get_children():
+		var label := _first_label(child)
+		if label != null:
+			return label
+	return null
 
 
 func _level_by_number(level_number: int) -> Dictionary:
@@ -112,6 +206,16 @@ func _has_button_text(node: Node, text: String) -> bool:
 		return true
 	for child in node.get_children():
 		if _has_button_text(child, text):
+			return true
+	return false
+
+
+func _has_any_tap_target_button(node: Node, level: Dictionary) -> bool:
+	var targets = level.get("rules", {}).get("tap_targets", [])
+	if typeof(targets) != TYPE_ARRAY:
+		return false
+	for target in targets:
+		if typeof(target) == TYPE_DICTIONARY and _has_button_text(node, str(target.get("label", ""))):
 			return true
 	return false
 

@@ -31,7 +31,7 @@ func _initialize() -> void:
 
 	_require(_verified_levels == 8, "Pack 6 should verify eight Physics Draw levels.")
 
-	print("Issue #41 Pack 6 direct drawing verification passed: %d Physics Draw levels render direct drawing surfaces, reject a bad line, and complete via their encoded gestures." % _verified_levels)
+	print("Issue #41 Pack 6 direct drawing verification passed: %d Physics Draw levels render direct draw-release surfaces, reject a bad line, and complete via their encoded gestures." % _verified_levels)
 	_cleanup()
 	quit(0)
 
@@ -70,20 +70,19 @@ func _verify_direct_drawing_level(level: Dictionary) -> void:
 	_require(_node_named(_main, "physics_draw_surface") != null, "Level %d should render a direct drawing surface." % level_number)
 	_require(_node_named(_main, "player_drawn_line") != null, "Level %d should render the player's line." % level_number)
 	_require(not _has_button_prefix(_main, "Draw:"), "Level %d should not expose Draw: fallback buttons." % level_number)
+	_require(not _screen_has_label_text("Draw one line so the ball reaches the cup."), "Level %d should not repeat generic Physics Draw instruction copy above the playfield." % level_number)
 
 	_draw_line_on_surface(Vector2(30, 220), Vector2(48, 222))
 	_require(str(_main.get("_physics_choice")) != correct_draw_id, "Level %d bad short line should not classify as correct." % level_number)
-	_main.call("_handle_physics_release")
 	_require(not _profile.is_level_completed(level_id), "Level %d bad line should not complete." % level_number)
 
 	_main.call("_show_play_screen", level)
 	_draw_line_on_surface(_gesture_start(gesture), _gesture_end(gesture))
 	_require(str(_main.get("_physics_choice")) == correct_draw_id, "Level %d correct gesture should classify as %s." % [level_number, correct_draw_id])
-	_main.call("_handle_physics_release")
 	_require(_profile.is_level_completed(level_id), "Level %d correct gesture should complete." % level_number)
 	_require(_screen_has_label_text("Score Roastcard"), "Level %d completion should route to Score Roastcard." % level_number)
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(best_attempt.get("action_count", 0)) == 2, "Level %d draw plus release should persist as two actions." % level_number)
+	_require(int(best_attempt.get("action_count", 0)) == 1, "Level %d draw-release should persist as one action." % level_number)
 	_verified_levels += 1
 
 

@@ -8,6 +8,7 @@ const OUTPUT_DIR := "res://docs/app-store/screenshots"
 const TEST_SAVE_PATH := "user://app_store_screenshot_profile.json"
 const WINDOW_SIZE := Vector2i(1320, 2868)
 const DESIGN_SIZE := Vector2i(390, 844)
+const SCREENSHOT_CAPTURE_ENV := "UQIQ_SCREENSHOT_CAPTURE"
 
 var _loader := LevelLoaderScript.new()
 var _pack_set := {}
@@ -17,6 +18,7 @@ var _failed := false
 
 
 func _initialize() -> void:
+	OS.set_environment(SCREENSHOT_CAPTURE_ENV, "1")
 	_configure_window()
 	_prepare_output_dir()
 	_remove_test_save()
@@ -31,12 +33,14 @@ func _initialize() -> void:
 
 	await _capture_level_list()
 	await _capture_play_screen("02_level_01_play.png", 1)
+	await _capture_play_screen("07_drag_logic.png", 2)
+	await _capture_play_screen("08_text_trap.png", 3)
 	await _capture_play_screen("03_pattern_grid.png", 31)
 	await _capture_play_screen("04_memory_flash.png", 41)
 	await _capture_play_screen("05_physics_draw.png", 51)
 	await _capture_score_roastcard()
 
-	print("App Store screenshot capture passed: wrote 6 draft screenshots to %s." % ProjectSettings.globalize_path(OUTPUT_DIR))
+	print("App Store screenshot capture passed: wrote 8 draft screenshots to %s." % ProjectSettings.globalize_path(OUTPUT_DIR))
 	_finish()
 
 
@@ -70,7 +74,11 @@ func _capture_level_list() -> void:
 
 
 func _capture_play_screen(filename: String, level_number: int) -> void:
-	_main.call("_show_play_screen", _level_by_number(level_number))
+	var level := _level_by_number(level_number)
+	_main.call("_show_play_screen", level)
+	if str(level.get("template", "")) == "Memory Flash":
+		_main.call("_hide_direct_memory_flash", int(_main.get("_direct_memory_flash_generation")))
+		await process_frame
 	await _save_screenshot(filename)
 
 
@@ -129,7 +137,17 @@ func _require(condition: bool, message: String) -> void:
 
 
 func _finish() -> void:
+	OS.set_environment(SCREENSHOT_CAPTURE_ENV, "")
+	_cleanup()
 	if _failed:
 		quit(1)
 		return
 	quit(0)
+
+
+func _cleanup() -> void:
+	if _main != null and is_instance_valid(_main):
+		if _main.get_parent() != null:
+			_main.get_parent().remove_child(_main)
+		_main.free()
+		_main = null

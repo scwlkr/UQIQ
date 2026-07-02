@@ -48,11 +48,26 @@ func _verify_direct_pattern_grid() -> void:
 	_main.call("_show_play_screen", level)
 	_require(_node_named(_main, "pattern_mark_grid") != null, "Pattern Grid should render a direct mark-grid container.")
 	_require(_node_named(_main, "pattern_mark_cell_r2c2") != null, "Pattern Grid should render named markable cells.")
+	_require(_screen_has_label_text("Grid unmarked."), "Pattern Grid should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("Tap the cell that breaks the pattern."), "Direct Pattern Grid should not repeat instruction copy above the grid.")
+	_require(not _screen_has_label_text("Mark the whole broken set."), "Direct Pattern Grid should not repeat multi-mark instruction copy above the grid.")
+	_require(not _screen_has_label_text("No cells marked."), "Pattern Grid should not render old negative idle feedback.")
 	_require(not _has_button_text(_main, "Submit Pattern"), "Direct Pattern Grid should not use Submit Pattern as the primary interaction.")
 
+	_press_cells(["r1c1"])
+	_press_cells(["r1c1"])
+	var marked_after_toggle: Array = _main.get("_pattern_marked_cells")
+	_require(marked_after_toggle.is_empty(), "Tapping a marked Pattern Grid cell again should unmark it.")
+	_require(_screen_has_label_text("Grid unmarked."), "Unmarking the last Pattern Grid cell should restore the ready-state feedback.")
+
+	_main.call("_show_play_screen", level)
 	_press_cells(["r1c1", "r1c2", "r1c3"])
 	_require(not _profile.is_level_completed(level_id), "Wrong marked row should not complete Level 4.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong row should count one action per marked cell.")
+	var marked_after_wrong: Array = _main.get("_pattern_marked_cells")
+	_require(marked_after_wrong.is_empty(), "Wrong full Pattern Grid set should clear marks for a clean retry.")
+	_require(_pattern_cells_have_border(["r1c1", "r1c2", "r1c3"], Color(0.95, 0.22, 0.24)), "Wrong full Pattern Grid set should frame the rejected row as a fail state.")
+	_require(_pattern_cells_pulsed(["r1c1", "r1c2", "r1c3"]), "Wrong full Pattern Grid set should pulse the rejected row.")
 
 	_main.call("_show_play_screen", level)
 	_press_cells(["r2c1", "r2c2", "r2c3"])
@@ -69,6 +84,38 @@ func _press_cells(cell_ids: Array[String]) -> void:
 		if _failed:
 			return
 		button.emit_signal("pressed")
+
+
+func _pattern_cells_have_border(cell_ids: Array[String], expected_color: Color) -> bool:
+	for cell_id in cell_ids:
+		var button := _node_named(_main, "pattern_mark_cell_%s" % cell_id) as Button
+		_require(button != null, "Expected markable Pattern Grid cell %s." % cell_id)
+		if button == null:
+			return false
+		var border_color := _button_border_color(button)
+		if not border_color.is_equal_approx(expected_color):
+			_require(false, "Pattern Grid cell %s border %s should match %s." % [cell_id, border_color, expected_color])
+			return false
+	return true
+
+
+func _pattern_cells_pulsed(cell_ids: Array[String]) -> bool:
+	for cell_id in cell_ids:
+		var button := _node_named(_main, "pattern_mark_cell_%s" % cell_id) as Button
+		_require(button != null, "Expected markable Pattern Grid cell %s." % cell_id)
+		if button == null:
+			return false
+		if int(button.get_meta("failure_pulse_count", 0)) <= 0:
+			return false
+	return true
+
+
+func _button_border_color(button: Button) -> Color:
+	var style := button.get_theme_stylebox("normal") as StyleBoxFlat
+	_require(style != null, "Expected framed Pattern Grid cell style.")
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
 
 
 func _level_by_number(level_number: int) -> Dictionary:

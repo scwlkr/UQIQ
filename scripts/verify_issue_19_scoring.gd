@@ -121,19 +121,41 @@ func _verify_score_roastcard_rows() -> void:
 	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
 
 	_require(_screen_has_label_text("Score Roastcard"), "Score Roastcard screen should render after completion.")
-	_require(_screen_has_label_text("Total Delta:"), "Score Roastcard should show total score delta.")
+	_require(_screen_has_label_text("Score change:"), "Score Roastcard should show total score delta.")
 	_require(_screen_has_label_text("Speed:"), "Score Roastcard should show Speed delta row.")
 	_require(_screen_has_label_text("Actions:"), "Score Roastcard should show Actions delta row.")
 	_require(_screen_has_label_text("Roasts:"), "Score Roastcard should show Roasts delta row.")
 	_require(_screen_has_label_text("DUR:"), "Score Roastcard should show DUR context row after a DUR'D completion.")
 	_require(_screen_has_label_text("Dignity tax"), "Score Roastcard should show absurd Roast flavor label.")
 	_require(_screen_has_label_text("DUR parole"), "Score Roastcard should show absurd DUR flavor label.")
+	var score_panel := _node_named(_main, "score_total_panel") as Control
+	_require(score_panel != null, "Score Roastcard should expose a named total score panel.")
+	if score_panel != null:
+		_require(int(score_panel.get_meta("arrival_pulse_count", 0)) > 0, "Score Roastcard total score panel should pulse on arrival.")
+	var next_button := _button_with_text(_main, "Next")
+	_require(next_button != null, "Score Roastcard should expose a Next Level action when the next level is unlocked.")
+	var list_button := _button_with_text(_main, "Level List")
+	_require(list_button != null, "Score Roastcard should expose a Level List action.")
+	if next_button != null and list_button != null:
+		_assert_scorecard_action_hierarchy(next_button, list_button)
 
 	var score_result := _dictionary_from(_main.get("_last_score_result"))
 	_require(not score_result.is_empty(), "Main scene should keep the issue #19 score result.")
 	var components := _dictionary_from(score_result.get("score_components", {}))
 	for key in ["speed", "actions", "roasts", "dur"]:
 		_require(components.has(key), "Score result should include %s component." % key)
+
+	if next_button != null:
+		next_button.emit_signal("pressed")
+		_require(_screen_has_label_text("Level 02"), "Next Level action should open the next playable level.")
+		_require(_screen_has_label_text("Move the Word"), "Next Level action should navigate to Level 2 content.")
+
+
+func _assert_scorecard_action_hierarchy(next_button: Button, list_button: Button) -> void:
+	var next_style := next_button.get_theme_stylebox("normal") as StyleBoxFlat
+	var list_style := list_button.get_theme_stylebox("normal") as StyleBoxFlat
+	_require(next_style != null and next_style.border_width_left == 0, "Score Roastcard Next action should render as the filled primary action.")
+	_require(list_style != null and list_style.border_width_left > 0, "Score Roastcard Level List action should render as a framed secondary action.")
 
 
 func _assert_score_result(level: Dictionary, score_result: Dictionary, score_before: int, action_count: int, roast_count: int, elapsed_seconds: float, was_durd: bool, tokens_restored: int) -> void:
@@ -226,6 +248,26 @@ func _dictionary_from(value: Variant) -> Dictionary:
 
 func _screen_has_label_text(text: String) -> bool:
 	return _node_has_label_text(_main, text)
+
+
+func _button_with_text(node: Node, text: String) -> Button:
+	if node is Button and str(node.text) == text:
+		return node as Button
+	for child in node.get_children():
+		var button := _button_with_text(child, text)
+		if button != null:
+			return button
+	return null
+
+
+func _node_named(node: Node, node_name: String) -> Node:
+	if node.name == node_name:
+		return node
+	for child in node.get_children():
+		var match := _node_named(child, node_name)
+		if match != null:
+			return match
+	return null
 
 
 func _node_has_label_text(node: Node, text: String) -> bool:

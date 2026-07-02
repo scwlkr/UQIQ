@@ -5,7 +5,8 @@ const LocalProfileScript := preload("res://scripts/local_profile.gd")
 const DeviceSmokeRunnerScript := preload("res://scripts/device_smoke_runner.gd")
 
 const COLOR_INK := Color(0.06, 0.07, 0.09)
-const COLOR_PAPER := Color(0.97, 0.95, 0.86)
+const COLOR_PAPER := Color(0.91, 0.94, 0.95)
+const COLOR_PLAYFIELD := Color(0.80, 0.86, 0.88)
 const COLOR_PANEL := Color(0.12, 0.13, 0.16)
 const COLOR_PANEL_ALT := Color(0.18, 0.20, 0.24)
 const COLOR_YELLOW := Color(1.00, 0.78, 0.15)
@@ -19,7 +20,13 @@ const DEVICE_SMOKE_ARG := "--uqiq-device-smoke"
 const DEVICE_SMOKE_ENV := "UQIQ_DEVICE_SMOKE"
 const PLAYTEST_LEVEL_ENV := "UQIQ_PLAYTEST_LEVEL"
 const PLAYTEST_UNLOCK_ALL_ENV := "UQIQ_PLAYTEST_UNLOCK_ALL"
+const SCREENSHOT_CAPTURE_ENV := "UQIQ_SCREENSHOT_CAPTURE"
 const FEEDBACK_MIX_RATE := 22050.0
+const MIN_DRAG_DROP_OVERLAP_RATIO := 0.28
+const MIN_PHYSICS_DRAW_LENGTH := 36.0
+const MIN_PHYSICS_POINT_DISTANCE := 4.0
+const SCREEN_TRANSITION_DURATION := 0.14
+const SCREEN_TRANSITION_OFFSET_Y := 10.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
 	"Drag Logic",
@@ -54,20 +61,30 @@ var _transition_counts := {}
 var _last_transition_name := ""
 var _feedback_label: Label
 var _text_input: LineEdit
+var _pressed_direct_tap_target_id := ""
 var _direct_text_answer_label: Label
+var _direct_text_answer_slot: PanelContainer
 var _last_direct_text_tile_id := ""
+var _pressed_direct_text_tile_id := ""
 var _selected_drag_id := ""
 var _dragging_object_id := ""
 var _dragging_tile: Control = null
 var _drag_offset := Vector2.ZERO
+var _drag_origin := Vector2.ZERO
 var _drag_drop_zones := {}
+var _drag_hover_target_id := ""
 var _last_drag_drop_target_id := ""
+var _last_failed_drag_return_id := ""
 var _selected_pattern_cell := ""
 var _pattern_marked_cells: Array[String] = []
 var _pattern_cell_buttons := {}
 var _memory_input: Array[String] = []
 var _memory_slot_labels := {}
+var _memory_slot_panels := {}
 var _last_direct_memory_tile_id := ""
+var _pressed_direct_memory_tile_id := ""
+var _direct_memory_flash_label: Label
+var _direct_memory_flash_generation := 0
 var _physics_choice := ""
 var _last_physics_result := ""
 var _physics_choice_label: Label
@@ -78,6 +95,7 @@ var _physics_is_drawing := false
 var _physics_has_drawn_line := false
 var _physics_draw_start := Vector2.ZERO
 var _physics_draw_end := Vector2.ZERO
+var _physics_draw_points := PackedVector2Array()
 
 
 func _ready() -> void:
@@ -155,7 +173,7 @@ func _show_level_list() -> void:
 	_set_judge_state("list")
 	var root := _make_screen(COLOR_INK, "level_list")
 
-	_add_label(root, "UQIQ", 44, COLOR_YELLOW)
+	_add_label(root, "UQIQ", 40, COLOR_YELLOW)
 	_add_judge_face(root, _judge_state)
 
 	var packs := _visible_packs()
@@ -163,13 +181,14 @@ func _show_level_list() -> void:
 		_add_status(root, _loader.last_error, COLOR_RED)
 		return
 
-	_add_status(root, "Loaded %d Level Specs from %d Packs" % [_loaded_level_count(packs), packs.size()], COLOR_GREEN)
-	_add_profile_status(root)
+	_add_level_list_summary(root, packs)
 	if not _level_list_notice.is_empty():
 		_add_status(root, _level_list_notice, COLOR_YELLOW)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	root.add_child(scroll)
 
 	var list := VBoxContainer.new()
@@ -309,18 +328,42 @@ func _loaded_level_count(packs: Array) -> int:
 
 
 func _add_pack_heading(parent: Node, pack: Dictionary) -> void:
-	var heading := _new_label(_pack_heading_text(pack), 20, COLOR_TEXT)
+	var heading_box := VBoxContainer.new()
+	heading_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading_box.add_theme_constant_override("separation", 0)
+	parent.add_child(heading_box)
+
+	var heading := _new_label(_pack_heading_title(pack), 20, COLOR_TEXT)
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	parent.add_child(heading)
+	heading_box.add_child(heading)
 
-	var source_path := str(pack.get("source_path", ""))
-	if not source_path.is_empty():
-		var source_label := _new_label(source_path, 13, COLOR_MUTED)
-		source_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		parent.add_child(source_label)
+	var range_text := _pack_level_range_text(pack)
+	if not range_text.is_empty():
+		var range_label := _new_label(range_text, 15, COLOR_MUTED)
+		range_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		heading_box.add_child(range_label)
 
 
-func _pack_heading_text(pack: Dictionary) -> String:
+func _pack_heading_title(pack: Dictionary) -> String:
+	var bounds := _pack_level_bounds(pack)
+	var first_level_number := int(bounds.get("first", 0))
+	var pack_number := 1
+	if first_level_number > 0:
+		pack_number = int((first_level_number - 1) / 10) + 1
+
+	return "Pack %d: %s" % [pack_number, str(pack.get("pack_title", "Untitled Pack"))]
+
+
+func _pack_level_range_text(pack: Dictionary) -> String:
+	var bounds := _pack_level_bounds(pack)
+	var first_level_number := int(bounds.get("first", 0))
+	var last_level_number := int(bounds.get("last", 0))
+	if first_level_number > 0 and last_level_number >= first_level_number:
+		return "Levels %02d-%02d" % [first_level_number, last_level_number]
+	return ""
+
+
+func _pack_level_bounds(pack: Dictionary) -> Dictionary:
 	var levels = pack.get("levels", [])
 	var first_level_number := 0
 	var last_level_number := 0
@@ -338,36 +381,48 @@ func _pack_heading_text(pack: Dictionary) -> String:
 			if level_number > last_level_number:
 				last_level_number = level_number
 
-	var pack_number := 1
-	if first_level_number > 0:
-		pack_number = int((first_level_number - 1) / 10) + 1
-
-	var title := str(pack.get("pack_title", "Untitled Pack"))
-	if first_level_number > 0 and last_level_number >= first_level_number:
-		return "Pack %d: %s | Levels %02d-%02d" % [pack_number, title, first_level_number, last_level_number]
-	return "Pack %d: %s" % [pack_number, title]
+	return {
+		"first": first_level_number,
+		"last": last_level_number,
+	}
 
 
 func _add_level_row(parent: Node, level: Dictionary) -> void:
 	var level_number := int(level.get("level_number", 0))
-	var title := str(level.get("title", "Untitled"))
 	var is_playable := _is_level_playable(level)
-	var button_text := "%02d  %s  |  %s" % [level_number, title, _level_state_text(level)]
 	var row := HBoxContainer.new()
+	row.name = "level_row_%02d" % level_number
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 8)
+	row.set_meta("level_number", level_number)
 	parent.add_child(row)
+	_apply_board_entry_motion(row)
 
-	var button := _make_button(button_text, _level_button_color(level))
+	var button := _make_level_row_button(level)
 	button.disabled = not is_playable
+	if is_playable:
+		_apply_button_frame(button, _level_button_color(level))
 	button.pressed.connect(Callable(self, "_show_play_screen").bind(level))
 	row.add_child(button)
 
-	var dur_button := _make_button("DUR", COLOR_ORANGE, Vector2(76, 58))
-	dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-	dur_button.disabled = not _is_supported_playable_level_spec(level) or not _profile.can_spend_dur_token(level)
-	dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
-	row.add_child(dur_button)
+	var can_spend_dur := _is_supported_playable_level_spec(level) and _profile.can_spend_dur_token(level)
+	if can_spend_dur:
+		var dur_button := _make_button("DUR", COLOR_PANEL_ALT, Vector2(58, 58))
+		dur_button.add_theme_font_size_override("font_size", 16)
+		dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+		_apply_button_frame(dur_button, COLOR_ORANGE)
+		for state in ["normal", "hover", "pressed", "disabled"]:
+			var stylebox := dur_button.get_theme_stylebox(state) as StyleBoxFlat
+			if stylebox != null:
+				stylebox.content_margin_left = 8
+				stylebox.content_margin_right = 8
+		dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
+		row.add_child(dur_button)
+	else:
+		var dur_spacer := Control.new()
+		dur_spacer.custom_minimum_size = Vector2(58, 58)
+		dur_spacer.size_flags_horizontal = Control.SIZE_SHRINK_END
+		row.add_child(dur_spacer)
 
 
 func _show_play_screen(level: Dictionary) -> void:
@@ -381,21 +436,31 @@ func _show_play_screen(level: Dictionary) -> void:
 	_last_score_result = {}
 	_level_list_notice = ""
 	_text_input = null
+	_pressed_direct_tap_target_id = ""
 	_direct_text_answer_label = null
+	_direct_text_answer_slot = null
 	_last_direct_text_tile_id = ""
+	_pressed_direct_text_tile_id = ""
 	_last_direct_tap_target_id = ""
 	_selected_drag_id = ""
 	_dragging_object_id = ""
 	_dragging_tile = null
 	_drag_offset = Vector2.ZERO
+	_drag_origin = Vector2.ZERO
 	_drag_drop_zones = {}
+	_drag_hover_target_id = ""
 	_last_drag_drop_target_id = ""
+	_last_failed_drag_return_id = ""
 	_selected_pattern_cell = ""
 	_pattern_marked_cells = []
 	_pattern_cell_buttons = {}
 	_memory_input = []
 	_memory_slot_labels = {}
+	_memory_slot_panels = {}
 	_last_direct_memory_tile_id = ""
+	_pressed_direct_memory_tile_id = ""
+	_direct_memory_flash_label = null
+	_direct_memory_flash_generation += 1
 	_physics_choice = ""
 	_last_physics_result = ""
 	_physics_choice_label = null
@@ -406,6 +471,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_physics_has_drawn_line = false
 	_physics_draw_start = Vector2.ZERO
 	_physics_draw_end = Vector2.ZERO
+	_physics_draw_points = PackedVector2Array()
 
 	var root := _make_screen(COLOR_PANEL, "play_screen", true)
 
@@ -415,6 +481,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	root.add_child(top_bar)
 
 	var back_button := _make_button("<", COLOR_INK, Vector2(48, 48))
+	_apply_button_frame(back_button, COLOR_MUTED, COLOR_PANEL)
 	back_button.pressed.connect(Callable(self, "_show_level_list"))
 	top_bar.add_child(back_button)
 
@@ -427,25 +494,19 @@ func _show_play_screen(level: Dictionary) -> void:
 	level_label.add_theme_color_override("font_color", COLOR_TEXT)
 	top_bar.add_child(level_label)
 
-	var score_label := Label.new()
-	score_label.text = "UQIQ %d" % _profile.current_uqiq_score()
-	score_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	score_label.add_theme_font_size_override("font_size", 16)
-	score_label.add_theme_color_override("font_color", COLOR_YELLOW)
-	top_bar.add_child(score_label)
-
-	var token_label := Label.new()
-	token_label.text = "Dur %d" % _profile.dur_tokens()
-	token_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	token_label.add_theme_font_size_override("font_size", 16)
-	token_label.add_theme_color_override("font_color", COLOR_ORANGE)
-	top_bar.add_child(token_label)
+	_add_play_header_chip(top_bar, "UQIQ %d" % _profile.current_uqiq_score(), COLOR_YELLOW, 100)
+	_add_play_header_chip(
+		top_bar,
+		"Dur %d/%d" % [_profile.dur_tokens(), LocalProfileScript.MAX_DUR_TOKENS],
+		COLOR_ORANGE,
+		92
+	)
 
 	_add_label(root, str(level.get("title", "Untitled")), 30, COLOR_TEXT)
 	_add_label(root, str(level.get("prompt", "")), 19, COLOR_MUTED)
 	if _profile.is_level_durd(str(level.get("id", ""))):
 		_add_status(root, "DUR'D: finish this Level to recover 1 Dur Token.", COLOR_YELLOW)
-	_add_judge_face(root, _judge_state)
+	_add_judge_face(root, _judge_state, true)
 
 	var stage := PanelContainer.new()
 	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -463,10 +524,14 @@ func _show_play_screen(level: Dictionary) -> void:
 
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	actions.add_theme_constant_override("separation", 10)
 	root.add_child(actions)
 
-	var roast_button := _make_button("Roast", COLOR_ORANGE)
+	var roast_button := _make_button("Roast", COLOR_PANEL, Vector2(120, 42))
+	roast_button.add_theme_font_size_override("font_size", 16)
+	roast_button.add_theme_color_override("font_color", COLOR_ORANGE)
+	_apply_button_frame(roast_button, COLOR_MUTED, COLOR_PANEL)
 	roast_button.pressed.connect(Callable(self, "_handle_roast_action"))
 	actions.add_child(roast_button)
 
@@ -475,12 +540,7 @@ func _handle_tap_target(target_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
 
-	var solution = _current_level.get("solution", {})
-	var winning_target := ""
-	if typeof(solution) == TYPE_DICTIONARY:
-		winning_target = str(solution.get("target_id", ""))
-
-	if target_id == winning_target:
+	if _is_tap_solution(target_id):
 		_complete_current_level()
 		return
 
@@ -489,42 +549,71 @@ func _handle_tap_target(target_id: String) -> void:
 	_trigger_feedback("fail")
 
 
+func _is_tap_solution(target_id: String) -> bool:
+	var solution = _current_level.get("solution", {})
+	if typeof(solution) != TYPE_DICTIONARY:
+		return false
+	return target_id == str(solution.get("target_id", ""))
+
+
 func _handle_drag_select(object_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_selected_drag_id = object_id
-	_feedback_label.text = "Holding %s. Now move it somewhere questionable." % object_id
+	_feedback_label.text = "Holding %s. Move it into a box." % _drag_object_label(object_id)
 
 
 func _handle_drag_drop(drop_target_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
-	_resolve_drag_drop(_selected_drag_id, drop_target_id)
+	var object_id := _selected_drag_id
+	_selected_drag_id = ""
+	_resolve_drag_drop(object_id, drop_target_id)
 
 
 func _handle_direct_drag_drop(object_id: String, drop_target_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
-	_selected_drag_id = object_id
+	_selected_drag_id = ""
 	_last_drag_drop_target_id = drop_target_id
 	_resolve_drag_drop(object_id, drop_target_id)
 
 
 func _resolve_drag_drop(object_id: String, drop_target_id: String) -> void:
-	var solution = _current_level.get("solution", {})
-	var winning_object := ""
-	var winning_target := ""
-	if typeof(solution) == TYPE_DICTIONARY:
-		winning_object = str(solution.get("object_id", ""))
-		winning_target = str(solution.get("drop_target_id", ""))
-
-	if object_id == winning_object and drop_target_id == winning_target:
+	if _is_drag_drop_solution(object_id, drop_target_id):
 		_complete_current_level()
 		return
 
-	_feedback_label.text = _first_roast("failure", "Wrong thing, wrong place. Somehow both.")
+	_feedback_label.text = "%s does not belong in %s." % [_drag_object_label(object_id), _drop_target_label(drop_target_id)]
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
+
+
+func _is_drag_drop_solution(object_id: String, drop_target_id: String) -> bool:
+	var solution = _current_level.get("solution", {})
+	if typeof(solution) != TYPE_DICTIONARY:
+		return false
+
+	return object_id == str(solution.get("object_id", "")) \
+		and drop_target_id == str(solution.get("drop_target_id", ""))
+
+
+func _drag_object_label(object_id: String) -> String:
+	var objects = _rules().get("draggable_objects", [])
+	if typeof(objects) == TYPE_ARRAY:
+		for object in objects:
+			if typeof(object) == TYPE_DICTIONARY and str(object.get("id", "")) == object_id:
+				return str(object.get("label", object_id))
+	return object_id
+
+
+func _drop_target_label(target_id: String) -> String:
+	var targets = _rules().get("drop_targets", [])
+	if typeof(targets) == TYPE_ARRAY:
+		for target in targets:
+			if typeof(target) == TYPE_DICTIONARY and str(target.get("id", "")) == target_id:
+				return str(target.get("label", target_id))
+	return target_id
 
 
 func _handle_text_submit() -> void:
@@ -539,23 +628,36 @@ func _handle_text_submit() -> void:
 
 
 func _resolve_text_answer(raw_answer: String) -> void:
+	if _is_text_answer_correct(raw_answer):
+		_complete_current_level()
+		return
+
+	_prepare_text_retry_feedback()
+	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
+	_set_judge_state("fail")
+	_trigger_feedback("fail")
+
+
+func _is_text_answer_correct(raw_answer: String) -> bool:
 	var answer := _normalize_answer(raw_answer)
 	var rules := _rules()
 	var accepted = rules.get("accepted_inputs", [])
 	if typeof(accepted) == TYPE_ARRAY:
 		for accepted_answer in accepted:
 			if answer == _normalize_answer(str(accepted_answer)):
-				_complete_current_level()
-				return
+				return true
 
 	var solution := _solution()
-	if answer == _normalize_answer(str(solution.get("answer", ""))):
-		_complete_current_level()
-		return
+	return answer == _normalize_answer(str(solution.get("answer", "")))
 
-	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
-	_set_judge_state("fail")
-	_trigger_feedback("fail")
+
+func _prepare_text_retry_feedback() -> void:
+	if _text_input == null or not is_instance_valid(_text_input):
+		return
+	_text_input.select_all()
+	if _text_input.is_inside_tree():
+		_text_input.grab_focus()
+	_shake_control(_text_input)
 
 
 func _handle_text_submitted(_submitted_text: String) -> void:
@@ -584,8 +686,11 @@ func _handle_pattern_submit() -> void:
 
 
 func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
+	if _pattern_marked_cells.is_empty():
+		_refresh_pattern_mark_styles()
 	_tap_count += 1
 	_trigger_feedback("tap")
+	_pulse_control(button)
 
 	if _pattern_marked_cells.has(cell_id):
 		_pattern_marked_cells.erase(cell_id)
@@ -593,7 +698,10 @@ func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
 		_pattern_marked_cells.append(cell_id)
 
 	_apply_pattern_mark_style(cell_id, button)
-	_feedback_label.text = "Marked: %s" % "  ".join(_pattern_marked_cells)
+	if _pattern_marked_cells.is_empty():
+		_feedback_label.text = "Grid unmarked."
+	else:
+		_feedback_label.text = "Marked: %s" % "  ".join(_pattern_marked_cell_labels())
 
 	var solution_cells := _pattern_solution_cells()
 	if _same_string_set(_pattern_marked_cells, solution_cells):
@@ -603,6 +711,11 @@ func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
 	var mark_count := int(_rules().get("mark_count", solution_cells.size()))
 	if mark_count > 0 and _pattern_marked_cells.size() >= mark_count:
 		_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
+		var failed_cells: Array[String] = []
+		for marked_cell in _pattern_marked_cells:
+			failed_cells.append(marked_cell)
+		_pattern_marked_cells = []
+		_apply_pattern_result_style(failed_cells, false)
 		_set_judge_state("fail")
 		_trigger_feedback("fail")
 
@@ -627,9 +740,15 @@ func _handle_memory_choice(item_id: String) -> void:
 
 
 func _handle_memory_clear() -> void:
+	if _memory_input.is_empty():
+		_feedback_label.text = "Recall row ready."
+		_reset_memory_recall_slot_styles()
+		return
+
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_memory_input = []
+	_reset_memory_recall_slot_styles()
 	_feedback_label.text = "Cleared. That was probably wise."
 
 
@@ -654,23 +773,32 @@ func _handle_physics_draw(draw_id: String) -> void:
 	_physics_choice = draw_id
 	_last_physics_result = "selected"
 	_physics_has_drawn_line = true
+	_set_physics_line_color(COLOR_BLUE)
 	_update_physics_choice_label()
-	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(draw_id)
+	_feedback_label.text = "Ramp set: %s. Lift to test." % _physics_draw_label(draw_id)
 
 
 func _handle_physics_release() -> void:
-	_tap_count += 1
-	_trigger_feedback("tap")
+	_resolve_physics_release(true)
+
+
+func _resolve_physics_release(count_action: bool) -> void:
+	if count_action:
+		_tap_count += 1
+		_trigger_feedback("tap")
 
 	var solution := _solution()
 	if _physics_choice == str(solution.get("draw_id", "")):
 		_last_physics_result = "success"
+		_set_physics_line_color(COLOR_GREEN)
 		_update_physics_result_label(true)
 		_complete_current_level()
 		return
 
 	_last_physics_result = "fail"
+	_set_physics_line_color(COLOR_RED)
 	_update_physics_result_label(false)
+	_pulse_physics_surface_failure()
 	_feedback_label.text = _first_roast("failure", "The ball saw your line and requested a different universe.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -697,35 +825,29 @@ func _complete_current_level() -> void:
 func _show_score_roastcard() -> void:
 	_set_judge_state("score")
 	var root := _make_screen(COLOR_INK, "score_roastcard", true)
+	root.add_theme_constant_override("separation", 10)
 
-	_add_label(root, "Score Roastcard", 38, COLOR_YELLOW)
+	_add_label(root, "Score Roastcard", 30, COLOR_YELLOW)
 	_add_judge_face(root, _judge_state)
 	_add_label(root, str(_current_level.get("title", "Level complete")), 24, COLOR_TEXT)
-	_add_status(root, "Completed in %d action(s)" % int(_last_completed_attempt.get("action_count", _tap_count)), COLOR_GREEN)
+	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
+	var best_action_count := action_count
+	var best_roast_count := 0
 	if not _last_best_attempt.is_empty():
-		_add_status(root, "Best Attempt: %d action(s), %d Roast(s)" % [
-			int(_last_best_attempt.get("action_count", _tap_count)),
-			int(_last_best_attempt.get("roast_count", 0)),
-		], COLOR_GREEN)
+		best_action_count = int(_last_best_attempt.get("action_count", action_count))
+		best_roast_count = int(_last_best_attempt.get("roast_count", 0))
 	if not _profile.last_error.is_empty():
 		_add_status(root, _profile.last_error, COLOR_RED)
 	else:
-		_add_status(root, "Saved. Level %02d unlocked. UQIQ %d." % [
-			int(_profile.data.get("unlocked_level", 1)),
-			_profile.current_uqiq_score(),
-		], COLOR_GREEN)
-
-	var card := PanelContainer.new()
-	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	card.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL, 8))
-	root.add_child(card)
-
-	var card_box := VBoxContainer.new()
-	card_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	card_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	card_box.add_theme_constant_override("separation", 16)
-	card.add_child(card_box)
+		_add_status(
+			root,
+			"Saved. Best: %s, %s. Level %02d open." % [
+				_count_label(best_action_count, "action", "actions"),
+				_count_label(best_roast_count, "roast", "roasts"),
+				int(_profile.data.get("unlocked_level", 1)),
+			],
+			COLOR_GREEN
+		)
 
 	var score_before := int(_last_score_result.get("score_before", _profile.current_uqiq_score()))
 	var score_after := int(_last_score_result.get("score_after", _profile.current_uqiq_score()))
@@ -733,19 +855,63 @@ func _show_score_roastcard() -> void:
 	var attempt_score_delta := int(_last_score_result.get("attempt_score_delta", score_delta))
 	var score_components := _dictionary_from(_last_score_result.get("score_components", {}))
 	var roast_count := int(_last_completed_attempt.get("roast_count", _roast_count))
-	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
-	_add_label(card_box, "UQIQ %d" % score_after, 36, COLOR_YELLOW)
-	_add_label(card_box, "Total Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 18, COLOR_MUTED)
+
+	var score_panel := PanelContainer.new()
+	score_panel.name = "score_total_panel"
+	score_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	score_panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL, 8))
+	root.add_child(score_panel)
+	score_panel.set_meta("arrival_pulse_count", int(score_panel.get_meta("arrival_pulse_count", 0)) + 1)
+	_pulse_control(score_panel, 0.985, 0.05)
+
+	var score_box := VBoxContainer.new()
+	score_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	score_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	score_box.add_theme_constant_override("separation", 4)
+	score_panel.add_child(score_box)
+
+	_add_label(score_box, "UQIQ %d" % score_after, 32, COLOR_YELLOW)
+	_add_label(score_box, "Score change: %+d (%d to %d)" % [score_delta, score_before, score_after], 17, COLOR_MUTED)
 	if attempt_score_delta != score_delta:
-		_add_label(card_box, "Attempt Delta: %+d before score cap" % attempt_score_delta, 16, COLOR_MUTED)
-	_add_label(card_box, _score_component_text(score_components, "speed", "Speed", "Chrono shrug"), 18, COLOR_TEXT)
-	_add_label(card_box, _score_component_text(score_components, "actions", "Actions", "Finger mystery"), 18, COLOR_TEXT)
-	_add_label(card_box, _score_component_text(score_components, "roasts", "Roasts", "Dignity intact"), 18, COLOR_TEXT)
+		_add_label(score_box, "Run value: %+d before score cap" % attempt_score_delta, 15, COLOR_MUTED)
+
+	var stat_grid := GridContainer.new()
+	stat_grid.columns = 2
+	stat_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stat_grid.add_theme_constant_override("h_separation", 10)
+	stat_grid.add_theme_constant_override("v_separation", 10)
+	root.add_child(stat_grid)
+
+	_add_score_stat_chip(stat_grid, score_components, "speed", "Speed", "Chrono shrug", COLOR_BLUE)
+	_add_score_stat_chip(stat_grid, score_components, "actions", "Actions", "Finger mystery", COLOR_GREEN)
+	_add_score_stat_chip(stat_grid, score_components, "roasts", "Roasts", "Dignity intact", COLOR_ORANGE)
 	if bool(_last_completed_attempt.get("durd_at_start", false)):
-		_add_label(card_box, _score_component_text(score_components, "dur", "DUR", "DUR parole"), 18, COLOR_YELLOW)
-	_add_label(card_box, "Raw: %d action(s), %d Roast(s)" % [action_count, roast_count], 16, COLOR_MUTED)
-	_add_label(card_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 20, COLOR_TEXT)
-	_add_label(card_box, str(_current_level.get("uqiq_moment", "")), 17, COLOR_MUTED)
+		_add_score_stat_chip(stat_grid, score_components, "dur", "DUR", "DUR parole", COLOR_YELLOW)
+	else:
+		_add_score_stat_chip(stat_grid, {
+			"raw": {
+				"delta": 0,
+				"label": "Run details",
+				"detail": "%s, %s" % [
+					_count_label(action_count, "action", "actions"),
+					_count_label(roast_count, "Roast", "Roasts"),
+				],
+			},
+		}, "raw", "Run", "Run details", COLOR_MUTED)
+
+	var note_panel := PanelContainer.new()
+	note_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	note_panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	root.add_child(note_panel)
+
+	var note_box := VBoxContainer.new()
+	note_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	note_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	note_box.add_theme_constant_override("separation", 6)
+	note_panel.add_child(note_box)
+
+	_add_label(note_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 17, COLOR_TEXT)
+	_add_label(note_box, str(_current_level.get("uqiq_moment", "")), 15, COLOR_MUTED)
 
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -753,12 +919,47 @@ func _show_score_roastcard() -> void:
 	root.add_child(actions)
 
 	var replay_button := _make_button("Replay", COLOR_BLUE)
+	_apply_button_frame(replay_button, COLOR_BLUE, COLOR_PANEL)
 	replay_button.pressed.connect(Callable(self, "_show_play_screen").bind(_current_level))
 	actions.add_child(replay_button)
 
-	var list_button := _make_button("Level List", COLOR_GREEN)
+	var next_level := _next_playable_level()
+	if not next_level.is_empty():
+		var next_button := _make_button("Next", COLOR_GREEN)
+		next_button.add_theme_color_override("font_color", COLOR_INK)
+		next_button.pressed.connect(Callable(self, "_show_next_level"))
+		actions.add_child(next_button)
+
+	var list_button := _make_button("Level List", COLOR_PANEL)
+	_apply_button_frame(list_button, COLOR_GREEN, COLOR_PANEL)
 	list_button.pressed.connect(Callable(self, "_show_level_list"))
 	actions.add_child(list_button)
+
+
+func _show_next_level() -> void:
+	var next_level := _next_playable_level()
+	if next_level.is_empty():
+		_show_level_list()
+		return
+	_show_play_screen(next_level)
+
+
+func _next_playable_level() -> Dictionary:
+	var next_level_number := int(_current_level.get("level_number", 0)) + 1
+	if next_level_number <= 1:
+		return {}
+	var pack_set := _pack
+	if pack_set.is_empty():
+		pack_set = _load_level_pack_set()
+		_pack = pack_set
+	var next_level := _loader.find_level_by_number(pack_set, next_level_number)
+	if next_level.is_empty():
+		return {}
+	if not _debug_playtest_unlock_all() and not _profile.is_level_unlocked(next_level_number):
+		return {}
+	if not _is_supported_playable_level_spec(next_level):
+		return {}
+	return next_level
 
 
 func _make_screen(background_color: Color, transition_name: String = "", use_scroll: bool = false) -> VBoxContainer:
@@ -781,6 +982,7 @@ func _make_screen(background_color: Color, transition_name: String = "", use_scr
 		var scroll := ScrollContainer.new()
 		scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 		add_child(scroll)
 
 		var margin := MarginContainer.new()
@@ -824,20 +1026,30 @@ func _add_status(parent: Node, text: String, color: Color) -> Label:
 	return label
 
 
-func _add_judge_face(parent: Node, state: String) -> PanelContainer:
+func _add_judge_face(parent: Node, state: String, compact: bool = false) -> PanelContainer:
 	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 44 if compact else 68)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	var panel_box := _flat_box(COLOR_PANEL_ALT, 8)
+	if compact:
+		panel_box.content_margin_left = 12
+		panel_box.content_margin_right = 12
+		panel_box.content_margin_top = 5
+		panel_box.content_margin_bottom = 5
+	panel.add_theme_stylebox_override("panel", panel_box)
 	parent.add_child(panel)
 
-	var box := VBoxContainer.new()
+	var box := HBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", 2)
+	box.add_theme_constant_override("separation", 10 if compact else 12)
 	panel.add_child(box)
 
-	_judge_face_label = _new_label(_judge_face_text(state), 28, COLOR_YELLOW)
+	_judge_face_label = _new_label(_judge_face_text(state), 18 if compact else 24, COLOR_YELLOW)
+	_judge_face_label.custom_minimum_size = Vector2(72 if compact else 96, 28 if compact else 36)
+	_judge_face_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	box.add_child(_judge_face_label)
-	_judge_caption_label = _new_label(_judge_caption_text(state), 14, COLOR_MUTED)
+	_judge_caption_label = _new_label(_judge_caption_text(state), 13 if compact else 14, COLOR_MUTED)
+	_judge_caption_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	box.add_child(_judge_caption_label)
 	return panel
 
@@ -858,7 +1070,10 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = min_size
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if min_size.x > 0:
+		button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	else:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.clip_text = true
 	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	button.add_theme_font_size_override("font_size", 18)
@@ -867,12 +1082,58 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	button.add_theme_stylebox_override("hover", _flat_box(color.lightened(0.08), 8))
 	button.add_theme_stylebox_override("pressed", _flat_box(color.darkened(0.08), 8))
 	button.add_theme_stylebox_override("disabled", _flat_box(Color(0.22, 0.23, 0.25), 8))
+	button.button_down.connect(Callable(self, "_handle_button_down_feedback").bind(button))
+	button.button_up.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
+	button.mouse_exited.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	return button
+
+
+func _make_level_row_button(level: Dictionary) -> Button:
+	var button := _make_button(_level_row_button_text(level), _level_button_color(level), Vector2(0, 54))
+	button.set_meta("level_row_button", true)
+	button.set_meta("level_number", int(level.get("level_number", 0)))
+	button.tooltip_text = _level_row_tooltip_text(level)
+	button.add_theme_font_size_override("font_size", _level_row_font_size(str(button.text)))
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		var stylebox := button.get_theme_stylebox(state) as StyleBoxFlat
+		if stylebox != null:
+			stylebox.content_margin_left = 12
+			stylebox.content_margin_right = 12
+	return button
+
+
+func _level_row_font_size(text: String) -> int:
+	if text.length() > 30:
+		return 15
+	if text.length() > 24:
+		return 16
+	return 17
+
+
+func _handle_button_down_feedback(button: Button) -> void:
+	if button == null or not is_instance_valid(button):
+		return
+	button.set_meta("press_feedback_count", int(button.get_meta("press_feedback_count", 0)) + 1)
+	_animate_control_scale(button, Vector2(0.97, 0.97), 0.04)
+	_play_button_press_feedback()
+
+
+func _play_button_press_feedback() -> void:
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
+		return
+	_play_feedback_tone("button_press")
+	if DisplayServer.get_name() != "headless":
+		Input.vibrate_handheld(6)
+
+
+func _apply_button_frame(button: Button, accent: Color, fill: Color = COLOR_PANEL_ALT) -> void:
+	button.add_theme_stylebox_override("normal", _framed_box(fill, accent, 8))
+	button.add_theme_stylebox_override("hover", _framed_box(fill.lightened(0.04), accent, 8))
+	button.add_theme_stylebox_override("pressed", _framed_box(fill.darkened(0.04), accent.darkened(0.08), 8))
 
 
 func _render_level_stage(stage_box: VBoxContainer, level: Dictionary) -> void:
 	var template := str(level.get("template", ""))
-	_add_label(stage_box, template, 24, COLOR_INK)
 
 	match template:
 		"Tap Logic":
@@ -911,16 +1172,15 @@ func _render_tap_logic(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap the right object in the scene.")), 17, COLOR_INK)
-
 	var surface := Panel.new()
 	surface.name = "tap_scene_surface"
 	surface.custom_minimum_size = Vector2(0, 280)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
-	var hint := _new_label("labels are evidence, not instructions", 16, COLOR_INK)
+	var hint := _new_label("Evidence board", 16, COLOR_INK)
 	hint.position = Vector2(18, 18)
 	hint.size = Vector2(300, 28)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -933,28 +1193,31 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 			if typeof(target) != TYPE_DICTIONARY:
 				continue
 
-			surface.add_child(_make_direct_tap_target(target, index))
+			surface.add_child(_make_direct_tap_target(target, index, targets.size()))
 
-	_add_feedback(stage_box, "Tap an object on the surface. The list is gone.")
+	_add_feedback(stage_box, "Scene waiting.")
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Drag the word into a box.", 17, COLOR_INK)
-
+	var objects = _rules().get("draggable_objects", [])
+	var targets = _rules().get("drop_targets", [])
+	var object_count: int = objects.size() if typeof(objects) == TYPE_ARRAY else 0
+	var target_count: int = targets.size() if typeof(targets) == TYPE_ARRAY else 0
+	var row_count := maxi(object_count, target_count)
 	var playfield := Panel.new()
 	playfield.name = "drag_playfield"
-	playfield.custom_minimum_size = Vector2(0, 280)
+	playfield.custom_minimum_size = Vector2(0, _drag_playfield_height(row_count))
 	playfield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	playfield.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	playfield.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(playfield)
+	_apply_board_entry_motion(playfield)
 
-	var hint := _new_label("drag tiles -> drop zones", 15, COLOR_INK)
+	var hint := _new_label("Loose claims", 15, COLOR_INK)
 	hint.position = Vector2(18, 16)
 	hint.size = Vector2(260, 28)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	playfield.add_child(hint)
 
-	var objects = _rules().get("draggable_objects", [])
 	if typeof(objects) == TYPE_ARRAY:
 		for index in range(objects.size()):
 			var object = objects[index]
@@ -962,10 +1225,9 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 				continue
 
 			var tile := _make_drag_tile(object)
-			tile.position = Vector2(20, 58 + (index * 78))
+			tile.position = Vector2(18, _drag_row_y(index, row_count, 76.0))
 			playfield.add_child(tile)
 
-	var targets = _rules().get("drop_targets", [])
 	if typeof(targets) == TYPE_ARRAY:
 		for index in range(targets.size()):
 			var target = targets[index]
@@ -973,11 +1235,23 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 				continue
 
 			var zone := _make_drop_zone(target)
-			zone.position = Vector2(190, 58 + (index * 88))
+			zone.position = Vector2(176, _drag_row_y(index, row_count, 82.0))
 			playfield.add_child(zone)
 			_drag_drop_zones[str(target.get("id", ""))] = zone
 
-	_add_feedback(stage_box, "Drag the wrong thing into the right place.")
+	_add_feedback(stage_box, "Tile ready.")
+
+
+func _drag_playfield_height(row_count: int) -> float:
+	if row_count <= 0:
+		return 280.0
+	return maxf(280.0, _drag_row_y(row_count - 1, row_count, 82.0) + 74.0 + 18.0)
+
+
+func _drag_row_y(index: int, row_count: int, default_step: float) -> float:
+	if row_count <= 2:
+		return 62.0 + (index * default_step)
+	return 58.0 + (index * default_step)
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
@@ -993,6 +1267,7 @@ func _render_text_trap(stage_box: VBoxContainer) -> void:
 	_text_input.add_theme_font_size_override("font_size", 22)
 	_text_input.text_submitted.connect(Callable(self, "_handle_text_submitted"))
 	stage_box.add_child(_text_input)
+	call_deferred("_focus_text_input_if_current")
 
 	var submit_button := _make_button("Submit", COLOR_GREEN)
 	submit_button.pressed.connect(Callable(self, "_handle_text_submit"))
@@ -1001,15 +1276,22 @@ func _render_text_trap(stage_box: VBoxContainer) -> void:
 	_add_feedback(stage_box, "Type the answer the prompt deserves, not the one it asked for.")
 
 
-func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap the literal word into the answer slot.")), 17, COLOR_INK)
+func _focus_text_input_if_current() -> void:
+	if _text_input == null or not is_instance_valid(_text_input):
+		return
+	if not _text_input.is_inside_tree():
+		return
+	_text_input.grab_focus()
 
+
+func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 	var surface := Panel.new()
 	surface.name = "text_tile_surface"
 	surface.custom_minimum_size = Vector2(0, 260)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var prompt_label := _new_label("answer slot", 15, COLOR_INK)
 	prompt_label.position = Vector2(18, 16)
@@ -1022,10 +1304,11 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 	answer_slot.position = Vector2(18, 50)
 	answer_slot.size = Vector2(300, 70)
 	answer_slot.custom_minimum_size = answer_slot.size
-	answer_slot.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	answer_slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
 	surface.add_child(answer_slot)
+	_direct_text_answer_slot = answer_slot
 
-	_direct_text_answer_label = _new_label("_", 24, COLOR_TEXT)
+	_direct_text_answer_label = _new_label("_", 24, COLOR_INK)
 	_direct_text_answer_label.name = "text_answer_slot_label"
 	_direct_text_answer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	answer_slot.add_child(_direct_text_answer_label)
@@ -1037,11 +1320,11 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 			if typeof(tile_data) == TYPE_DICTIONARY:
 				surface.add_child(_make_text_tile(tile_data, index))
 
-	_add_feedback(stage_box, "Tap a word tile. The slot judges it immediately.")
+	_add_feedback(stage_box, "Answer slot ready.")
 
 
 func _render_pattern_grid(stage_box: VBoxContainer) -> void:
-	if _uses_direct_pattern_grid():
+	if _uses_direct_pattern_grid() or not _pattern_solution_cells().is_empty():
 		_render_direct_pattern_grid(stage_box)
 		return
 
@@ -1070,7 +1353,19 @@ func _render_pattern_grid(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Mark the whole broken row.", 17, COLOR_INK)
+	var surface := PanelContainer.new()
+	surface.name = "pattern_grid_surface"
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
+	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_right", 14)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	surface.add_child(margin)
 
 	var grid := GridContainer.new()
 	grid.name = "pattern_mark_grid"
@@ -1078,7 +1373,7 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
-	stage_box.add_child(grid)
+	margin.add_child(grid)
 
 	var cells = _rules().get("cells", [])
 	if typeof(cells) == TYPE_ARRAY:
@@ -1087,13 +1382,15 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 				continue
 
 			var cell_id := str(cell.get("id", ""))
-			var cell_button := _make_button(str(cell.get("label", "?")), _target_color(cell), Vector2(86, 64))
+			var cell_button := _make_button(str(cell.get("label", "?")), COLOR_PANEL_ALT, Vector2(86, 70))
 			cell_button.name = "pattern_mark_cell_%s" % cell_id
+			cell_button.add_theme_font_size_override("font_size", 24)
+			_apply_pattern_button_style(cell_button, COLOR_PANEL_ALT, COLOR_BLUE)
 			cell_button.pressed.connect(Callable(self, "_handle_pattern_mark_cell").bind(cell_id, cell_button))
 			grid.add_child(cell_button)
 			_pattern_cell_buttons[cell_id] = cell_button
 
-	_add_feedback(stage_box, "Mark cells in the row that broke the pattern. It will judge you automatically.")
+	_add_feedback(stage_box, "Grid unmarked.")
 
 
 func _render_memory_flash(stage_box: VBoxContainer) -> void:
@@ -1138,14 +1435,13 @@ func _render_memory_flash(stage_box: VBoxContainer) -> void:
 
 
 func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap tiles into the recall slots.")), 17, COLOR_INK)
-
 	var surface := Panel.new()
 	surface.name = "memory_tile_surface"
 	surface.custom_minimum_size = Vector2(0, 312)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var flash_label := _new_label("flash order: %s" % "  ".join(_string_array(_rules().get("flash_items", []))), 16, COLOR_INK)
 	flash_label.name = "memory_flash_order"
@@ -1153,29 +1449,41 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 	flash_label.size = Vector2(320, 30)
 	flash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(flash_label)
+	_direct_memory_flash_label = flash_label
+	_arm_direct_memory_flash_hide()
 
 	_render_memory_recall_slots(surface)
 	_render_memory_tile_bank(surface)
-	_add_feedback(stage_box, "Tap tiles into slots. It judges the moment the row is full.")
+	_add_feedback(stage_box, "Recall row ready.")
 
 
 func _render_memory_recall_slots(surface: Control) -> void:
 	var sequence := _memory_solution_sequence()
+	var slot_count := maxi(sequence.size(), 1)
+	var slot_size := _memory_tile_size(slot_count, 70.0)
+	var slot_step := _memory_tile_step(slot_count, slot_size.x)
 	for index in range(sequence.size()):
 		var slot := PanelContainer.new()
 		slot.name = "memory_recall_slot_%d" % index
-		slot.position = Vector2(18 + (index * 102), 70)
-		slot.size = Vector2(96, 70)
+		slot.position = Vector2(18 + (index * slot_step), 70)
+		slot.size = slot_size
 		slot.custom_minimum_size = slot.size
-		slot.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+		_apply_memory_recall_slot_style(slot, COLOR_BLUE)
 		surface.add_child(slot)
 
-		var label := _new_label("_", 22, COLOR_TEXT)
+		var box := VBoxContainer.new()
+		box.alignment = BoxContainer.ALIGNMENT_CENTER
+		box.add_theme_constant_override("separation", 2)
+		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_child(box)
+
+		var label := _new_label("_", 24 if slot_size.x < 84.0 else 26, COLOR_INK)
 		label.name = "memory_recall_slot_label_%d" % index
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		slot.add_child(label)
+		box.add_child(label)
 		_memory_slot_labels[index] = label
+		_memory_slot_panels[index] = slot
 
 
 func _render_memory_tile_bank(surface: Control) -> void:
@@ -1183,40 +1491,48 @@ func _render_memory_tile_bank(surface: Control) -> void:
 	if typeof(choices) == TYPE_ARRAY:
 		for index in range(choices.size()):
 			var item_id := str(choices[index])
-			var tile := _make_memory_tile(item_id, index)
+			var tile := _make_memory_tile(item_id, index, false, choices.size())
 			surface.add_child(tile)
 
-	var clear_tile := _make_memory_tile("CLEAR", 0, true)
+	var clear_tile := _make_memory_tile("CLEAR", 0, true, maxi(_memory_solution_sequence().size(), 3))
 	clear_tile.name = "memory_tile_clear"
 	clear_tile.position = Vector2(18, 242)
 	surface.add_child(clear_tile)
 
 
-func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> PanelContainer:
+func _make_memory_tile(item_id: String, index: int, is_clear: bool = false, tile_count: int = 3) -> PanelContainer:
+	var tile_size := _memory_tile_size(tile_count, 62.0)
+	var tile_step := _memory_tile_step(tile_count, tile_size.x)
 	var tile := PanelContainer.new()
 	tile.name = "memory_tile_%s" % item_id.to_lower()
-	tile.position = Vector2(18 + (index * 102), 164)
-	tile.size = Vector2(96, 62)
+	tile.position = Vector2(18 + (index * tile_step), 164)
+	tile.size = tile_size
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
-	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_ORANGE if is_clear else COLOR_BLUE, 8))
+	_apply_direct_base_panel_style(tile, COLOR_ORANGE if is_clear else COLOR_BLUE)
 	if is_clear:
 		tile.gui_input.connect(Callable(self, "_handle_direct_memory_clear_input").bind(tile))
 	else:
 		tile.gui_input.connect(Callable(self, "_handle_direct_memory_tile_input").bind(item_id, tile))
 
-	var label := _new_label(item_id, 18 if is_clear else 17, COLOR_TEXT)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(box)
+
+	var label := _new_label(item_id, 15 if tile_size.x < 84.0 else 20, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tile.add_child(label)
+	box.add_child(label)
 	return tile
 
 
 func _render_physics_draw(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
 	if not _uses_direct_physics_draw():
+		_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
 		_render_physics_draw_choice_fallback(stage_box)
 		return
 
@@ -1224,67 +1540,94 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	surface.name = "physics_draw_surface"
 	surface.custom_minimum_size = Vector2(0, 280)
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	surface.mouse_filter = Control.MOUSE_FILTER_STOP
 	surface.gui_input.connect(Callable(self, "_handle_physics_surface_input").bind(surface))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 	_physics_draw_surface = surface
 
+	surface.add_child(_make_physics_marker("physics_ball_marker", Vector2(78, 218), COLOR_ORANGE.darkened(0.08), COLOR_ORANGE))
+	surface.add_child(_make_physics_marker("physics_cup_marker", Vector2(260, 108), COLOR_GREEN.darkened(0.12), COLOR_GREEN))
+
 	var ball := _new_label("BALL", 17, COLOR_INK)
-	ball.position = Vector2(18, 216)
+	ball.position = Vector2(18, 232)
 	ball.size = Vector2(76, 28)
 	surface.add_child(ball)
 
 	var cup := _new_label("CUP", 17, COLOR_INK)
-	cup.position = Vector2(244, 84)
+	cup.position = Vector2(272, 88)
 	cup.size = Vector2(76, 28)
 	surface.add_child(cup)
 
-	var guide := _new_label("BALL -> selected line -> CUP", 18, COLOR_INK)
+	var guide := _new_label("Ramp sketch", 18, COLOR_INK)
 	guide.position = Vector2(20, 18)
 	guide.size = Vector2(300, 30)
 	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(guide)
 
+	var guide_line := Line2D.new()
+	guide_line.name = "physics_draw_hint_line"
+	guide_line.width = 3.0
+	guide_line.default_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.20)
+	guide_line.joint_mode = Line2D.LINE_JOINT_ROUND
+	guide_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	guide_line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	guide_line.add_point(Vector2(78, 218))
+	guide_line.add_point(Vector2(154, 156))
+	guide_line.add_point(Vector2(240, 108))
+	surface.add_child(guide_line)
+
 	_physics_line = Line2D.new()
 	_physics_line.name = "player_drawn_line"
 	_physics_line.width = 6.0
 	_physics_line.default_color = COLOR_BLUE
+	_physics_line.joint_mode = Line2D.LINE_JOINT_ROUND
+	_physics_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_physics_line.end_cap_mode = Line2D.LINE_CAP_ROUND
 	surface.add_child(_physics_line)
 
-	_physics_choice_label = _new_label("Selected line: none", 16, COLOR_INK)
+	_physics_choice_label = _new_label("Ramp ready", 16, COLOR_INK)
 	_physics_choice_label.position = Vector2(20, 52)
 	_physics_choice_label.size = Vector2(300, 26)
 	_physics_choice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_choice_label)
-	_physics_result_label = _new_label("Release result: waiting on fake gravity", 16, COLOR_INK)
+	_physics_result_label = _new_label("Draw from the ball", 16, COLOR_INK)
 	_physics_result_label.position = Vector2(20, 248)
 	_physics_result_label.size = Vector2(320, 26)
 	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_result_label)
 
-	var release_button := _make_button("Release Ball", COLOR_GREEN)
-	release_button.pressed.connect(Callable(self, "_handle_physics_release"))
-	stage_box.add_child(release_button)
+	_add_feedback(stage_box, "Line ready.")
 
-	_add_feedback(stage_box, "Draw the ramp, then release the ball.")
+
+func _make_physics_marker(marker_name: String, center: Vector2, fill: Color, border: Color) -> Panel:
+	var marker := Panel.new()
+	marker.name = marker_name
+	marker.position = center - Vector2(11, 11)
+	marker.size = Vector2(22, 22)
+	marker.custom_minimum_size = marker.size
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	marker.add_theme_stylebox_override("panel", _framed_box(fill, border, 11))
+	return marker
 
 
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	var surface := PanelContainer.new()
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var surface_box := VBoxContainer.new()
 	surface_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	surface_box.add_theme_constant_override("separation", 6)
 	surface.add_child(surface_box)
 
-	_add_label(surface_box, "BALL -> selected line -> CUP", 18, COLOR_INK)
-	_physics_choice_label = _new_label("Selected line: none", 16, COLOR_INK)
+	_add_label(surface_box, "Ramp sketch", 18, COLOR_INK)
+	_physics_choice_label = _new_label("Ramp ready", 16, COLOR_INK)
 	surface_box.add_child(_physics_choice_label)
-	_physics_result_label = _new_label("Release result: waiting on fake gravity", 16, COLOR_INK)
+	_physics_result_label = _new_label("Draw from the ball", 16, COLOR_INK)
 	surface_box.add_child(_physics_result_label)
 
 	var options = _rules().get("draw_options", [])
@@ -1305,7 +1648,12 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 
 
 func _uses_direct_tap_scene() -> bool:
-	return str(_rules().get("interaction_model", "")) == "direct_tap_scene"
+	if str(_rules().get("interaction_model", "")) == "direct_tap_scene":
+		return true
+	var targets = _rules().get("tap_targets", [])
+	return str(_current_level.get("template", "")) == "Tap Logic" \
+		and typeof(targets) == TYPE_ARRAY \
+		and not targets.is_empty()
 
 
 func _uses_direct_text_tiles() -> bool:
@@ -1313,30 +1661,71 @@ func _uses_direct_text_tiles() -> bool:
 
 
 func _uses_direct_memory_tiles() -> bool:
-	return str(_rules().get("interaction_model", "")) == "direct_memory_tiles"
+	if str(_rules().get("interaction_model", "")) == "direct_memory_tiles":
+		return true
+	return str(_current_level.get("template", "")) == "Memory Flash" \
+		and not _memory_solution_sequence().is_empty() \
+		and _rules().has("choices")
 
 
 func _uses_direct_physics_draw() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_draw_line_then_release"
 
 
-func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
+func _make_direct_tap_target(target: Dictionary, index: int, target_count: int) -> PanelContainer:
 	var target_id := str(target.get("id", "target"))
 	var pad := PanelContainer.new()
 	pad.name = "tap_scene_target_%s" % target_id
-	pad.custom_minimum_size = _vector2_from_array(target.get("scene_size", []), Vector2(138, 96))
+	pad.custom_minimum_size = _vector2_from_array(target.get("scene_size", []), _default_tap_target_size(target_count))
 	pad.size = pad.custom_minimum_size
-	pad.position = _vector2_from_array(target.get("scene_position", []), Vector2(28 + (index * 162), 92))
+	pad.position = _vector2_from_array(target.get("scene_position", []), _default_tap_target_position(index, target_count))
 	pad.mouse_filter = Control.MOUSE_FILTER_STOP
 	pad.set_meta("target_id", target_id)
-	pad.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
+	_apply_direct_base_panel_style(pad)
 	pad.gui_input.connect(Callable(self, "_handle_direct_tap_scene_input").bind(target_id, pad))
 
-	var label := _new_label(str(target.get("label", "Tap")), 25, COLOR_TEXT)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pad.add_child(box)
+
+	var label_text := str(target.get("label", "Tap"))
+	var label := _new_label(label_text, _direct_tap_label_font_size(label_text, target_count), COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pad.add_child(label)
+	box.add_child(label)
 	return pad
+
+
+func _default_tap_target_size(target_count: int) -> Vector2:
+	if target_count >= 3:
+		return Vector2(96, 90)
+	return Vector2(138, 96)
+
+
+func _default_tap_target_position(index: int, target_count: int) -> Vector2:
+	if target_count >= 3:
+		return Vector2(18 + ((index % 3) * 108), 96 + (int(index / 3) * 98))
+	if target_count == 2:
+		return Vector2(28 + (index * 162), 92)
+	return Vector2(111, 92)
+
+
+func _direct_tap_label_font_size(label_text: String, target_count: int) -> int:
+	if target_count >= 3:
+		if label_text.length() > 16:
+			return 12
+		if label_text.length() > 10:
+			return 14
+		return 18
+	if label_text.length() > 14:
+		return 18
+	if label_text.length() > 10:
+		return 20
+	return 24
 
 
 func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
@@ -1348,50 +1737,83 @@ func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
 	tile.set_meta("token_id", tile_id)
-	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
+	_apply_direct_base_panel_style(tile)
 	tile.gui_input.connect(Callable(self, "_handle_direct_text_tile_input").bind(
 		tile_id,
 		str(tile_data.get("answer", tile_data.get("label", ""))),
 		tile
 	))
 
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(box)
+
 	var label := _new_label(str(tile_data.get("label", tile_id)), 18, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tile.add_child(label)
+	box.add_child(label)
 	return tile
 
 
 func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	var tile := PanelContainer.new()
 	tile.name = "drag_tile_%s" % str(object.get("id", "object"))
-	tile.custom_minimum_size = Vector2(136, 62)
+	tile.custom_minimum_size = Vector2(126, 64)
 	tile.size = tile.custom_minimum_size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
-	tile.add_theme_stylebox_override("panel", _flat_box(_target_color(object), 8))
+	tile.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
 	tile.set_meta("object_id", str(object.get("id", "")))
 	tile.gui_input.connect(Callable(self, "_handle_drag_tile_input").bind(str(object.get("id", "")), tile))
 
-	var label := _new_label(str(object.get("label", "Object")), 21, COLOR_TEXT)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(box)
+
+	var label := _new_label(str(object.get("label", "Object")), 23, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	tile.add_child(label)
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(label)
 	return tile
+
+
+func _apply_drag_tile_style(tile: Control, is_dragging: bool) -> void:
+	var tile_panel := tile as PanelContainer
+	if tile_panel == null or not is_instance_valid(tile_panel):
+		return
+
+	if is_dragging:
+		tile_panel.add_theme_stylebox_override("panel", _framed_box(COLOR_YELLOW.darkened(0.16), COLOR_YELLOW, 8))
+	else:
+		tile_panel.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
 
 
 func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	var zone := PanelContainer.new()
 	zone.name = "drop_zone_%s" % str(target.get("id", "target"))
-	zone.custom_minimum_size = Vector2(150, 72)
+	zone.custom_minimum_size = Vector2(132, 74)
 	zone.size = zone.custom_minimum_size
 	zone.mouse_filter = Control.MOUSE_FILTER_PASS
-	zone.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	zone.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
 	zone.set_meta("target_id", str(target.get("id", "")))
 
-	var label := _new_label(str(target.get("label", "Target")), 17, COLOR_TEXT)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	zone.add_child(box)
+
+	var label := _new_label(str(target.get("label", "Target")), 16, COLOR_INK)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	zone.add_child(label)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(label)
 	return zone
 
 
@@ -1400,54 +1822,108 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_dragging_object_id = object_id
 		_dragging_tile = tile
 		_drag_offset = _event_position_in_control(event, tile, tile)
+		_drag_origin = tile.position
+		_animate_control_scale(tile, Vector2(1.04, 1.04), 0.05)
+		_apply_drag_tile_style(tile, true)
 		tile.move_to_front()
-		_feedback_label.text = "Dragging %s. Drop it where truth will tolerate it." % object_id
+		_refresh_drag_drop_zone_styles()
+		_set_drag_hover_target(_drop_target_for_released_tile(_event_canvas_position(event, tile), tile))
+		_feedback_label.text = "Dragging %s. Find its box." % _drag_object_label(object_id)
 		_mark_input_handled()
 		return
 
 	if _is_pointer_drag(event) and _dragging_tile == tile:
 		_move_drag_tile(event, tile)
+		_set_drag_hover_target(_drop_target_for_released_tile(_event_canvas_position(event, tile), tile))
 		_mark_input_handled()
 		return
 
 	if _is_primary_release(event) and _dragging_tile == tile:
 		var canvas_position := _event_canvas_position(event, tile)
-		var drop_target_id := _drop_target_at_canvas_position(canvas_position)
+		var drop_target_id := _drop_target_for_released_tile(canvas_position, tile)
 		_dragging_object_id = ""
 		_dragging_tile = null
 		_drag_offset = Vector2.ZERO
+		_animate_control_scale(tile, Vector2.ONE, 0.06)
+		_apply_drag_tile_style(tile, false)
+		_set_drag_hover_target("")
 		if drop_target_id.is_empty():
-			_handle_direct_drag_miss(object_id)
+			_handle_direct_drag_miss(object_id, tile)
 		else:
+			if _is_drag_drop_solution(object_id, drop_target_id):
+				_snap_drag_tile_to_zone(tile, drop_target_id)
+				_apply_drag_drop_zone_result_style(drop_target_id, true)
+			else:
+				_last_failed_drag_return_id = object_id
+				_animate_failed_drag_return(tile)
+				_apply_drag_drop_zone_result_style(drop_target_id, false)
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
 
 
 func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		_reset_direct_sibling_panel_styles(pad, "tap_scene_target_")
+		_pressed_direct_tap_target_id = target_id
+		if pad != null and is_instance_valid(pad):
+			_pulse_control(pad)
+			_apply_direct_selected_panel_style(pad)
+		_mark_input_handled()
 		return
 
-	_last_direct_tap_target_id = target_id
-	if pad != null and is_instance_valid(pad):
-		pad.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
-	_handle_tap_target(target_id)
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_tap_target_id == target_id:
+		_pressed_direct_tap_target_id = ""
+		if not _event_is_inside_control(event, pad):
+			_apply_direct_base_panel_style(pad)
+			_mark_input_handled()
+			return
+		_last_direct_tap_target_id = target_id
+		if not _is_tap_solution(target_id):
+			_apply_direct_fail_panel_style(pad)
+		_handle_tap_target(target_id)
+		_mark_input_handled()
 
 
 func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: String, tile: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		_reset_direct_sibling_panel_styles(tile, "text_tile_")
+		_reset_direct_text_answer_slot()
+		_pressed_direct_text_tile_id = tile_id
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_mark_input_handled()
 		return
 
-	_handle_direct_text_tile_choice(tile_id, answer, tile)
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_text_tile_id == tile_id:
+		_pressed_direct_text_tile_id = ""
+		if not _event_is_inside_control(event, tile):
+			_apply_direct_base_panel_style(tile)
+			_mark_input_handled()
+			return
+		_handle_direct_text_tile_choice(tile_id, answer, tile)
+		_mark_input_handled()
 
 
 func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Control = null) -> void:
 	_last_direct_text_tile_id = tile_id
+	var is_correct := _is_text_answer_correct(answer)
 	if tile != null and is_instance_valid(tile):
-		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+		_pulse_control(tile)
+		if is_correct:
+			_apply_direct_selected_panel_style(tile)
+		else:
+			_apply_direct_fail_panel_style(tile)
 	if _direct_text_answer_label != null:
 		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
+		if _direct_text_answer_slot != null and is_instance_valid(_direct_text_answer_slot):
+			if is_correct:
+				_apply_direct_selected_panel_style(_direct_text_answer_slot)
+			else:
+				_apply_direct_fail_panel_style(_direct_text_answer_slot)
+			_pulse_control(_direct_text_answer_slot, 0.985, 0.04)
+		else:
+			_pulse_control(_direct_text_answer_label.get_parent() as Control, 0.985, 0.04)
 
 	_tap_count += 1
 	_trigger_feedback("tap")
@@ -1455,28 +1931,67 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 
 
 func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		if _memory_input.is_empty():
+			_reset_direct_memory_tile_styles()
+			_reset_memory_recall_slot_styles()
+		_pressed_direct_memory_tile_id = item_id
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_mark_input_handled()
 		return
 
-	_last_direct_memory_tile_id = item_id
-	if tile != null and is_instance_valid(tile):
-		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
-	_handle_memory_choice(item_id)
-	_update_memory_recall_slots()
-	_resolve_direct_memory_if_full()
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_memory_tile_id == item_id:
+		_pressed_direct_memory_tile_id = ""
+		if not _event_is_inside_control(event, tile):
+			_apply_direct_base_panel_style(tile)
+			_mark_input_handled()
+			return
+		_hide_direct_memory_flash(_direct_memory_flash_generation)
+		_last_direct_memory_tile_id = item_id
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_handle_memory_choice(item_id)
+		_update_memory_recall_slots()
+		_pulse_memory_recall_slot(_memory_input.size() - 1)
+		var will_reset_wrong_row := _direct_memory_row_is_full_and_wrong()
+		var failed_input: Array[String] = []
+		if will_reset_wrong_row:
+			for memory_item in _memory_input:
+				failed_input.append(memory_item)
+		_resolve_direct_memory_if_full()
+		if will_reset_wrong_row:
+			_apply_direct_memory_tile_result_styles(failed_input, false)
+		_mark_input_handled()
 
 
 func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		_pressed_direct_memory_tile_id = "CLEAR"
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_mark_input_handled()
 		return
 
-	_last_direct_memory_tile_id = "CLEAR"
-	if tile != null and is_instance_valid(tile):
-		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
-	_handle_memory_clear()
-	_update_memory_recall_slots()
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_memory_tile_id == "CLEAR":
+		_pressed_direct_memory_tile_id = ""
+		if not _event_is_inside_control(event, tile):
+			_apply_direct_base_panel_style(tile, COLOR_ORANGE)
+			_mark_input_handled()
+			return
+		_hide_direct_memory_flash(_direct_memory_flash_generation)
+		var had_memory_input := not _memory_input.is_empty()
+		if had_memory_input:
+			_last_direct_memory_tile_id = "CLEAR"
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_base_panel_style(tile, COLOR_ORANGE)
+		_handle_memory_clear()
+		_update_memory_recall_slots()
+		_mark_input_handled()
 
 
 func _move_drag_tile(event: InputEvent, tile: Control) -> void:
@@ -1494,6 +2009,78 @@ func _move_drag_tile(event: InputEvent, tile: Control) -> void:
 	)
 
 
+func _set_drag_hover_target(target_id: String) -> void:
+	if target_id == _drag_hover_target_id:
+		return
+	_drag_hover_target_id = target_id
+	_refresh_drag_drop_zone_styles()
+	_refresh_drag_hover_feedback()
+
+
+func _refresh_drag_hover_feedback() -> void:
+	if _feedback_label == null or not is_instance_valid(_feedback_label) or _dragging_object_id.is_empty():
+		return
+
+	if _drag_hover_target_id.is_empty():
+		_feedback_label.text = "Dragging %s. Find its box." % _drag_object_label(_dragging_object_id)
+	else:
+		_feedback_label.text = "Over %s. Release to drop %s." % [
+			_drop_target_label(_drag_hover_target_id),
+			_drag_object_label(_dragging_object_id),
+		]
+
+
+func _refresh_drag_drop_zone_styles() -> void:
+	for target_id in _drag_drop_zones.keys():
+		var zone = _drag_drop_zones[target_id] as PanelContainer
+		if zone == null or not is_instance_valid(zone):
+			continue
+
+		var is_hovered := str(target_id) == _drag_hover_target_id
+		var color := COLOR_YELLOW.darkened(0.16) if is_hovered else COLOR_PLAYFIELD.darkened(0.05)
+		var border_color := COLOR_YELLOW if is_hovered else COLOR_BLUE
+		zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+		_apply_drag_drop_zone_hover_lift(zone, is_hovered)
+
+
+func _apply_drag_drop_zone_hover_lift(zone: Control, is_hovered: bool) -> void:
+	var target_scale := Vector2(1.035, 1.035) if is_hovered else Vector2.ONE
+	if zone.scale.is_equal_approx(target_scale):
+		return
+	zone.pivot_offset = zone.size * 0.5
+	if DisplayServer.get_name() == "headless":
+		zone.scale = target_scale
+	else:
+		_animate_control_scale(zone, target_scale, 0.06, Tween.TRANS_CUBIC, Tween.EASE_OUT)
+
+
+func _apply_drag_drop_zone_result_style(target_id: String, success: bool) -> void:
+	var zone = _drag_drop_zones.get(target_id) as PanelContainer
+	if zone == null or not is_instance_valid(zone):
+		return
+
+	var color := COLOR_GREEN.darkened(0.16) if success else COLOR_RED.darkened(0.18)
+	var border_color := COLOR_GREEN if success else COLOR_RED
+	zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+	if not success:
+		_shake_control(zone)
+
+
+func _snap_drag_tile_to_zone(tile: Control, target_id: String) -> void:
+	if tile == null or not is_instance_valid(tile):
+		return
+	var zone = _drag_drop_zones.get(target_id) as Control
+	if zone == null or not is_instance_valid(zone):
+		return
+	var playfield := tile.get_parent() as Control
+	if playfield == null:
+		return
+
+	var zone_center := zone.get_global_rect().get_center()
+	var target_position: Vector2 = zone_center - playfield.get_global_rect().position - (tile.size * 0.5)
+	_animate_control_position(tile, target_position, 0.10, Tween.TRANS_CUBIC, Tween.EASE_OUT)
+
+
 func _drop_target_at_canvas_position(canvas_position: Vector2) -> String:
 	for target_id in _drag_drop_zones.keys():
 		var zone = _drag_drop_zones[target_id] as Control
@@ -1502,11 +2089,56 @@ func _drop_target_at_canvas_position(canvas_position: Vector2) -> String:
 	return ""
 
 
-func _handle_direct_drag_miss(object_id: String) -> void:
+func _drop_target_for_released_tile(canvas_position: Vector2, tile: Control) -> String:
+	var point_target := _drop_target_at_canvas_position(canvas_position)
+	if not point_target.is_empty():
+		return point_target
+	if tile == null or not is_instance_valid(tile):
+		return ""
+
+	var tile_rect := tile.get_global_rect()
+	var best_target_id := ""
+	var best_overlap_area := 0.0
+	var best_target_area := 0.0
+	for target_id in _drag_drop_zones.keys():
+		var zone = _drag_drop_zones[target_id] as Control
+		if zone == null or not is_instance_valid(zone):
+			continue
+
+		var zone_rect := zone.get_global_rect()
+		var overlap_area := _rect_overlap_area(tile_rect, zone_rect)
+		if overlap_area > best_overlap_area:
+			best_overlap_area = overlap_area
+			best_target_id = str(target_id)
+			best_target_area = zone_rect.size.x * zone_rect.size.y
+
+	if best_target_id.is_empty():
+		return ""
+
+	var tile_area := tile_rect.size.x * tile_rect.size.y
+	var required_overlap := minf(tile_area, best_target_area) * MIN_DRAG_DROP_OVERLAP_RATIO
+	if best_overlap_area < required_overlap:
+		return ""
+	return best_target_id
+
+
+func _rect_overlap_area(a: Rect2, b: Rect2) -> float:
+	var left = max(a.position.x, b.position.x)
+	var top = max(a.position.y, b.position.y)
+	var right = min(a.position.x + a.size.x, b.position.x + b.size.x)
+	var bottom = min(a.position.y + a.size.y, b.position.y + b.size.y)
+	if right <= left or bottom <= top:
+		return 0.0
+	return (right - left) * (bottom - top)
+
+
+func _handle_direct_drag_miss(object_id: String, tile: Control = null) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_last_drag_drop_target_id = ""
-	_feedback_label.text = "%s hit empty space. The floor is not a valid argument." % object_id
+	if tile != null and is_instance_valid(tile):
+		_animate_failed_drag_return(tile)
+	_feedback_label.text = "%s missed every box." % _drag_object_label(object_id)
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
@@ -1517,48 +2149,124 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 		_physics_has_drawn_line = false
 		_physics_choice = ""
 		_last_physics_result = "drawing"
-		_physics_draw_start = _event_position_in_control(event, surface, surface)
+		_physics_draw_start = _clamp_physics_draw_point(_event_position_in_control(event, surface, surface))
 		_physics_draw_end = _physics_draw_start
-		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		_physics_draw_points = PackedVector2Array([_physics_draw_start])
+		_set_physics_line_color(COLOR_BLUE)
+		_set_physics_line_points(_physics_draw_points)
 		_update_physics_choice_label()
 		_feedback_label.text = "Drawing. Aim like gravity is watching."
 		_mark_input_handled()
 		return
 
 	if _is_pointer_drag(event) and _physics_is_drawing:
-		_physics_draw_end = _event_position_in_control(event, surface, surface)
-		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		_append_physics_draw_point(_event_position_in_control(event, surface, surface))
 		_mark_input_handled()
 		return
 
 	if _is_primary_release(event) and _physics_is_drawing:
-		_physics_draw_end = _event_position_in_control(event, surface, surface)
-		_record_physics_drawn_line()
+		_append_physics_draw_point(_event_position_in_control(event, surface, surface), true)
+		if (_physics_draw_end - _physics_draw_start).length() < MIN_PHYSICS_DRAW_LENGTH:
+			_cancel_short_physics_stroke()
+			_mark_input_handled()
+			return
+		_pulse_control(surface, 0.99, 0.035)
+		_record_physics_drawn_line(true)
 		_mark_input_handled()
 
 
-func _record_physics_drawn_line() -> void:
+func _record_physics_drawn_line(auto_release: bool = false) -> void:
 	_physics_is_drawing = false
 	_physics_has_drawn_line = true
 	_tap_count += 1
 	_trigger_feedback("tap")
-	_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+	if _physics_draw_points.size() < 2:
+		_physics_draw_points = PackedVector2Array([_physics_draw_start, _physics_draw_end])
+	_set_physics_line_points(_physics_draw_points)
 	_physics_choice = _classify_physics_line(_physics_draw_start, _physics_draw_end)
 	_last_physics_result = "selected"
 	_update_physics_choice_label()
-	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % _physics_draw_label(_physics_choice)
+	_feedback_label.text = "Ramp set: %s. Lift to test." % _physics_draw_label(_physics_choice)
+	if auto_release:
+		_resolve_physics_release(false)
 
 
 func _simulate_physics_draw_line(start: Vector2, end: Vector2) -> void:
 	_physics_draw_start = start
 	_physics_draw_end = end
+	_physics_draw_points = PackedVector2Array([start, end])
 	_record_physics_drawn_line()
 
 
-func _set_physics_line_points(start: Vector2, end: Vector2) -> void:
+func _append_physics_draw_point(point: Vector2, force: bool = false) -> void:
+	point = _clamp_physics_draw_point(point)
+	_physics_draw_end = point
+	if _physics_draw_points.is_empty():
+		_physics_draw_points = PackedVector2Array([point])
+		_set_physics_line_points(_physics_draw_points)
+		return
+
+	var last_index := _physics_draw_points.size() - 1
+	var last_point := _physics_draw_points[last_index]
+	if last_point.distance_to(point) < 0.5:
+		_physics_draw_points[last_index] = point
+	elif force or _physics_draw_points.size() == 1 or last_point.distance_to(point) >= MIN_PHYSICS_POINT_DISTANCE:
+		_physics_draw_points.append(point)
+	else:
+		_physics_draw_points[last_index] = point
+	_set_physics_line_points(_physics_draw_points)
+
+
+func _clamp_physics_draw_point(point: Vector2) -> Vector2:
+	if _physics_draw_surface == null or not is_instance_valid(_physics_draw_surface):
+		return point
+
+	var bounds := _physics_draw_surface.size
+	if bounds.x <= 0.0:
+		bounds.x = maxf(_physics_draw_surface.custom_minimum_size.x, 320.0)
+	if bounds.y <= 0.0:
+		bounds.y = maxf(_physics_draw_surface.custom_minimum_size.y, 280.0)
+
+	return Vector2(
+		clamp(point.x, 0.0, bounds.x),
+		clamp(point.y, 0.0, bounds.y)
+	)
+
+
+func _set_physics_line_points(points: PackedVector2Array) -> void:
 	if _physics_line == null or not is_instance_valid(_physics_line):
 		return
-	_physics_line.points = PackedVector2Array([start, end])
+	_physics_line.points = points
+
+
+func _set_physics_line_color(color: Color) -> void:
+	if _physics_line == null or not is_instance_valid(_physics_line):
+		return
+	_physics_line.default_color = color
+
+
+func _clear_physics_line() -> void:
+	if _physics_line == null or not is_instance_valid(_physics_line):
+		return
+	_physics_line.points = PackedVector2Array()
+
+
+func _cancel_short_physics_stroke() -> void:
+	_physics_is_drawing = false
+	_physics_has_drawn_line = false
+	_physics_choice = ""
+	_last_physics_result = "short"
+	_physics_draw_points = PackedVector2Array()
+	_clear_physics_line()
+	_update_physics_choice_label()
+	_pulse_physics_surface_failure()
+	_feedback_label.text = "Line too short."
+
+
+func _pulse_physics_surface_failure() -> void:
+	if _physics_draw_surface == null or not is_instance_valid(_physics_draw_surface):
+		return
+	_failure_pulse_control(_physics_draw_surface, 0.985, 0.04)
 
 
 func _classify_physics_line(start: Vector2, end: Vector2) -> String:
@@ -1569,7 +2277,7 @@ func _classify_physics_line(start: Vector2, end: Vector2) -> String:
 		return _first_wrong_physics_draw_id()
 
 	var delta := end - start
-	if delta.length() < 36.0:
+	if delta.length() < MIN_PHYSICS_DRAW_LENGTH:
 		return "wall"
 	if abs(delta.x) < 28.0:
 		return "wall"
@@ -1583,7 +2291,7 @@ func _classify_physics_line(start: Vector2, end: Vector2) -> String:
 func _line_matches_gesture(gesture: String, start: Vector2, end: Vector2) -> bool:
 	var delta := end - start
 	var length := delta.length()
-	if length < 36.0:
+	if length < MIN_PHYSICS_DRAW_LENGTH:
 		return false
 
 	match gesture:
@@ -1653,6 +2361,12 @@ func _event_position_in_control(event: InputEvent, control: Control, local_node:
 	return control.get_global_transform_with_canvas().affine_inverse() * _event_canvas_position(event, local_node)
 
 
+func _event_is_inside_control(event: InputEvent, control: Control) -> bool:
+	if control == null or not is_instance_valid(control):
+		return false
+	return control.get_global_rect().has_point(_event_canvas_position(event, control))
+
+
 func _mark_input_handled() -> void:
 	var viewport := get_viewport()
 	if viewport != null:
@@ -1675,7 +2389,58 @@ func _flat_box(color: Color, radius: int) -> StyleBoxFlat:
 	box.content_margin_right = 14
 	box.content_margin_top = 10
 	box.content_margin_bottom = 10
+	box.shadow_color = Color(0.0, 0.0, 0.0, 0.20)
+	box.shadow_size = 4
+	box.shadow_offset = Vector2(0, 2)
 	return box
+
+
+func _framed_box(color: Color, border_color: Color, radius: int) -> StyleBoxFlat:
+	var box := _flat_box(color, radius)
+	box.border_width_left = 2
+	box.border_width_top = 2
+	box.border_width_right = 2
+	box.border_width_bottom = 2
+	box.border_color = border_color
+	return box
+
+
+func _apply_direct_base_panel_style(panel: Control, accent: Color = COLOR_BLUE) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
+	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, accent, 8))
+
+
+func _apply_direct_selected_panel_style(panel: Control) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
+	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_YELLOW.darkened(0.16), COLOR_YELLOW, 8))
+
+
+func _apply_direct_fail_panel_style(panel: Control) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
+	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_RED.darkened(0.18), COLOR_RED, 8))
+	_shake_control(panel)
+
+
+func _reset_direct_text_answer_slot() -> void:
+	if _direct_text_answer_slot == null or not is_instance_valid(_direct_text_answer_slot):
+		return
+	_direct_text_answer_slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
+
+
+func _reset_direct_sibling_panel_styles(panel: Control, name_prefix: String) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
+	var surface := panel.get_parent() as Control
+	if surface == null or not is_instance_valid(surface):
+		return
+
+	for child in surface.get_children():
+		var control := child as Control
+		if control != null and str(control.name).begins_with(name_prefix):
+			_apply_direct_base_panel_style(control)
 
 
 func _target_color(target: Dictionary) -> Color:
@@ -1685,6 +2450,112 @@ func _target_color(target: Dictionary) -> Color:
 	if role == "decoy":
 		return COLOR_BLUE
 	return COLOR_PANEL_ALT
+
+
+func _animate_failed_drag_return(tile: Control) -> void:
+	_animate_control_position(tile, _drag_origin, 0.16, Tween.TRANS_BACK, Tween.EASE_OUT)
+
+
+func _animate_control_position(
+	control: Control,
+	target_position: Vector2,
+	duration: float = 0.08,
+	transition: Tween.TransitionType = Tween.TRANS_QUAD,
+	ease_type: Tween.EaseType = Tween.EASE_OUT
+) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	if is_inside_tree():
+		var tween := create_tween()
+		tween.set_trans(transition)
+		tween.set_ease(ease_type)
+		tween.tween_property(control, "position", target_position, duration)
+	else:
+		control.position = target_position
+
+
+func _animate_control_scale(
+	control: Control,
+	target_scale: Vector2,
+	duration: float,
+	transition: Tween.TransitionType = Tween.TRANS_QUAD,
+	ease_type: Tween.EaseType = Tween.EASE_OUT
+) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.pivot_offset = control.size * 0.5
+	if is_inside_tree():
+		var tween := create_tween()
+		tween.set_trans(transition)
+		tween.set_ease(ease_type)
+		tween.tween_property(control, "scale", target_scale, duration)
+	else:
+		control.scale = target_scale
+
+
+func _pulse_control(control: Control, shrink: float = 0.96, duration: float = 0.06) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.pivot_offset = control.size * 0.5
+	if is_inside_tree():
+		var tween := create_tween()
+		tween.set_trans(Tween.TRANS_QUAD)
+		tween.set_ease(Tween.EASE_OUT)
+		tween.tween_property(control, "scale", Vector2(shrink, shrink), duration)
+		tween.tween_property(control, "scale", Vector2.ONE, duration)
+	else:
+		control.scale = Vector2.ONE
+
+
+func _apply_board_entry_motion(control: Control) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.set_meta("entry_motion_count", int(control.get_meta("entry_motion_count", 0)) + 1)
+	if not is_inside_tree():
+		return
+	call_deferred("_play_board_entry_motion", control)
+
+
+func _play_board_entry_motion(control: Control) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1" or DisplayServer.get_name() == "headless":
+		return
+
+	control.pivot_offset = control.size * 0.5
+	control.modulate.a = 0.0
+	control.scale = Vector2(0.985, 0.985)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(control, "modulate:a", 1.0, 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _failure_pulse_control(control: Control, shrink: float = 0.94, duration: float = 0.05) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.set_meta("failure_pulse_count", int(control.get_meta("failure_pulse_count", 0)) + 1)
+	_pulse_control(control, shrink, duration)
+
+
+func _shake_control(control: Control, magnitude: float = 5.0, duration: float = 0.028) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.set_meta("failure_shake_count", int(control.get_meta("failure_shake_count", 0)) + 1)
+	var origin := control.position
+	control.set_meta("failure_shake_origin", origin)
+	if DisplayServer.get_name() == "headless" or not is_inside_tree():
+		control.position = origin
+		return
+
+	control.position = origin
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(control, "position", origin + Vector2(-magnitude, 0.0), duration)
+	tween.tween_property(control, "position", origin + Vector2(magnitude, 0.0), duration)
+	tween.tween_property(control, "position", origin + Vector2(-magnitude * 0.45, 0.0), duration)
+	tween.tween_property(control, "position", origin, duration)
 
 
 func _handle_dur_level(level: Dictionary) -> void:
@@ -1704,17 +2575,52 @@ func _handle_dur_level(level: Dictionary) -> void:
 	_show_level_list()
 
 
-func _add_profile_status(parent: Node) -> void:
+func _add_level_list_summary(parent: Node, packs: Array) -> void:
 	if not _profile.last_error.is_empty():
 		_add_status(parent, _profile.last_error, COLOR_RED)
 		return
 
-	_add_status(parent, "Local Profile: UQIQ %d | Dur %d/%d | Level %02d unlocked" % [
-		_profile.current_uqiq_score(),
-		_profile.dur_tokens(),
-		LocalProfileScript.MAX_DUR_TOKENS,
-		int(_profile.data.get("unlocked_level", 1)),
-	], COLOR_MUTED)
+	_add_status(parent, "%d levels ready across %d packs" % [_loaded_level_count(packs), packs.size()], COLOR_GREEN)
+
+	var metrics := HBoxContainer.new()
+	metrics.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	metrics.add_theme_constant_override("separation", 10)
+	parent.add_child(metrics)
+
+	_add_metric_chip(metrics, "UQIQ", str(_profile.current_uqiq_score()), COLOR_YELLOW)
+	_add_metric_chip(metrics, "Dur", "%d/%d" % [_profile.dur_tokens(), LocalProfileScript.MAX_DUR_TOKENS], COLOR_ORANGE)
+	_add_metric_chip(metrics, "Unlocked", "Level %02d" % int(_profile.data.get("unlocked_level", 1)), COLOR_GREEN)
+
+
+func _add_metric_chip(parent: Node, title: String, value: String, accent: Color) -> void:
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size = Vector2(0, 62)
+	chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chip.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	parent.add_child(chip)
+
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 0)
+	chip.add_child(box)
+
+	_add_label(box, title, 13, COLOR_MUTED)
+	_add_label(box, value, 18, accent)
+
+
+func _add_play_header_chip(parent: Node, text: String, accent: Color, width: int) -> void:
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size = Vector2(width, 48)
+	chip.size_flags_horizontal = Control.SIZE_SHRINK_END
+	chip.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL, accent, 8))
+	parent.add_child(chip)
+
+	var label := _new_label(text, 14, accent)
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	chip.add_child(label)
 
 
 func _is_level_playable(level: Dictionary) -> bool:
@@ -1760,6 +2666,20 @@ func _level_state_text(level: Dictionary) -> String:
 	return "future placeholder"
 
 
+func _level_row_button_text(level: Dictionary) -> String:
+	var level_number := int(level.get("level_number", 0))
+	var title := str(level.get("title", "Untitled"))
+	return "%02d  %s" % [level_number, title]
+
+
+func _level_row_tooltip_text(level: Dictionary) -> String:
+	var text := _level_row_button_text(level)
+	var state := _level_state_text(level)
+	if state == "playable" or state == "locked":
+		return text
+	return "%s | %s" % [text, state]
+
+
 func _level_button_color(level: Dictionary) -> Color:
 	var level_id := str(level.get("id", ""))
 	var level_number := int(level.get("level_number", 0))
@@ -1781,10 +2701,16 @@ func _uses_direct_pattern_grid() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_mark_cells"
 
 
+func _direct_pattern_prompt() -> String:
+	if _pattern_solution_cells().size() > 1:
+		return "Mark the whole broken set."
+	return "Tap the cell that breaks the pattern."
+
+
 func _pattern_solution_cells() -> Array[String]:
 	var solution := _solution()
 	var cell_ids = solution.get("cell_ids", [])
-	if typeof(cell_ids) == TYPE_ARRAY:
+	if typeof(cell_ids) == TYPE_ARRAY and not cell_ids.is_empty():
 		return _string_array(cell_ids)
 
 	var cell_id := str(solution.get("cell_id", ""))
@@ -1811,6 +2737,40 @@ func _update_memory_recall_slots() -> void:
 			label.text = "_"
 
 
+func _pulse_memory_recall_slot(index: int) -> void:
+	var label = _memory_slot_labels.get(index) as Label
+	if label == null or not is_instance_valid(label):
+		return
+
+	var slot_box := label.get_parent() as Control
+	if slot_box == null or not is_instance_valid(slot_box):
+		return
+
+	_pulse_control(slot_box.get_parent() as Control, 0.985, 0.04)
+
+
+func _apply_memory_recall_slot_style(slot: Control, border_color: Color) -> void:
+	if slot == null or not is_instance_valid(slot):
+		return
+	var fill := COLOR_RED.darkened(0.18) if border_color.is_equal_approx(COLOR_RED) else COLOR_PLAYFIELD.darkened(0.05)
+	slot.add_theme_stylebox_override("panel", _framed_box(fill, border_color, 8))
+
+
+func _reset_memory_recall_slot_styles() -> void:
+	for index in _memory_slot_panels.keys():
+		var slot = _memory_slot_panels[index] as Control
+		_apply_memory_recall_slot_style(slot, COLOR_BLUE)
+
+
+func _apply_memory_recall_slot_failure_feedback() -> void:
+	for index in _memory_slot_panels.keys():
+		var slot = _memory_slot_panels[index] as Control
+		if slot == null or not is_instance_valid(slot):
+			continue
+		_apply_memory_recall_slot_style(slot, COLOR_RED)
+		_failure_pulse_control(slot, 0.985, 0.04)
+
+
 func _resolve_direct_memory_if_full() -> void:
 	var sequence := _memory_solution_sequence()
 	if sequence.is_empty() or _memory_input.size() < sequence.size():
@@ -1821,16 +2781,121 @@ func _resolve_direct_memory_if_full() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Memory failed. The pixels had one job and so did you.")
+	_apply_memory_recall_slot_failure_feedback()
+	_memory_input = []
+	_update_memory_recall_slots()
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
 
+func _direct_memory_row_is_full_and_wrong() -> bool:
+	var sequence := _memory_solution_sequence()
+	return not sequence.is_empty() and _memory_input.size() >= sequence.size() and _memory_input != sequence
+
+
+func _reset_direct_memory_tile_styles() -> void:
+	if _direct_memory_flash_label == null or not is_instance_valid(_direct_memory_flash_label):
+		return
+	var surface := _direct_memory_flash_label.get_parent() as Control
+	if surface == null or not is_instance_valid(surface):
+		return
+
+	for child in surface.get_children():
+		var control := child as Control
+		if control == null or not str(control.name).begins_with("memory_tile_"):
+			continue
+
+		if str(control.name) == "memory_tile_clear":
+			_apply_direct_base_panel_style(control, COLOR_ORANGE)
+		else:
+			_apply_direct_base_panel_style(control)
+
+
+func _apply_direct_memory_tile_result_styles(item_ids: Array[String], success: bool) -> void:
+	var color := COLOR_GREEN.darkened(0.16) if success else COLOR_RED.darkened(0.18)
+	var border_color := COLOR_GREEN if success else COLOR_RED
+	for item_id in item_ids:
+		var control := _direct_memory_tile_control(item_id)
+		if control != null and is_instance_valid(control):
+			control.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+			if not success:
+				_shake_control(control)
+
+
+func _direct_memory_tile_control(item_id: String) -> Control:
+	if _direct_memory_flash_label == null or not is_instance_valid(_direct_memory_flash_label):
+		return null
+	var surface := _direct_memory_flash_label.get_parent() as Control
+	if surface == null or not is_instance_valid(surface):
+		return null
+	return surface.get_node_or_null("memory_tile_%s" % item_id.to_lower()) as Control
+
+
+func _memory_tile_size(tile_count: int, height: float) -> Vector2:
+	var width := 96.0
+	if tile_count >= 4:
+		width = 72.0
+	return Vector2(width, height)
+
+
+func _memory_tile_step(tile_count: int, tile_width: float) -> float:
+	if tile_count <= 1:
+		return 0.0
+	return (300.0 - tile_width) / float(tile_count - 1)
+
+
+func _arm_direct_memory_flash_hide() -> void:
+	if not is_inside_tree():
+		return
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
+		return
+	var generation := _direct_memory_flash_generation
+	var delay := maxf(float(_rules().get("flash_seconds", 1.0)), 0.8)
+	get_tree().create_timer(delay).timeout.connect(Callable(self, "_hide_direct_memory_flash").bind(generation))
+
+
+func _hide_direct_memory_flash(generation: int = -1) -> void:
+	if generation >= 0 and generation != _direct_memory_flash_generation:
+		return
+	if _direct_memory_flash_label == null or not is_instance_valid(_direct_memory_flash_label):
+		return
+	_direct_memory_flash_label.text = "Receipt hidden"
+
+
 func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
 	var is_marked := _pattern_marked_cells.has(cell_id)
-	var color := COLOR_YELLOW if is_marked else _target_color(_pattern_cell_by_id(cell_id))
-	button.add_theme_stylebox_override("normal", _flat_box(color, 8))
-	button.add_theme_stylebox_override("hover", _flat_box(color.lightened(0.08), 8))
-	button.add_theme_stylebox_override("pressed", _flat_box(color.darkened(0.08), 8))
+	var color := COLOR_YELLOW.darkened(0.16) if is_marked else COLOR_PANEL_ALT
+	var border_color := COLOR_YELLOW if is_marked else COLOR_BLUE
+	_apply_pattern_button_style(button, color, border_color)
+
+
+func _clear_pattern_marks() -> void:
+	_pattern_marked_cells = []
+	_refresh_pattern_mark_styles()
+
+
+func _refresh_pattern_mark_styles() -> void:
+	for cell_id in _pattern_cell_buttons.keys():
+		var button = _pattern_cell_buttons[cell_id] as Button
+		if button != null and is_instance_valid(button):
+			_apply_pattern_mark_style(str(cell_id), button)
+
+
+func _apply_pattern_result_style(cell_ids: Array[String], success: bool) -> void:
+	var color := COLOR_GREEN.darkened(0.16) if success else COLOR_RED.darkened(0.18)
+	var border_color := COLOR_GREEN if success else COLOR_RED
+	for cell_id in cell_ids:
+		var button = _pattern_cell_buttons.get(cell_id) as Button
+		if button != null and is_instance_valid(button):
+			_apply_pattern_button_style(button, color, border_color)
+			if not success:
+				_failure_pulse_control(button)
+
+
+func _apply_pattern_button_style(button: Button, color: Color, border_color: Color) -> void:
+	button.add_theme_stylebox_override("normal", _framed_box(color, border_color, 8))
+	button.add_theme_stylebox_override("hover", _framed_box(color.lightened(0.08), border_color, 8))
+	button.add_theme_stylebox_override("pressed", _framed_box(color.darkened(0.08), border_color, 8))
 
 
 func _pattern_cell_by_id(cell_id: String) -> Dictionary:
@@ -1840,6 +2905,14 @@ func _pattern_cell_by_id(cell_id: String) -> Dictionary:
 			if typeof(cell) == TYPE_DICTIONARY and str(cell.get("id", "")) == cell_id:
 				return cell
 	return {}
+
+
+func _pattern_marked_cell_labels() -> Array[String]:
+	var labels: Array[String] = []
+	for cell_id in _pattern_marked_cells:
+		var cell := _pattern_cell_by_id(cell_id)
+		labels.append(str(cell.get("label", cell_id)))
+	return labels
 
 
 func _same_string_set(left: Array[String], right: Array[String]) -> bool:
@@ -1892,14 +2965,32 @@ func _vector2_from_array(value: Variant, fallback: Vector2) -> Vector2:
 	return Vector2(float(values[0]), float(values[1]))
 
 
-func _score_component_text(components: Dictionary, key: String, title: String, fallback_label: String) -> String:
+func _add_score_stat_chip(parent: Node, components: Dictionary, key: String, title: String, fallback_label: String, accent: Color) -> void:
 	var component := _dictionary_from(components.get(key, {}))
 	var label := str(component.get("label", fallback_label))
 	var delta := int(component.get("delta", 0))
 	var detail := str(component.get("detail", ""))
-	if detail.is_empty():
-		return "%s: %s (%+d)" % [title, label, delta]
-	return "%s: %s (%+d) | %s" % [title, label, delta, detail]
+
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size = Vector2(0, 100)
+	chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chip.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	parent.add_child(chip)
+
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	chip.add_child(box)
+
+	_add_label(box, "%s: %+d" % [title, delta], 18, accent)
+	_add_label(box, label, 15, COLOR_TEXT)
+	if not detail.is_empty():
+		_add_label(box, detail, 13, COLOR_MUTED)
+
+
+func _count_label(count: int, singular: String, plural: String) -> String:
+	return "%d %s" % [count, singular if count == 1 else plural]
 
 
 func _physics_draw_label(draw_id: String) -> String:
@@ -1916,30 +3007,37 @@ func _physics_draw_label(draw_id: String) -> String:
 func _update_physics_choice_label() -> void:
 	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
 		if _last_physics_result == "drawing":
-			_physics_choice_label.text = "Selected line: drawing..."
+			_physics_choice_label.text = "Ramp: drawing"
+		elif _physics_choice.is_empty():
+			_physics_choice_label.text = "Ramp ready"
 		else:
-			_physics_choice_label.text = "Selected line: %s" % _physics_draw_label(_physics_choice)
+			_physics_choice_label.text = "Ramp: %s" % _physics_draw_label(_physics_choice)
 	if _physics_result_label != null and is_instance_valid(_physics_result_label):
 		if _last_physics_result == "drawing":
-			_physics_result_label.text = "Release result: line not released yet"
+			_physics_result_label.text = "Keep tracing"
+		elif _physics_choice.is_empty():
+			_physics_result_label.text = "Draw from the ball"
 		else:
-			_physics_result_label.text = "Release result: ready to test"
+			_physics_result_label.text = "Lift to test"
 
 
 func _update_physics_result_label(success: bool) -> void:
 	if _physics_result_label == null or not is_instance_valid(_physics_result_label):
 		return
 	if success:
-		_physics_result_label.text = "Release result: ball reached the cup"
+		_physics_result_label.text = "Ball reached the cup"
 	else:
-		_physics_result_label.text = "Release result: fake gravity rejected %s" % _physics_draw_label(_physics_choice)
+		_physics_result_label.text = "Missed: %s" % _physics_draw_label(_physics_choice)
 
 
 func _set_judge_state(state: String) -> void:
+	var changed := state != _judge_state
 	_judge_state = state
 	_judge_state_counts[state] = int(_judge_state_counts.get(state, 0)) + 1
 	if _judge_face_label != null and is_instance_valid(_judge_face_label):
 		_judge_face_label.text = _judge_face_text(state)
+		if changed:
+			_pulse_control(_judge_face_label, 0.90, 0.05)
 	if _judge_caption_label != null and is_instance_valid(_judge_caption_label):
 		_judge_caption_label.text = _judge_caption_text(state)
 
@@ -1981,16 +3079,25 @@ func _apply_screen_transition(root: Control, transition_name: String) -> void:
 		return
 	_last_transition_name = transition_name
 	_transition_counts[transition_name] = int(_transition_counts.get(transition_name, 0)) + 1
-	root.modulate = Color(1.0, 1.0, 1.0, 0.92)
+	root.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1" or DisplayServer.get_name() == "headless":
+		return
 	if is_inside_tree():
+		var resting_position := root.position
+		root.modulate.a = 0.0
+		root.position = resting_position + Vector2(0.0, SCREEN_TRANSITION_OFFSET_Y)
 		var tween := create_tween()
-		tween.tween_property(root, "modulate:a", 1.0, 0.08)
+		tween.set_parallel(true)
+		tween.tween_property(root, "modulate:a", 1.0, SCREEN_TRANSITION_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(root, "position", resting_position, SCREEN_TRANSITION_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 func _setup_feedback() -> void:
 	if _feedback_player != null:
 		return
 	if DisplayServer.get_name() == "headless":
+		return
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
 		return
 
 	_feedback_generator = AudioStreamGenerator.new()
@@ -2047,6 +3154,8 @@ func _pulse_feedback(kind: String) -> void:
 
 func _feedback_spec(kind: String) -> Dictionary:
 	match kind:
+		"button_press":
+			return {"frequency": 520.0, "duration": 0.018, "volume": 0.06, "volume_db": -24.0, "haptic_ms": 0}
 		"tap":
 			return {"frequency": 620.0, "duration": 0.025, "volume": 0.08, "volume_db": -22.0, "haptic_ms": 8}
 		"fail":

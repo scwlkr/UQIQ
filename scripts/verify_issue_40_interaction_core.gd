@@ -27,11 +27,15 @@ func _initialize() -> void:
 	if _failed:
 		return
 
+	_verify_drag_layout_bounds()
+	if _failed:
+		return
+
 	_verify_direct_physics_draw()
 	if _failed:
 		return
 
-	print("Issue #40 interaction core verification passed: Drag Logic uses a direct drag/drop playfield, Physics Draw uses a direct draw surface, and both complete through Score Roastcard.")
+	print("Issue #40 interaction core verification passed: Drag Logic uses a direct drag/drop playfield with failed-drop bounce-back, Physics Draw resolves from a direct draw-release surface, and both complete through Score Roastcard.")
 	_cleanup()
 	quit(0)
 
@@ -53,19 +57,81 @@ func _verify_direct_drag_drop() -> void:
 	_require(_node_named(_main, "drag_playfield") != null, "Drag Logic should render a named direct-manipulation playfield.")
 	_require(_node_named(_main, "drag_tile_word_wrong") != null, "Drag Logic should render the correct word as a draggable tile.")
 	_require(_node_named(_main, "drop_zone_truth_box") != null, "Drag Logic should render the Truth Box as a drop zone.")
+	_require(_screen_has_label_text("Loose claims"), "Drag Logic should render the playfield with in-world state copy.")
+	_require(not _screen_has_label_text("Drag the word into a box."), "Direct Drag Logic should not repeat instruction copy above the playfield.")
+	_require(not _screen_has_label_text("drag tiles to drop zones"), "Drag Logic should not render old instruction-like playfield copy.")
+	_require(_screen_has_label_text("Tile ready."), "Drag Logic should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("No tile moving."), "Drag Logic should not render old negative idle feedback.")
 	_require(not _has_button_prefix(_main, "Move:"), "Drag Logic should not expose Move: choice buttons as the primary interaction.")
 	_require(not _has_button_prefix(_main, "Drop on:"), "Drag Logic should not expose Drop on: choice buttons as the primary interaction.")
 
-	_drag_tile_to_zone("word_right", "confidence_box")
-	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
-	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
+	_release_tile_into_empty_space("word_right")
+	_require(_screen_has_label_text("RIGHT missed every box."), "Direct Drag Logic miss feedback should use the visible tile label.")
+	_require(not _screen_has_label_text("word_right"), "Direct Drag Logic miss feedback should not leak internal object ids.")
 
 	_main.call("_show_play_screen", level)
-	_drag_tile_to_zone("word_wrong", "truth_box")
+	_release_tile_with_tiny_overlap("word_right", "confidence_box")
+	_require(not _profile.is_level_completed(level_id), "Tiny edge overlap with pointer outside should not count as a drop.")
+	_require(str(_main.get("_last_drag_drop_target_id")).is_empty(), "Tiny edge overlap should leave the drop target empty.")
+	_require(_screen_has_label_text("RIGHT missed every box."), "Tiny edge overlap should fall back to miss feedback.")
+
+	_main.call("_show_play_screen", level)
+	_drag_tile_to_zone("word_right", "confidence_box", "Over Confidence Box. Release to drop RIGHT.")
+	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
+	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
+	_require(str(_main.get("_selected_drag_id")).is_empty(), "Wrong direct drag/drop should clear the held-tile state after release.")
+	_require(str(_main.get("_last_failed_drag_return_id")) == "word_right", "Wrong direct drag/drop should schedule the dragged tile to return to origin.")
+	_require(_drop_zone_border_color("confidence_box").is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct drag/drop should frame the rejected target as a fail state.")
+	_require(_drop_zone_shake_count("confidence_box") > 0, "Wrong direct drag/drop should shake the rejected target.")
+	_require(_screen_has_label_text("RIGHT does not belong in Confidence Box."), "Wrong direct drag/drop feedback should use visible tile and box labels.")
+	_require(not _screen_has_label_text("word_right"), "Wrong direct drag/drop feedback should not leak internal object ids.")
+
+	_main.call("_show_play_screen", level)
+	_release_overlapping_tile_with_bad_pointer("word_wrong", "truth_box")
 	_require(_profile.is_level_completed(level_id), "Correct direct drag/drop should complete Level 2.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct drag/drop should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct drag/drop should persist as one direct action.")
+
+
+func _verify_drag_layout_bounds() -> void:
+	var levels = _pack_set.get("levels", [])
+	_require(typeof(levels) == TYPE_ARRAY, "Default pack set should expose levels for drag layout verification.")
+	if typeof(levels) != TYPE_ARRAY:
+		return
+
+	for level in levels:
+		if typeof(level) != TYPE_DICTIONARY or str(level.get("template", "")) != "Drag Logic":
+			continue
+
+		_main.call("_show_play_screen", level)
+		var playfield := _node_named(_main, "drag_playfield") as Control
+		_require(playfield != null, "Drag Logic Level %d should render a playfield." % int(level.get("level_number", 0)))
+		if playfield == null:
+			return
+
+		var playfield_height := _control_height(playfield)
+		_require(playfield_height >= 280.0, "Drag Logic Level %d playfield should keep a phone-friendly minimum height." % int(level.get("level_number", 0)))
+		_verify_named_children_fit(playfield, "drag_tile_", playfield_height, int(level.get("level_number", 0)))
+		_verify_named_children_fit(playfield, "drop_zone_", playfield_height, int(level.get("level_number", 0)))
+
+
+func _verify_named_children_fit(parent: Control, name_prefix: String, parent_height: float, level_number: int) -> void:
+	var count := 0
+	for child in parent.get_children():
+		var control := child as Control
+		if control == null or not str(control.name).begins_with(name_prefix):
+			continue
+		count += 1
+		var bottom := control.position.y + _control_height(control)
+		_require(bottom <= parent_height + 0.01, "Drag Logic Level %d %s should fit inside the playfield." % [level_number, str(control.name)])
+	_require(count > 0, "Drag Logic Level %d should render %s controls." % [level_number, name_prefix])
+
+
+func _control_height(control: Control) -> float:
+	if control.size.y > 0.0:
+		return control.size.y
+	return control.custom_minimum_size.y
 
 
 func _verify_direct_physics_draw() -> void:
@@ -74,24 +140,44 @@ func _verify_direct_physics_draw() -> void:
 	_main.call("_show_play_screen", level)
 
 	_require(_node_named(_main, "physics_draw_surface") != null, "Physics Draw should render a named direct drawing surface.")
+	_require(_physics_marker_is_visible("physics_ball_marker"), "Physics Draw should render a visible ball marker.")
+	_require(_physics_marker_is_visible("physics_cup_marker"), "Physics Draw should render a visible cup marker.")
 	_require(_node_named(_main, "player_drawn_line") != null, "Physics Draw should render the player's drawn line.")
+	_require(_physics_hint_is_secondary(), "Physics Draw hint line should read as a faint guide, not a completed player stroke.")
 	_require(not _has_button_prefix(_main, "Draw:"), "Physics Draw should not expose Draw: option buttons as the primary interaction.")
-	_require(_screen_has_label_text("Selected line: none"), "Physics Draw should start with no selected line.")
+	_require(_screen_has_label_text("Ramp sketch"), "Physics Draw should render the playfield with in-world state copy.")
+	_require(not _screen_has_label_text("Draw toward the cup"), "Physics Draw should not render old instruction-like playfield copy.")
+	_require(_screen_has_label_text("Ramp ready"), "Physics Draw should start with no selected line.")
+	_require(_screen_has_label_text("Line ready."), "Physics Draw should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("No ramp drawn."), "Physics Draw should not render old negative idle feedback.")
 
+	_draw_line_on_surface(Vector2(48, 220), Vector2(54, 216))
+	_require(str(_main.get("_last_physics_result")) == "short", "A tiny Physics Draw stroke should record a short-stroke state.")
+	_require(str(_main.get("_physics_choice")).is_empty(), "A tiny Physics Draw stroke should not select a ramp.")
+	_require(int(_main.get("_tap_count")) == 0, "A tiny Physics Draw stroke should not spend an action.")
+	_require(not _profile.is_level_completed(level_id), "A tiny Physics Draw stroke should not complete Level 6.")
+	_require(_screen_has_label_text("Line too short."), "A tiny Physics Draw stroke should ask for a longer line.")
+	_require(_physics_surface_failure_pulse_count() > 0, "A tiny Physics Draw stroke should pulse the draw surface as failed feedback.")
+
+	_draw_curved_line_on_surface(Vector2(48, 220), [Vector2(-120, 360), Vector2(500, -80)], Vector2(260, 220))
+	_require(str(_main.get("_last_physics_result")) == "fail", "A wrong curved Physics Draw stroke should fail without completing.")
+	_require(_drawn_line_point_count() >= 4, "Physics Draw should preserve a multi-point finger path instead of snapping to start/end.")
+	_require(_drawn_line_points_inside_surface(), "Physics Draw should clamp off-surface finger movement inside the playfield.")
+	_require(_player_line_color().is_equal_approx(Color(0.95, 0.22, 0.24)), "A wrong Physics Draw stroke should color the player line as failure.")
+	_require(_physics_surface_failure_pulse_count() > 1, "A wrong curved Physics Draw stroke should pulse the draw surface as failed feedback.")
+	_require(not _profile.is_level_completed(level_id), "A wrong curved Physics Draw stroke should not complete Level 6.")
+
+	_main.call("_show_play_screen", level)
 	_draw_line_on_surface(Vector2(48, 220), Vector2(260, 110))
 	_require(str(_main.get("_physics_choice")) == "ramp_to_cup", "A rising line from ball to cup should classify as the ramp.")
-	_require(str(_main.get("_last_physics_result")) == "selected", "Drawing a line should record selected state before release.")
-	_require(_screen_has_label_text("Selected line: ramp to cup"), "Physics Draw should show the classified drawn ramp.")
-
-	_main.call("_handle_physics_release")
 	_require(str(_main.get("_last_physics_result")) == "success", "Correct drawn ramp release should record success state.")
 	_require(_profile.is_level_completed(level_id), "Correct drawn ramp should complete Level 6.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct drawn ramp should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(best_attempt.get("action_count", 0)) == 2, "Draw plus release should persist as two actions.")
+	_require(int(best_attempt.get("action_count", 0)) == 1, "Draw-release should persist as one direct action.")
 
 
-func _drag_tile_to_zone(object_id: String, target_id: String) -> void:
+func _drag_tile_to_zone(object_id: String, target_id: String, expected_hover_text: String = "") -> void:
 	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
 	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
 	_require(tile != null, "Expected draggable tile for %s." % object_id)
@@ -105,10 +191,88 @@ func _drag_tile_to_zone(object_id: String, target_id: String) -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.position = tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	_main.call("_handle_drag_tile_input", motion, object_id, tile)
+	_require(str(_main.get("_drag_hover_target_id")) == target_id, "Dragging over a drop zone should mark it as the current hover target.")
+	_require(_drop_zone_scale(target_id).is_equal_approx(Vector2(1.035, 1.035)), "Dragging over a drop zone should lift the hovered target.")
+	if not expected_hover_text.is_empty():
+		_require(_screen_has_label_text(expected_hover_text), "Dragging over a drop zone should show release guidance with visible labels.")
 	target_center = zone.get_global_rect().get_center()
 	var release_position := tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	var release := _mouse_button_event(release_position, false)
 	_main.call("_handle_drag_tile_input", release, object_id, tile)
+	_require(str(_main.get("_drag_hover_target_id")).is_empty(), "Releasing a drag should clear drop-zone hover state.")
+	_require(_drop_zone_scale(target_id).is_equal_approx(Vector2.ONE), "Releasing a drag should return the drop target to resting scale.")
+
+
+func _release_overlapping_tile_with_bad_pointer(object_id: String, target_id: String) -> void:
+	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(tile != null, "Expected draggable tile for %s." % object_id)
+	_require(zone != null, "Expected drop zone for %s." % target_id)
+	if _failed:
+		return
+
+	var press := _mouse_button_event(Vector2(12, 12), true)
+	_main.call("_handle_drag_tile_input", press, object_id, tile)
+	tile.position = zone.position
+	tile.move_to_front()
+	var release := _mouse_button_event(Vector2(-500, -500), false)
+	_main.call("_handle_drag_tile_input", release, object_id, tile)
+
+
+func _release_tile_with_tiny_overlap(object_id: String, target_id: String) -> void:
+	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(tile != null, "Expected draggable tile for %s." % object_id)
+	_require(zone != null, "Expected drop zone for %s." % target_id)
+	if _failed:
+		return
+
+	var press := _mouse_button_event(Vector2(12, 12), true)
+	_main.call("_handle_drag_tile_input", press, object_id, tile)
+	tile.position = zone.position + Vector2(zone.size.x - 2.0, 0.0)
+	tile.move_to_front()
+	var release := _mouse_button_event(Vector2(-500, -500), false)
+	_main.call("_handle_drag_tile_input", release, object_id, tile)
+
+
+func _release_tile_into_empty_space(object_id: String) -> void:
+	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
+	_require(tile != null, "Expected draggable tile for %s." % object_id)
+	if _failed:
+		return
+
+	var press := _mouse_button_event(Vector2(12, 12), true)
+	_main.call("_handle_drag_tile_input", press, object_id, tile)
+	var release := _mouse_button_event(Vector2(-500, -500), false)
+	_main.call("_handle_drag_tile_input", release, object_id, tile)
+
+
+func _drop_zone_border_color(target_id: String) -> Color:
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as PanelContainer
+	_require(zone != null, "Expected drop zone %s." % target_id)
+	if zone == null:
+		return Color.TRANSPARENT
+	var style := zone.get_theme_stylebox("panel") as StyleBoxFlat
+	_require(style != null, "Expected framed drop zone %s." % target_id)
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
+
+
+func _drop_zone_scale(target_id: String) -> Vector2:
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(zone != null, "Expected drop zone %s." % target_id)
+	if zone == null:
+		return Vector2.ZERO
+	return zone.scale
+
+
+func _drop_zone_shake_count(target_id: String) -> int:
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(zone != null, "Expected drop zone %s." % target_id)
+	if zone == null:
+		return 0
+	return int(zone.get_meta("failure_shake_count", 0))
 
 
 func _draw_line_on_surface(start: Vector2, end: Vector2) -> void:
@@ -122,6 +286,84 @@ func _draw_line_on_surface(start: Vector2, end: Vector2) -> void:
 	motion.position = end
 	_main.call("_handle_physics_surface_input", motion, surface)
 	_main.call("_handle_physics_surface_input", _mouse_button_event(end, false), surface)
+
+
+func _draw_curved_line_on_surface(start: Vector2, midpoints: Array, end: Vector2) -> void:
+	var surface := _node_named(_main, "physics_draw_surface") as Control
+	_require(surface != null, "Expected physics drawing surface.")
+	if _failed:
+		return
+
+	_main.call("_handle_physics_surface_input", _mouse_button_event(start, true), surface)
+	for midpoint in midpoints:
+		var motion := InputEventMouseMotion.new()
+		motion.position = midpoint
+		_main.call("_handle_physics_surface_input", motion, surface)
+	var release := _mouse_button_event(end, false)
+	_main.call("_handle_physics_surface_input", release, surface)
+
+
+func _drawn_line_point_count() -> int:
+	var line := _node_named(_main, "player_drawn_line") as Line2D
+	_require(line != null, "Expected Physics Draw player line.")
+	if line == null:
+		return 0
+	return line.points.size()
+
+
+func _drawn_line_points_inside_surface() -> bool:
+	var surface := _node_named(_main, "physics_draw_surface") as Control
+	var line := _node_named(_main, "player_drawn_line") as Line2D
+	_require(surface != null, "Expected Physics Draw surface.")
+	_require(line != null, "Expected Physics Draw player line.")
+	if surface == null or line == null:
+		return false
+
+	var bounds := surface.size
+	if bounds.x <= 0.0:
+		bounds.x = maxf(surface.custom_minimum_size.x, 320.0)
+	if bounds.y <= 0.0:
+		bounds.y = maxf(surface.custom_minimum_size.y, 280.0)
+
+	for point in line.points:
+		if point.x < -0.01 or point.y < -0.01 or point.x > bounds.x + 0.01 or point.y > bounds.y + 0.01:
+			return false
+
+	return true
+
+
+func _player_line_color() -> Color:
+	var line := _node_named(_main, "player_drawn_line") as Line2D
+	_require(line != null, "Expected Physics Draw player line.")
+	if line == null:
+		return Color.TRANSPARENT
+	return line.default_color
+
+
+func _physics_surface_failure_pulse_count() -> int:
+	var surface := _node_named(_main, "physics_draw_surface") as Control
+	_require(surface != null, "Expected Physics Draw surface.")
+	if surface == null:
+		return 0
+	return int(surface.get_meta("failure_pulse_count", 0))
+
+
+func _physics_marker_is_visible(marker_name: String) -> bool:
+	var marker := _node_named(_main, marker_name) as Control
+	_require(marker != null, "Expected Physics Draw marker %s." % marker_name)
+	if marker == null:
+		return false
+	return marker.size.x >= 20.0 and marker.size.y >= 20.0 and marker.visible
+
+
+func _physics_hint_is_secondary() -> bool:
+	var hint := _node_named(_main, "physics_draw_hint_line") as Line2D
+	var player := _node_named(_main, "player_drawn_line") as Line2D
+	_require(hint != null, "Expected Physics Draw hint line.")
+	_require(player != null, "Expected Physics Draw player line.")
+	if hint == null or player == null:
+		return false
+	return hint.default_color.a <= 0.24 and hint.width < player.width
 
 
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:

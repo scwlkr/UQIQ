@@ -227,8 +227,19 @@ func _spend_dur_from_level_list(level: Dictionary) -> void:
 	var row := _find_level_row(level_number)
 	if not _require(row != null, "Level List should render Level %d before Dur Token spend." % level_number):
 		return
+	if not _require(str(row.name) == "level_row_%02d" % level_number, "Level List row should be named for Level %d." % level_number):
+		return
+	if not _require(int(row.get_meta("entry_motion_count", 0)) > 0, "Level List row should record entry motion for Level %d." % level_number):
+		return
 	var dur_button := _find_dur_button(row)
 	if not _require(dur_button != null, "Level List should render a DUR button for Level %d." % level_number):
+		return
+	if not _require(dur_button.custom_minimum_size == Vector2(58, 58), "Level List DUR button should stay compact and square."):
+		return
+	if not _require(dur_button.get_theme_font_size("font_size") <= 16, "Level List compact DUR button should use a smaller label."):
+		return
+	var dur_stylebox := dur_button.get_theme_stylebox("normal") as StyleBoxFlat
+	if not _require(dur_stylebox != null and dur_stylebox.content_margin_left <= 8 and dur_stylebox.content_margin_right <= 8, "Level List compact DUR button should keep enough text room."):
 		return
 	if not _require(not dur_button.disabled, "Level List should allow Dur Token spend on unlocked incomplete Level %d." % level_number):
 		return

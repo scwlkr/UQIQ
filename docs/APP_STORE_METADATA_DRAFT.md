@@ -158,12 +158,14 @@ Draft App Store screenshot set:
 - `docs/app-store/screenshots/04_memory_flash.png`
 - `docs/app-store/screenshots/05_physics_draw.png`
 - `docs/app-store/screenshots/06_score_roastcard.png`
+- `docs/app-store/screenshots/07_drag_logic.png`
+- `docs/app-store/screenshots/08_text_trap.png`
 
 Still needed before submission:
 
 - Review or replace draft screenshots before upload; Scorecard and content-heavy play screens are now scrollable, but static screenshots still show only the current scroll position.
 - Capture final App Store screenshots from the release/TestFlight build in the intended portrait presentation if scwlkr wants device-native assets instead of local draft captures.
-- Recommended set: Level List, Level 01 play, a Pattern Grid level, a Memory Flash level, a Physics Draw level, and Score Roastcard.
+- Recommended set: Level List, Level 01 play, Drag Logic, Text Trap, a Pattern Grid level, a Memory Flash level, a Physics Draw level, and Score Roastcard.
 - Verify whether App Store Connect accepts only the 6.9-inch iPhone set for this phone-only app, or whether it asks for additional sizes in the current app record.
 - Confirm app icon readability at App Store size and small Home Screen size.
 

@@ -52,18 +52,53 @@ func _verify_tactile_memory_flash() -> void:
 	_require(_node_named(_main, "memory_tile_moon") != null, "Memory Flash should render MOON as a direct tile.")
 	_require(_node_named(_main, "memory_tile_dur") != null, "Memory Flash should render DUR as a direct tile.")
 	_require_tile_label_fits("MOON")
+	_require(_screen_has_label_text("Recall row ready."), "Direct Memory Flash should start with positive ready-state feedback.")
+	_require(not _screen_has_label_text("Row empty."), "Direct Memory Flash should not render old negative idle feedback.")
 	_require(not _has_button_text(_main, "Flash"), "Direct Memory Flash should not expose Flash button.")
 	_require(not _has_button_text(_main, "Hide"), "Direct Memory Flash should not expose Hide button.")
 	_require(not _has_button_text(_main, "Submit"), "Direct Memory Flash should not expose Submit button.")
 	_require(not _has_button_text(_main, "SUN"), "Direct Memory Flash should not expose SUN as a choice button.")
 	_require(not _has_button_text(_main, "MOON"), "Direct Memory Flash should not expose MOON as a choice button.")
 	_require(not _has_button_text(_main, "DUR"), "Direct Memory Flash should not expose DUR as a choice button.")
+	_require(not _screen_has_label_text("Tap tiles into the recall slots"), "Direct Memory Flash should not repeat instruction copy above the tile surface.")
+	_main.call("_hide_direct_memory_flash", int(_main.get("_direct_memory_flash_generation")))
+	_require(_screen_has_label_text("Receipt hidden"), "Direct Memory Flash hidden state should use concise in-world copy.")
+	_require(not _screen_has_label_text("flash hidden - rebuild it from memory"), "Direct Memory Flash should not render old instruction-like hidden copy.")
 
+	_cancel_tile_release_outside("SUN")
+	_require(int(_main.get("_tap_count")) == 0, "Direct Memory Flash release outside should cancel without spending an action.")
+	_require(str(_main.get("_last_direct_memory_tile_id")).is_empty(), "Direct Memory Flash release outside should not record a tile.")
+	var memory_after_cancel: Array = _main.get("_memory_input")
+	_require(memory_after_cancel.is_empty(), "Direct Memory Flash release outside should not add recall input.")
+
+	_press_clear_with_touch()
+	_require(int(_main.get("_tap_count")) == 0, "Direct Memory Flash empty clear should not spend an action.")
+	_require(str(_main.get("_last_direct_memory_tile_id")).is_empty(), "Direct Memory Flash empty clear should not record CLEAR as a tile.")
+	_require(_screen_has_label_text("Recall row ready."), "Direct Memory Flash empty clear should keep ready-state feedback.")
+	_require(_memory_tile_has_border("CLEAR", Color(0.96, 0.43, 0.13)), "Direct Memory Flash empty clear should keep CLEAR on its orange idle frame.")
+
+	_press_tile_with_touch("SUN")
+	_press_clear_with_touch()
+	_require(int(_main.get("_tap_count")) == 2, "Direct Memory Flash non-empty clear should count as one action after one tile.")
+	_require(str(_main.get("_last_direct_memory_tile_id")) == "CLEAR", "Direct Memory Flash non-empty clear should record the CLEAR tile.")
+	var memory_after_clear: Array = _main.get("_memory_input")
+	_require(memory_after_clear.is_empty(), "Direct Memory Flash non-empty clear should reset recall input.")
+	_require(_memory_tile_has_border("CLEAR", Color(0.96, 0.43, 0.13)), "Direct Memory Flash non-empty clear should return CLEAR to its orange idle frame.")
+
+	_main.call("_show_play_screen", level)
 	_press_tiles_with_touch(["DUR", "SUN", "MOON"])
 	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong direct memory row should count one action per tile.")
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "MOON", "Direct memory handler should record the last touched tile.")
-	_require(_screen_has_label_text("DUR"), "Recall slots should show tapped memory input.")
+	_require(not _memory_tiles_have_selected_border(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should leave selected contact feedback.")
+	_require(_memory_tiles_have_border(["DUR", "SUN", "MOON"], Color(0.95, 0.22, 0.24)), "Wrong full Memory Flash row should frame touched tiles as a fail state.")
+	_require(_memory_tiles_shook(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should shake touched tiles.")
+	_require(_memory_recall_slots_have_border(3, Color(0.95, 0.22, 0.24)), "Wrong full Memory Flash row should frame recall slots as a fail state.")
+	_require(_memory_recall_slots_pulsed(3), "Wrong full Memory Flash row should pulse recall slots.")
+	var memory_after_wrong: Array = _main.get("_memory_input")
+	_require(memory_after_wrong.is_empty(), "Wrong full Memory Flash row should clear recall input for a clean retry.")
+	var first_slot_label := _node_named(_main, "memory_recall_slot_label_0") as Label
+	_require(first_slot_label != null and str(first_slot_label.text) == "_", "Wrong full Memory Flash row should reset recall slot labels.")
 
 	_main.call("_show_play_screen", level)
 	_press_tiles_with_mouse(["SUN", "MOON", "DUR"])
@@ -76,20 +111,124 @@ func _verify_tactile_memory_flash() -> void:
 
 func _press_tiles_with_touch(item_ids: Array[String]) -> void:
 	for item_id in item_ids:
-		_press_tile(item_id, _screen_touch_event(true))
+		_press_tile_with_touch(item_id)
 
 
 func _press_tiles_with_mouse(item_ids: Array[String]) -> void:
 	for item_id in item_ids:
-		_press_tile(item_id, _mouse_button_event(Vector2(16, 16), true))
+		_press_tile(item_id, _mouse_button_event(Vector2(16, 16), true), _mouse_button_event(Vector2(16, 16), false))
 
 
-func _press_tile(item_id: String, event: InputEvent) -> void:
+func _press_tile(item_id: String, press_event: InputEvent, release_event: InputEvent) -> void:
 	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
 	_require(tile != null, "Expected direct memory tile %s." % item_id)
 	if _failed:
 		return
-	_main.call("_handle_direct_memory_tile_input", event, item_id, tile)
+	var tap_count_before_press := int(_main.get("_tap_count"))
+	_main.call("_handle_direct_memory_tile_input", press_event, item_id, tile)
+	_require(int(_main.get("_tap_count")) == tap_count_before_press, "Direct Memory Flash press should preview without spending an action.")
+	_main.call("_handle_direct_memory_tile_input", release_event, item_id, tile)
+
+
+func _press_tile_with_touch(item_id: String) -> void:
+	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+	_require(tile != null, "Expected direct memory tile %s." % item_id)
+	if _failed:
+		return
+	var touch_position := _touch_position(tile)
+	_press_tile(item_id, _screen_touch_event(true, touch_position), _screen_touch_event(false, touch_position))
+
+
+func _cancel_tile_release_outside(item_id: String) -> void:
+	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+	_require(tile != null, "Expected direct memory tile %s." % item_id)
+	if _failed:
+		return
+	_main.call("_handle_direct_memory_tile_input", _screen_touch_event(true, _touch_position(tile)), item_id, tile)
+	_main.call("_handle_direct_memory_tile_input", _screen_touch_event(false, Vector2(-500, -500)), item_id, tile)
+
+
+func _press_clear_with_touch() -> void:
+	var tile := _node_named(_main, "memory_tile_clear") as Control
+	_require(tile != null, "Expected direct memory CLEAR tile.")
+	if _failed:
+		return
+	var touch_position := _touch_position(tile)
+	var tap_count_before_press := int(_main.get("_tap_count"))
+	_main.call("_handle_direct_memory_clear_input", _screen_touch_event(true, touch_position), tile)
+	_require(int(_main.get("_tap_count")) == tap_count_before_press, "Direct Memory Flash CLEAR press should preview without spending an action.")
+	_main.call("_handle_direct_memory_clear_input", _screen_touch_event(false, touch_position), tile)
+
+
+func _memory_tiles_have_selected_border(item_ids: Array[String]) -> bool:
+	for item_id in item_ids:
+		var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+		_require(tile != null, "Expected direct memory tile %s." % item_id)
+		if tile == null:
+			return false
+		if _panel_border_color(tile).is_equal_approx(Color(1.00, 0.78, 0.15)):
+			return true
+	return false
+
+
+func _memory_tile_has_border(item_id: String, expected_color: Color) -> bool:
+	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+	_require(tile != null, "Expected direct memory tile %s." % item_id)
+	if tile == null:
+		return false
+	return _panel_border_color(tile).is_equal_approx(expected_color)
+
+
+func _memory_tiles_have_border(item_ids: Array[String], expected_color: Color) -> bool:
+	for item_id in item_ids:
+		if not _memory_tile_has_border(item_id, expected_color):
+			return false
+	return true
+
+
+func _memory_tiles_shook(item_ids: Array[String]) -> bool:
+	for item_id in item_ids:
+		var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+		_require(tile != null, "Expected direct memory tile %s." % item_id)
+		if tile == null:
+			return false
+		if int(tile.get_meta("failure_shake_count", 0)) <= 0:
+			return false
+	return true
+
+
+func _memory_recall_slots_have_border(slot_count: int, expected_color: Color) -> bool:
+	for index in range(slot_count):
+		var slot := _node_named(_main, "memory_recall_slot_%d" % index) as Control
+		_require(slot != null, "Expected direct memory recall slot %d." % index)
+		if slot == null:
+			return false
+		if not _panel_border_color(slot).is_equal_approx(expected_color):
+			return false
+	return true
+
+
+func _memory_recall_slots_pulsed(slot_count: int) -> bool:
+	for index in range(slot_count):
+		var slot := _node_named(_main, "memory_recall_slot_%d" % index) as Control
+		_require(slot != null, "Expected direct memory recall slot %d." % index)
+		if slot == null:
+			return false
+		if int(slot.get_meta("failure_pulse_count", 0)) <= 0:
+			return false
+	return true
+
+
+func _panel_border_color(control: Control) -> Color:
+	var panel := control as PanelContainer
+	_require(panel != null, "Expected a framed direct memory tile.")
+	if panel == null:
+		return Color.TRANSPARENT
+	var style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+	_require(style != null, "Expected direct memory tile style.")
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
 
 
 func _require_tile_label_fits(item_id: String) -> void:
@@ -125,11 +264,15 @@ func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseBut
 	return event
 
 
-func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
+func _screen_touch_event(pressed: bool, position: Vector2 = Vector2(16, 16)) -> InputEventScreenTouch:
 	var event := InputEventScreenTouch.new()
 	event.pressed = pressed
-	event.position = Vector2(16, 16)
+	event.position = position
 	return event
+
+
+func _touch_position(control: Control) -> Vector2:
+	return control.get_global_rect().position + Vector2(16, 16)
 
 
 func _level_by_number(level_number: int) -> Dictionary:

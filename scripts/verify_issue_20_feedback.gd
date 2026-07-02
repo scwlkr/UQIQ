@@ -64,6 +64,14 @@ func _verify_tap_fail_roast_success_feedback() -> void:
 	_require(_feedback_count("success") == 1, "Completion should fire success feedback.")
 	_require(_profile.is_level_completed(level_id), "Level 1 should complete after correct tap.")
 
+	var next_button := _button_with_exact_text(_main, "Next")
+	_require(next_button != null, "Score Roastcard should expose a Next navigation button.")
+	if next_button != null:
+		var tap_before_button_press := _feedback_count("tap")
+		next_button.emit_signal("button_down")
+		_require(int(next_button.get_meta("press_feedback_count", 0)) == 1, "Navigation button press should record tactile press feedback.")
+		_require(_feedback_count("tap") == tap_before_button_press, "Navigation button press feedback should not count as a gameplay tap.")
+
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 2, "Feedback should not change Level 1 action count.")
 	_require(int(best_attempt.get("roast_count", 0)) == 1, "Feedback should not change Level 1 Roast count.")
@@ -130,6 +138,16 @@ func _complete_level_by_template(level: Dictionary) -> void:
 func _feedback_count(kind: String) -> int:
 	var counts := _dictionary_from(_main.get("_feedback_counts"))
 	return int(counts.get(kind, 0))
+
+
+func _button_with_exact_text(node: Node, text: String) -> Button:
+	if node is Button and str(node.text) == text:
+		return node as Button
+	for child in node.get_children():
+		var button := _button_with_exact_text(child, text)
+		if button != null:
+			return button
+	return null
 
 
 func _level_by_number(level_number: int) -> Dictionary:
