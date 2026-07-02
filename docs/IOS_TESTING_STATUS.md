@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-01
 
-Active GitHub issue: https://github.com/scwlkr/UQIQ/issues/24
+Active GitHub issue: https://github.com/scwlkr/UQIQ/issues/25
 
 ## Mac Tooling
 
@@ -111,11 +111,47 @@ That build succeeds, but it cannot install on the iOS 27 simulator because the s
 
 Physical iPhone proof for issue #24 is complete.
 
+## Distribution Status
+
+The Release export preset is now internally set for App Store distribution:
+
+```text
+application/code_sign_identity_release="Apple Distribution"
+application/export_method_release=0
+```
+
+`godot --headless --path . --export-release iOS /tmp/uqiq-ios-release/UQIQ.ipa` now generates:
+
+```text
+method = app-store
+teamID = QP9SJRTA44
+```
+
+The archive still fails because this Mac does not have distribution signing available:
+
+```text
+UQIQ is automatically signed for development, but a conflicting code signing identity Apple Distribution has been manually specified.
+```
+
+Local signing/auth inventory:
+
+```text
+security find-identity -v -p codesigning
+Apple Development: Shane Walker (79A6A93QV3)
+No Apple Distribution identity found.
+
+~/Library/MobileDevice/Provisioning Profiles
+0 mobileprovision files
+
+xcrun altool --list-providers
+Either JWT (--api-issuer and --api-key) or username and app password authentication is required.
+```
+
 ## Current Blocker
 
-The remaining release blocker is distribution proof: create a release archive, export/upload for TestFlight, and complete any required App Store Connect setup.
+The remaining release blocker requires scwlkr-controlled Apple access: Apple Distribution signing/provisioning for `com.scwlkr.uqiq` and App Store Connect upload credentials/app record access.
 
-## Next Commands
+## Next Commands After Apple Access
 
 ```sh
 rm -rf /tmp/uqiq-ios
