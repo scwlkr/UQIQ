@@ -698,7 +698,7 @@ func _handle_physics_draw(draw_id: String) -> void:
 	_last_physics_result = "selected"
 	_physics_has_drawn_line = true
 	_update_physics_choice_label()
-	_feedback_label.text = "Drew %s. Release to test it." % _physics_draw_label(draw_id)
+	_feedback_label.text = "Ramp set: %s. Lift to test." % _physics_draw_label(draw_id)
 
 
 func _handle_physics_release() -> void:
@@ -1384,18 +1384,6 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(guide)
 
-	var draw_hint := _new_label("DRAW", 11, COLOR_PANEL_ALT)
-	draw_hint.position = Vector2(20, 84)
-	draw_hint.size = Vector2(80, 22)
-	draw_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	surface.add_child(draw_hint)
-
-	var lift_hint := _new_label("LIFT TO TEST", 11, COLOR_PANEL_ALT)
-	lift_hint.position = Vector2(176, 216)
-	lift_hint.size = Vector2(138, 22)
-	lift_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	surface.add_child(lift_hint)
-
 	var guide_line := Line2D.new()
 	guide_line.name = "physics_draw_hint_line"
 	guide_line.width = 4.0
@@ -1411,12 +1399,12 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_physics_line.default_color = COLOR_BLUE
 	surface.add_child(_physics_line)
 
-	_physics_choice_label = _new_label("Path: ready", 16, COLOR_INK)
+	_physics_choice_label = _new_label("Ramp ready", 16, COLOR_INK)
 	_physics_choice_label.position = Vector2(20, 52)
 	_physics_choice_label.size = Vector2(300, 26)
 	_physics_choice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_choice_label)
-	_physics_result_label = _new_label("Waiting for a path", 16, COLOR_INK)
+	_physics_result_label = _new_label("Draw from the ball", 16, COLOR_INK)
 	_physics_result_label.position = Vector2(20, 248)
 	_physics_result_label.size = Vector2(320, 26)
 	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1437,9 +1425,9 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	surface.add_child(surface_box)
 
 	_add_label(surface_box, "Draw toward the cup", 18, COLOR_INK)
-	_physics_choice_label = _new_label("Path: ready", 16, COLOR_INK)
+	_physics_choice_label = _new_label("Ramp ready", 16, COLOR_INK)
 	surface_box.add_child(_physics_choice_label)
-	_physics_result_label = _new_label("Waiting for a path", 16, COLOR_INK)
+	_physics_result_label = _new_label("Draw from the ball", 16, COLOR_INK)
 	surface_box.add_child(_physics_result_label)
 
 	var options = _rules().get("draw_options", [])
@@ -1843,7 +1831,7 @@ func _record_physics_drawn_line(auto_release: bool = false) -> void:
 	_physics_choice = _classify_physics_line(_physics_draw_start, _physics_draw_end)
 	_last_physics_result = "selected"
 	_update_physics_choice_label()
-	_feedback_label.text = "Drew %s. Release to test it." % _physics_draw_label(_physics_choice)
+	_feedback_label.text = "Ramp set: %s. Lift to test." % _physics_draw_label(_physics_choice)
 	if auto_release:
 		_resolve_physics_release(false)
 
@@ -2388,14 +2376,18 @@ func _physics_draw_label(draw_id: String) -> String:
 func _update_physics_choice_label() -> void:
 	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
 		if _last_physics_result == "drawing":
-			_physics_choice_label.text = "Path: drawing"
+			_physics_choice_label.text = "Ramp: drawing"
+		elif _physics_choice.is_empty():
+			_physics_choice_label.text = "Ramp ready"
 		else:
-			_physics_choice_label.text = "Path: %s" % _physics_draw_label(_physics_choice)
+			_physics_choice_label.text = "Ramp: %s" % _physics_draw_label(_physics_choice)
 	if _physics_result_label != null and is_instance_valid(_physics_result_label):
 		if _last_physics_result == "drawing":
-			_physics_result_label.text = "Keep drawing"
+			_physics_result_label.text = "Keep tracing"
+		elif _physics_choice.is_empty():
+			_physics_result_label.text = "Draw from the ball"
 		else:
-			_physics_result_label.text = "Release to test"
+			_physics_result_label.text = "Lift to test"
 
 
 func _update_physics_result_label(success: bool) -> void:

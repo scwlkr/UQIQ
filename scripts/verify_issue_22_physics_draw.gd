@@ -52,12 +52,12 @@ func _verify_physics_draw_feedback() -> void:
 
 	_main.call("_show_play_screen", level)
 	_require(_screen_has_label_text("Draw toward the cup"), "Physics Draw should show the deterministic play surface.")
-	_require(_screen_has_label_text("Path: ready"), "Physics Draw should start with no selected line.")
-	_require(_screen_has_label_text("Waiting for a path"), "Physics Draw should start with waiting release state.")
+	_require(_screen_has_label_text("Ramp ready"), "Physics Draw should start with no selected line.")
+	_require(_screen_has_label_text("Draw from the ball"), "Physics Draw should start with waiting release state.")
 
 	_main.call("_handle_physics_draw", wrong_draw_id)
-	_require(_screen_has_label_text("Path: %s" % wrong_label), "Physics Draw should show the selected wrong line label.")
-	_require(_screen_has_label_text("Release to test"), "Physics Draw should show ready state after selecting a line.")
+	_require(_screen_has_label_text("Ramp: %s" % wrong_label), "Physics Draw should show the selected wrong line label.")
+	_require(_screen_has_label_text("Lift to test"), "Physics Draw should show ready state after selecting a line.")
 	_require(str(_main.get("_last_physics_result")) == "selected", "Physics Draw should record selected state before release.")
 
 	_main.call("_handle_physics_release")
@@ -68,7 +68,7 @@ func _verify_physics_draw_feedback() -> void:
 
 	_main.call("_show_play_screen", level)
 	_main.call("_handle_physics_draw", correct_draw_id)
-	_require(_screen_has_label_text("Path: %s" % correct_label), "Physics Draw should show the selected correct line label.")
+	_require(_screen_has_label_text("Ramp: %s" % correct_label), "Physics Draw should show the selected correct line label.")
 	_main.call("_handle_physics_release")
 	_require(str(_main.get("_last_physics_result")) == "success", "Correct Physics Draw release should record success state.")
 	_require(_profile.is_level_completed(level_id), "Correct Physics Draw release should complete the Level.")
