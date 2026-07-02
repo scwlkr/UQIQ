@@ -159,7 +159,7 @@ func _show_level_list() -> void:
 	_set_judge_state("list")
 	var root := _make_screen(COLOR_INK, "level_list")
 
-	_add_label(root, "UQIQ", 44, COLOR_YELLOW)
+	_add_label(root, "UQIQ", 40, COLOR_YELLOW)
 	_add_judge_face(root, _judge_state)
 
 	var packs := _visible_packs()
@@ -587,6 +587,7 @@ func _handle_pattern_submit() -> void:
 func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
+	_pulse_control(button)
 
 	if _pattern_marked_cells.has(cell_id):
 		_pattern_marked_cells.erase(cell_id)
@@ -832,18 +833,22 @@ func _add_status(parent: Node, text: String, color: Color) -> Label:
 
 func _add_judge_face(parent: Node, state: String) -> PanelContainer:
 	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 68)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
 	parent.add_child(panel)
 
-	var box := VBoxContainer.new()
+	var box := HBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", 2)
+	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
 
-	_judge_face_label = _new_label(_judge_face_text(state), 28, COLOR_YELLOW)
+	_judge_face_label = _new_label(_judge_face_text(state), 24, COLOR_YELLOW)
+	_judge_face_label.custom_minimum_size = Vector2(96, 36)
+	_judge_face_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	box.add_child(_judge_face_label)
 	_judge_caption_label = _new_label(_judge_caption_text(state), 14, COLOR_MUTED)
+	_judge_caption_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	box.add_child(_judge_caption_label)
 	return panel
 
@@ -864,7 +869,10 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = min_size
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if min_size.x > 0:
+		button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	else:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.clip_text = true
 	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	button.add_theme_font_size_override("font_size", 18)
@@ -873,6 +881,9 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	button.add_theme_stylebox_override("hover", _flat_box(color.lightened(0.08), 8))
 	button.add_theme_stylebox_override("pressed", _flat_box(color.darkened(0.08), 8))
 	button.add_theme_stylebox_override("disabled", _flat_box(Color(0.22, 0.23, 0.25), 8))
+	button.button_down.connect(Callable(self, "_animate_control_scale").bind(button, Vector2(0.97, 0.97), 0.04))
+	button.button_up.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
+	button.mouse_exited.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	return button
 
 
@@ -1417,6 +1428,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_dragging_tile = tile
 		_drag_offset = _event_position_in_control(event, tile, tile)
 		_drag_origin = tile.position
+		_animate_control_scale(tile, Vector2(1.04, 1.04), 0.05)
 		tile.move_to_front()
 		_feedback_label.text = "Dragging %s. Drop it where truth will tolerate it." % object_id
 		_mark_input_handled()
@@ -1433,6 +1445,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_dragging_object_id = ""
 		_dragging_tile = null
 		_drag_offset = Vector2.ZERO
+		_animate_control_scale(tile, Vector2.ONE, 0.06)
 		if drop_target_id.is_empty():
 			_handle_direct_drag_miss(object_id, tile)
 		else:
@@ -1446,6 +1459,7 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 
 	_last_direct_tap_target_id = target_id
 	if pad != null and is_instance_valid(pad):
+		_pulse_control(pad)
 		pad.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	_handle_tap_target(target_id)
 	_mark_input_handled()
@@ -1462,6 +1476,7 @@ func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: 
 func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Control = null) -> void:
 	_last_direct_text_tile_id = tile_id
 	if tile != null and is_instance_valid(tile):
+		_pulse_control(tile)
 		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	if _direct_text_answer_label != null:
 		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
@@ -1478,6 +1493,7 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 	_hide_direct_memory_flash(_direct_memory_flash_generation)
 	_last_direct_memory_tile_id = item_id
 	if tile != null and is_instance_valid(tile):
+		_pulse_control(tile)
 		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	_handle_memory_choice(item_id)
 	_update_memory_recall_slots()
@@ -1492,6 +1508,7 @@ func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void
 	_hide_direct_memory_flash(_direct_memory_flash_generation)
 	_last_direct_memory_tile_id = "CLEAR"
 	if tile != null and is_instance_valid(tile):
+		_pulse_control(tile)
 		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	_handle_memory_clear()
 	_update_memory_recall_slots()
@@ -1587,6 +1604,7 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 
 	if _is_primary_release(event) and _physics_is_drawing:
 		_physics_draw_end = _event_position_in_control(event, surface, surface)
+		_pulse_control(surface, 0.99, 0.035)
 		_record_physics_drawn_line(true)
 		_mark_input_handled()
 
@@ -1755,6 +1773,29 @@ func _animate_control_position(control: Control, target_position: Vector2) -> vo
 		tween.tween_property(control, "position", target_position, 0.08)
 	else:
 		control.position = target_position
+
+
+func _animate_control_scale(control: Control, target_scale: Vector2, duration: float) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.pivot_offset = control.size * 0.5
+	if is_inside_tree():
+		var tween := create_tween()
+		tween.tween_property(control, "scale", target_scale, duration)
+	else:
+		control.scale = target_scale
+
+
+func _pulse_control(control: Control, shrink: float = 0.96, duration: float = 0.06) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.pivot_offset = control.size * 0.5
+	if is_inside_tree():
+		var tween := create_tween()
+		tween.tween_property(control, "scale", Vector2(shrink, shrink), duration)
+		tween.tween_property(control, "scale", Vector2.ONE, duration)
+	else:
+		control.scale = Vector2.ONE
 
 
 func _handle_dur_level(level: Dictionary) -> void:
