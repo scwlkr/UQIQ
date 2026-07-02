@@ -18,6 +18,7 @@ const COLOR_MUTED := Color(0.73, 0.75, 0.76)
 const DEVICE_SMOKE_ARG := "--uqiq-device-smoke"
 const DEVICE_SMOKE_ENV := "UQIQ_DEVICE_SMOKE"
 const PLAYTEST_LEVEL_ENV := "UQIQ_PLAYTEST_LEVEL"
+const PLAYTEST_UNLOCK_ALL_ENV := "UQIQ_PLAYTEST_UNLOCK_ALL"
 const FEEDBACK_MIX_RATE := 22050.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
@@ -112,6 +113,14 @@ func _debug_playtest_level_number() -> int:
 	if value.is_empty():
 		return 0
 	return max(0, int(value))
+
+
+func _debug_playtest_unlock_all() -> bool:
+	if not OS.is_debug_build():
+		return false
+
+	var value := OS.get_environment(PLAYTEST_UNLOCK_ALL_ENV).strip_edges().to_lower()
+	return ["1", "true", "yes", "on"].has(value)
 
 
 func _show_playtest_level_from_env() -> void:
@@ -1710,6 +1719,8 @@ func _add_profile_status(parent: Node) -> void:
 
 func _is_level_playable(level: Dictionary) -> bool:
 	var level_number := int(level.get("level_number", 0))
+	if _debug_playtest_unlock_all() and _is_supported_playable_level_spec(level):
+		return true
 	return _profile.is_level_unlocked(level_number) and _is_supported_playable_level_spec(level)
 
 
@@ -1737,6 +1748,9 @@ func _level_state_text(level: Dictionary) -> String:
 	if _profile.is_level_durd(level_id):
 		return "DUR'D - finish to recover Dur"
 
+	if _debug_playtest_unlock_all() and _is_supported_playable_level_spec(level):
+		return "playtest"
+
 	if not _profile.is_level_unlocked(level_number):
 		return "locked"
 
@@ -1754,6 +1768,8 @@ func _level_button_color(level: Dictionary) -> Color:
 		return COLOR_GREEN
 	if _profile.is_level_durd(level_id):
 		return COLOR_ORANGE
+	if _debug_playtest_unlock_all() and _is_supported_playable_level_spec(level):
+		return COLOR_BLUE
 	if _profile.is_level_unlocked(level_number) and _is_supported_playable_level_spec(level):
 		return COLOR_BLUE
 	if _profile.is_level_unlocked(level_number):
