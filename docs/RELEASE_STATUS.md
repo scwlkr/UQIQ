@@ -8,11 +8,12 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Active Next Step
 
-- GitHub issue: [#47 Build tactile Text Trap prototype](https://github.com/scwlkr/UQIQ/issues/47)
-- Branch: `codex/issue-47-tactile-text-trap`
+- GitHub issue: [#48 Add debug all-level phone playtest mode](https://github.com/scwlkr/UQIQ/issues/48)
+- Branch: `codex/issue-48-debug-playtest-all`
 
 ## Current Gameplay Proof
 
+- Debug phone playtest supports direct level jump and is adding all-level Level List access.
 - Level 2 Drag Logic has direct drag/drop.
 - Level 4 Pattern Grid has direct row marking.
 - Level 6 and Pack 6 Physics Draw have direct line drawing.
@@ -36,6 +37,9 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - `verify_issue_47_tactile_text_trap.gd` passed locally.
 - Full README verification floor passed through `verify_issue_47_tactile_text_trap.gd`.
 - #47 phone deploy passed with `UQIQ_PLAYTEST_LEVEL=3`: installed/launched UQIQ `0.1.1 (20260701230643)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701230643.png`.
+- `verify_issue_48_debug_playtest_all.gd` passed locally.
+- Full README verification floor passed through `verify_issue_48_debug_playtest_all.gd`.
+- #48 phone deploy passed with `UQIQ_PLAYTEST_UNLOCK_ALL=1`: installed/launched UQIQ `0.1.1 (20260701231050)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701231050.png`.
 
 ## Known Blockers
 
@@ -44,4 +48,4 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Next Gate
 
-Close #47 with proof, then route the next `next-step` to the next tactile gameplay prototype.
+Close #48 with proof, then collect scwlkr direction from the phone playtest build.
