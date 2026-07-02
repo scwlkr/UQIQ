@@ -1640,7 +1640,7 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 	_last_direct_tap_target_id = target_id
 	if pad != null and is_instance_valid(pad):
 		_pulse_control(pad)
-		pad.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+		_apply_direct_selected_panel_style(pad)
 	_handle_tap_target(target_id)
 	_mark_input_handled()
 
@@ -1657,7 +1657,7 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 	_last_direct_text_tile_id = tile_id
 	if tile != null and is_instance_valid(tile):
 		_pulse_control(tile)
-		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+		_apply_direct_selected_panel_style(tile)
 	if _direct_text_answer_label != null:
 		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
 
@@ -1674,7 +1674,7 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 	_last_direct_memory_tile_id = item_id
 	if tile != null and is_instance_valid(tile):
 		_pulse_control(tile)
-		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+		_apply_direct_selected_panel_style(tile)
 	_handle_memory_choice(item_id)
 	_update_memory_recall_slots()
 	_resolve_direct_memory_if_full()
@@ -1689,7 +1689,7 @@ func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void
 	_last_direct_memory_tile_id = "CLEAR"
 	if tile != null and is_instance_valid(tile):
 		_pulse_control(tile)
-		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+		_apply_direct_selected_panel_style(tile)
 	_handle_memory_clear()
 	_update_memory_recall_slots()
 	_mark_input_handled()
@@ -1974,6 +1974,10 @@ func _framed_box(color: Color, border_color: Color, radius: int) -> StyleBoxFlat
 	box.border_width_bottom = 2
 	box.border_color = border_color
 	return box
+
+
+func _apply_direct_selected_panel_style(panel: Control) -> void:
+	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_YELLOW.darkened(0.16), COLOR_YELLOW, 8))
 
 
 func _target_color(target: Dictionary) -> Color:

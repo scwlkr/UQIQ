@@ -77,6 +77,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Twenty-ninth local polish loop framed Text Trap answer slots and Memory Flash recall slots so target areas match the tactile tile language; Text Trap and Memory Flash screenshots refreshed and full verification floor passed again.
 - Thirtieth local polish loop framed Score Roastcard Replay and Level List controls so completion navigation matches the rest of the app's tactile control language; Score Roastcard screenshot refreshed and full verification floor passed again.
 - Thirty-first local polish loop framed the play-screen back control so navigation chrome matches the app's tactile button language; play screenshots refreshed and full verification floor passed again.
+- Thirty-second local polish loop changed direct tap/text/memory selected states from flat yellow fills to framed yellow contact feedback; screenshot capture stayed stable and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
