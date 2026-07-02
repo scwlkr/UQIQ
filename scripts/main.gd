@@ -404,14 +404,20 @@ func _add_level_row(parent: Node, level: Dictionary) -> void:
 
 	var can_spend_dur := _is_supported_playable_level_spec(level) and _profile.can_spend_dur_token(level)
 	if can_spend_dur:
-		var dur_button := _make_button("DUR", COLOR_PANEL_ALT, Vector2(76, 58))
+		var dur_button := _make_button("DUR", COLOR_PANEL_ALT, Vector2(58, 58))
+		dur_button.add_theme_font_size_override("font_size", 16)
 		dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 		_apply_button_frame(dur_button, COLOR_ORANGE)
+		for state in ["normal", "hover", "pressed", "disabled"]:
+			var stylebox := dur_button.get_theme_stylebox(state) as StyleBoxFlat
+			if stylebox != null:
+				stylebox.content_margin_left = 8
+				stylebox.content_margin_right = 8
 		dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
 		row.add_child(dur_button)
 	else:
 		var dur_spacer := Control.new()
-		dur_spacer.custom_minimum_size = Vector2(76, 58)
+		dur_spacer.custom_minimum_size = Vector2(58, 58)
 		dur_spacer.size_flags_horizontal = Control.SIZE_SHRINK_END
 		row.add_child(dur_spacer)
 
