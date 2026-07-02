@@ -1723,6 +1723,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 
 func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: Control) -> void:
 	if _is_primary_press(event):
+		_reset_direct_sibling_panel_styles(pad, "tap_scene_target_")
 		_pressed_direct_tap_target_id = target_id
 		if pad != null and is_instance_valid(pad):
 			_pulse_control(pad)
@@ -1745,6 +1746,7 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 
 func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: String, tile: Control) -> void:
 	if _is_primary_press(event):
+		_reset_direct_sibling_panel_styles(tile, "text_tile_")
 		_pressed_direct_text_tile_id = tile_id
 		if tile != null and is_instance_valid(tile):
 			_pulse_control(tile)
@@ -2246,6 +2248,19 @@ func _apply_direct_fail_panel_style(panel: Control) -> void:
 	if panel == null or not is_instance_valid(panel):
 		return
 	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_RED.darkened(0.18), COLOR_RED, 8))
+
+
+func _reset_direct_sibling_panel_styles(panel: Control, name_prefix: String) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
+	var surface := panel.get_parent() as Control
+	if surface == null or not is_instance_valid(surface):
+		return
+
+	for child in surface.get_children():
+		var control := child as Control
+		if control != null and str(control.name).begins_with(name_prefix):
+			_apply_direct_base_panel_style(control)
 
 
 func _target_color(target: Dictionary) -> Color:
