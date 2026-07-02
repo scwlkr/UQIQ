@@ -2231,8 +2231,8 @@ func _hide_direct_memory_flash(generation: int = -1) -> void:
 
 func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
 	var is_marked := _pattern_marked_cells.has(cell_id)
-	var color := COLOR_YELLOW if is_marked else COLOR_PANEL_ALT
-	var border_color := COLOR_YELLOW.darkened(0.18) if is_marked else COLOR_BLUE
+	var color := COLOR_YELLOW.darkened(0.16) if is_marked else COLOR_PANEL_ALT
+	var border_color := COLOR_YELLOW if is_marked else COLOR_BLUE
 	_apply_pattern_button_style(button, color, border_color)
 
 
