@@ -1220,11 +1220,23 @@ func _render_memory_recall_slots(surface: Control) -> void:
 		slot.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
 		surface.add_child(slot)
 
+		var box := VBoxContainer.new()
+		box.alignment = BoxContainer.ALIGNMENT_CENTER
+		box.add_theme_constant_override("separation", 2)
+		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_child(box)
+
+		var action_label := _new_label("SLOT", 9, COLOR_MUTED)
+		action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+		action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		box.add_child(action_label)
+
 		var label := _new_label("_", 20 if slot_size.x < 84.0 else 22, COLOR_TEXT)
 		label.name = "memory_recall_slot_label_%d" % index
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		slot.add_child(label)
+		box.add_child(label)
 		_memory_slot_labels[index] = label
 
 
@@ -1257,12 +1269,24 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false, tile
 	else:
 		tile.gui_input.connect(Callable(self, "_handle_direct_memory_tile_input").bind(item_id, tile))
 
-	var label := _new_label(item_id, 14 if tile_size.x < 84.0 else (18 if is_clear else 17), COLOR_TEXT)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(box)
+
+	var action_label := _new_label("RESET" if is_clear else "TAP", 9 if tile_size.x < 84.0 else 10, COLOR_MUTED)
+	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(action_label)
+
+	var label := _new_label(item_id, 13 if tile_size.x < 84.0 else (18 if is_clear else 17), COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tile.add_child(label)
+	box.add_child(label)
 	return tile
 
 
@@ -1297,6 +1321,27 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	guide.size = Vector2(300, 30)
 	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(guide)
+
+	var draw_hint := _new_label("DRAW", 11, COLOR_MUTED)
+	draw_hint.position = Vector2(20, 84)
+	draw_hint.size = Vector2(80, 22)
+	draw_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(draw_hint)
+
+	var lift_hint := _new_label("LIFT TO TEST", 11, COLOR_MUTED)
+	lift_hint.position = Vector2(176, 216)
+	lift_hint.size = Vector2(138, 22)
+	lift_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	surface.add_child(lift_hint)
+
+	var guide_line := Line2D.new()
+	guide_line.name = "physics_draw_hint_line"
+	guide_line.width = 3.0
+	guide_line.default_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.28)
+	guide_line.add_point(Vector2(78, 218))
+	guide_line.add_point(Vector2(154, 156))
+	guide_line.add_point(Vector2(240, 108))
+	surface.add_child(guide_line)
 
 	_physics_line = Line2D.new()
 	_physics_line.name = "player_drawn_line"
