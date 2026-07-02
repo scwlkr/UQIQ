@@ -2,6 +2,7 @@ extends Control
 
 const LevelLoaderScript := preload("res://scripts/level_loader.gd")
 const LocalProfileScript := preload("res://scripts/local_profile.gd")
+const DeviceSmokeRunnerScript := preload("res://scripts/device_smoke_runner.gd")
 
 const COLOR_INK := Color(0.06, 0.07, 0.09)
 const COLOR_PAPER := Color(0.97, 0.95, 0.86)
@@ -14,6 +15,8 @@ const COLOR_BLUE := Color(0.12, 0.58, 0.92)
 const COLOR_ORANGE := Color(0.96, 0.43, 0.13)
 const COLOR_TEXT := Color(0.98, 0.98, 0.96)
 const COLOR_MUTED := Color(0.73, 0.75, 0.76)
+const DEVICE_SMOKE_ARG := "--uqiq-device-smoke"
+const DEVICE_SMOKE_ENV := "UQIQ_DEVICE_SMOKE"
 const FEEDBACK_MIX_RATE := 22050.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
@@ -63,6 +66,35 @@ func _ready() -> void:
 	_packs = _pack_groups_from_pack_set(_pack)
 	_profile.load_or_create()
 	_show_level_list()
+	if _should_run_device_smoke():
+		call_deferred("_run_device_smoke")
+
+
+func _should_run_device_smoke() -> bool:
+	if not OS.is_debug_build():
+		return false
+	if OS.get_cmdline_args().has(DEVICE_SMOKE_ARG):
+		return true
+	return OS.get_environment(DEVICE_SMOKE_ENV) == "1"
+
+
+func _run_device_smoke() -> void:
+	var runner = DeviceSmokeRunnerScript.new()
+	_show_device_smoke_result(runner.run(self))
+
+
+func _show_device_smoke_result(result: Dictionary) -> void:
+	var success := bool(result.get("success", false))
+	_set_judge_state("success" if success else "fail")
+	var root := _make_screen(COLOR_INK, "device_smoke")
+	_add_label(root, "Device Smoke Passed" if success else "Device Smoke Failed", 34, COLOR_GREEN if success else COLOR_RED)
+	_add_judge_face(root, _judge_state)
+	_add_status(root, "Issue #24 physical iPhone release proof", COLOR_YELLOW)
+
+	var lines = result.get("lines", [])
+	if typeof(lines) == TYPE_ARRAY:
+		for line in lines:
+			_add_status(root, str(line), COLOR_MUTED if success else COLOR_TEXT)
 
 
 func _show_level_list() -> void:

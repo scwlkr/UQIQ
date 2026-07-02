@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-01
 
-Active GitHub issue: https://github.com/scwlkr/UQIQ/issues/6
+Active GitHub issue: https://github.com/scwlkr/UQIQ/issues/24
 
 ## Mac Tooling
 
@@ -43,19 +43,19 @@ Expected passing summary:
 Issue #5 desktop smoke passed: 128 completions, 122 replays, 128 Score Roastcards, 23 save/load checks, 1 Dur spend(s), 1 Dur recovery event(s), 20 stability cycles.
 ```
 
-Godot iOS export now reaches Xcode archive and fails only on provisioning:
+Godot iOS export regenerates the temporary Xcode project and still fails at the generic archive step unless signing build settings are supplied manually:
 
 ```sh
 godot --headless --path . --export-debug iOS /tmp/uqiq-ios/UQIQ.ipa
 ```
 
-Current result:
+Current generic archive result:
 
 ```text
 "UQIQ" requires a provisioning profile.
 ```
 
-Physical-device Xcode build currently fails because the iPhone is not an available destination:
+Physical-device Xcode build now succeeds against `17 Hoe Max`:
 
 ```sh
 xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Debug -destination 'platform=iOS,id=00008150-001435EA1480401C' build -allowProvisioningUpdates -allowProvisioningDeviceRegistration DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic
@@ -64,16 +64,38 @@ xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -con
 Current result:
 
 ```text
-Unable to find a destination matching: platform=iOS,id=00008150-001435EA1480401C
+** BUILD SUCCEEDED **
+Signing Identity: Apple Development: Shane Walker (79A6A93QV3)
+Provisioning Profile: iOS Team Provisioning Profile: *
 ```
 
-`xcrun devicectl list devices` currently sees the physical iPhone, but it is unavailable:
+`xcrun devicectl list devices` and `xcodebuild -showdestinations` now see the physical iPhone:
 
 ```text
-17 Hoe Max ... unavailable ... iPhone18,2
+17 Hoe Max ... connected ... iPhone18,2
+{ platform:iOS, arch:arm64, id:00008150-001435EA1480401C, name:17 Hoe Max }
 ```
 
-Xcode's destination chooser also lists only My Mac and simulators. It does not list the physical iPhone as a runnable device yet.
+The app installs and launches on the physical iPhone:
+
+```sh
+xcrun devicectl device install app --device 9820C039-3903-5542-9D4A-388ED65AEFDE /Users/shanewalker/Library/Developer/Xcode/DerivedData/UQIQ-gzplululhoslqicnydwkeixwffki/Build/Products/Debug-iphoneos/UQIQ.app
+xcrun devicectl device process launch --device 9820C039-3903-5542-9D4A-388ED65AEFDE --terminate-existing --environment-variables '{"UQIQ_DEVICE_SMOKE":"1"}' com.scwlkr.uqiq
+xcrun devicectl device orientation set --device 9820C039-3903-5542-9D4A-388ED65AEFDE portrait
+xcrun devicectl device capture screenshot --device 9820C039-3903-5542-9D4A-388ED65AEFDE --destination /tmp/uqiq-issue-24-device-smoke-portrait.png
+```
+
+Device smoke result visible in the screenshot:
+
+```text
+Device Smoke Passed
+Loaded 60 specs and selected Levels 01-03
+Level List rendered on device
+Play -> Score Roastcard path passed through Level 03
+Local Profile save/load preserved Level 01-03 state
+1 save/load check(s), 1 Dur spend(s), 1 Dur recovery event(s)
+No launch crash observed before/after smoke path
+```
 
 ## Simulator Status
 
@@ -87,43 +109,24 @@ xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphonesimulat
 
 That build succeeds, but it cannot install on the iOS 27 simulator because the simulator runs `arm64` only and the Godot 4.7 official simulator `libgodot.a` present here is `x86_64`.
 
-Physical iPhone remains the valid proof path for issue #6.
+Physical iPhone proof for issue #24 is complete.
 
 ## Current Blocker
 
-The only remaining blocker is physical iPhone availability and provisioning.
+The remaining release blocker is distribution proof: create a release archive, export/upload for TestFlight, and complete any required App Store Connect setup.
 
-The iPhone is still updating/downloading. Do not continue physical-device proof until Shane explicitly says the iPhone is ready.
-
-When ready, the iPhone must be:
-
-- Connected by USB if possible.
-- Unlocked and on the Home Screen.
-- Trusted by this Mac if prompted.
-- In Developer Mode if iOS prompts for it.
-- Visible in Xcode's destination chooser or `xcodebuild -showdestinations`.
-
-## Next Commands When iPhone Is Ready
-
-Regenerate the temporary iOS export project if `/tmp/uqiq-ios` is gone:
+## Next Commands
 
 ```sh
 rm -rf /tmp/uqiq-ios
 mkdir -p /tmp/uqiq-ios
-godot --headless --path . --export-debug iOS /tmp/uqiq-ios/UQIQ.ipa
+godot --headless --path . --export-release iOS /tmp/uqiq-ios/UQIQ.ipa
 ```
 
-Then check the device:
+If Godot's generic archive still fails, retry the generated project manually with explicit signing settings:
 
 ```sh
-xcrun devicectl list devices
-xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -showdestinations
+xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -allowProvisioningUpdates DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic -archivePath /tmp/uqiq-ios/UQIQ.xcarchive
 ```
 
-Then build with automatic provisioning and device registration:
-
-```sh
-xcodebuild -project /tmp/uqiq-ios/UQIQ.xcodeproj -scheme UQIQ -sdk iphoneos -configuration Debug -destination 'platform=iOS,id=00008150-001435EA1480401C' build -allowProvisioningUpdates -allowProvisioningDeviceRegistration DEVELOPMENT_TEAM=QP9SJRTA44 CODE_SIGN_STYLE=Automatic
-```
-
-Done when Xcode creates/downloads a provisioning profile, installs UQIQ on the physical iPhone, and UQIQ launches there without crashing during the focused smoke path.
+Then export/upload through Xcode/App Store Connect tooling once distribution signing resolves.
