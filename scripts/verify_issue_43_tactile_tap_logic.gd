@@ -63,9 +63,15 @@ func _verify_tactile_tap_logic() -> void:
 	_require(not _has_button_text(_main, "CORRECT"), "Direct Tap Logic should not expose CORRECT as an answer-choice button.")
 	_require(not _has_button_text(_main, "WRONG"), "Direct Tap Logic should not expose WRONG as an answer-choice button.")
 
-	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true), "correct_button", decoy_pad)
+	var decoy_touch_position := _touch_position(decoy_pad)
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true, decoy_touch_position), "correct_button", decoy_pad)
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false, Vector2(-500, -500)), "correct_button", decoy_pad)
+	_require(int(_main.get("_tap_count")) == 0, "Direct tap release outside should cancel without spending an action.")
+	_require(str(_main.get("_last_direct_tap_target_id")).is_empty(), "Direct tap release outside should not record a target.")
+
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true, decoy_touch_position), "correct_button", decoy_pad)
 	_require(int(_main.get("_tap_count")) == 0, "Direct tap press should preview without spending an action.")
-	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false), "correct_button", decoy_pad)
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false, decoy_touch_position), "correct_button", decoy_pad)
 	_require(not _profile.is_level_completed(level_id), "Wrong direct tap should not complete Level 1.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct tap should count as one action.")
 	_require(str(_main.get("_last_direct_tap_target_id")) == "correct_button", "Direct tap handler should record the touched decoy target.")
@@ -94,11 +100,15 @@ func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseBut
 	return event
 
 
-func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
+func _screen_touch_event(pressed: bool, position: Vector2 = Vector2(16, 16)) -> InputEventScreenTouch:
 	var event := InputEventScreenTouch.new()
 	event.pressed = pressed
-	event.position = Vector2(16, 16)
+	event.position = position
 	return event
+
+
+func _touch_position(control: Control) -> Vector2:
+	return control.get_global_rect().position + Vector2(16, 16)
 
 
 func _level_by_number(level_number: int) -> Dictionary:

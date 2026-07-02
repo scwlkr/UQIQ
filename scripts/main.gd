@@ -1389,10 +1389,7 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false, tile
 	tile.size = tile_size
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
-	tile.add_theme_stylebox_override(
-		"panel",
-		_framed_box(COLOR_PANEL_ALT, COLOR_ORANGE if is_clear else COLOR_BLUE, 8)
-	)
+	_apply_direct_base_panel_style(tile, COLOR_ORANGE if is_clear else COLOR_BLUE)
 	if is_clear:
 		tile.gui_input.connect(Callable(self, "_handle_direct_memory_clear_input").bind(tile))
 	else:
@@ -1543,13 +1540,7 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	pad.position = _vector2_from_array(target.get("scene_position", []), Vector2(28 + (index * 162), 92))
 	pad.mouse_filter = Control.MOUSE_FILTER_STOP
 	pad.set_meta("target_id", target_id)
-	var pad_box := _flat_box(COLOR_PANEL_ALT, 8)
-	pad_box.border_width_left = 2
-	pad_box.border_width_top = 2
-	pad_box.border_width_right = 2
-	pad_box.border_width_bottom = 2
-	pad_box.border_color = COLOR_BLUE
-	pad.add_theme_stylebox_override("panel", pad_box)
+	_apply_direct_base_panel_style(pad)
 	pad.gui_input.connect(Callable(self, "_handle_direct_tap_scene_input").bind(target_id, pad))
 
 	var box := VBoxContainer.new()
@@ -1576,7 +1567,7 @@ func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
 	tile.set_meta("token_id", tile_id)
-	tile.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
+	_apply_direct_base_panel_style(tile)
 	tile.gui_input.connect(Callable(self, "_handle_direct_text_tile_input").bind(
 		tile_id,
 		str(tile_data.get("answer", tile_data.get("label", ""))),
@@ -1708,6 +1699,10 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 
 	if _is_primary_release(event) and _pressed_direct_tap_target_id == target_id:
 		_pressed_direct_tap_target_id = ""
+		if not _event_is_inside_control(event, pad):
+			_apply_direct_base_panel_style(pad)
+			_mark_input_handled()
+			return
 		_last_direct_tap_target_id = target_id
 		_handle_tap_target(target_id)
 		_mark_input_handled()
@@ -1724,6 +1719,10 @@ func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: 
 
 	if _is_primary_release(event) and _pressed_direct_text_tile_id == tile_id:
 		_pressed_direct_text_tile_id = ""
+		if not _event_is_inside_control(event, tile):
+			_apply_direct_base_panel_style(tile)
+			_mark_input_handled()
+			return
 		_handle_direct_text_tile_choice(tile_id, answer, tile)
 		_mark_input_handled()
 
@@ -1753,6 +1752,10 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 
 	if _is_primary_release(event) and _pressed_direct_memory_tile_id == item_id:
 		_pressed_direct_memory_tile_id = ""
+		if not _event_is_inside_control(event, tile):
+			_apply_direct_base_panel_style(tile)
+			_mark_input_handled()
+			return
 		_hide_direct_memory_flash(_direct_memory_flash_generation)
 		_last_direct_memory_tile_id = item_id
 		if tile != null and is_instance_valid(tile):
@@ -1776,6 +1779,10 @@ func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void
 
 	if _is_primary_release(event) and _pressed_direct_memory_tile_id == "CLEAR":
 		_pressed_direct_memory_tile_id = ""
+		if not _event_is_inside_control(event, tile):
+			_apply_direct_base_panel_style(tile, COLOR_ORANGE)
+			_mark_input_handled()
+			return
 		_hide_direct_memory_flash(_direct_memory_flash_generation)
 		_last_direct_memory_tile_id = "CLEAR"
 		if tile != null and is_instance_valid(tile):
@@ -2084,6 +2091,12 @@ func _event_position_in_control(event: InputEvent, control: Control, local_node:
 	return control.get_global_transform_with_canvas().affine_inverse() * _event_canvas_position(event, local_node)
 
 
+func _event_is_inside_control(event: InputEvent, control: Control) -> bool:
+	if control == null or not is_instance_valid(control):
+		return false
+	return control.get_global_rect().has_point(_event_canvas_position(event, control))
+
+
 func _mark_input_handled() -> void:
 	var viewport := get_viewport()
 	if viewport != null:
@@ -2119,7 +2132,15 @@ func _framed_box(color: Color, border_color: Color, radius: int) -> StyleBoxFlat
 	return box
 
 
+func _apply_direct_base_panel_style(panel: Control, accent: Color = COLOR_BLUE) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
+	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, accent, 8))
+
+
 func _apply_direct_selected_panel_style(panel: Control) -> void:
+	if panel == null or not is_instance_valid(panel):
+		return
 	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_YELLOW.darkened(0.16), COLOR_YELLOW, 8))
 
 

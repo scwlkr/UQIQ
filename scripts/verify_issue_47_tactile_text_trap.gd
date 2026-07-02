@@ -66,9 +66,15 @@ func _verify_tactile_text_trap() -> void:
 	_require(not _screen_has_label_text("Fill the answer slot with the literal word"), "Direct Text Trap should not repeat instruction copy above the tile surface.")
 	_require(not _screen_has_label_text("Tap the literal word into the answer slot."), "Direct Text Trap should not render fallback instruction copy above the tile surface.")
 
-	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true), "blank", "", blank_tile)
+	var blank_touch_position := _touch_position(blank_tile)
+	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true, blank_touch_position), "blank", "", blank_tile)
+	_main.call("_handle_direct_text_tile_input", _screen_touch_event(false, Vector2(-500, -500)), "blank", "", blank_tile)
+	_require(int(_main.get("_tap_count")) == 0, "Direct Text Trap release outside should cancel without spending an action.")
+	_require(str(_main.get("_last_direct_text_tile_id")).is_empty(), "Direct Text Trap release outside should not record a tile.")
+
+	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true, blank_touch_position), "blank", "", blank_tile)
 	_require(int(_main.get("_tap_count")) == 0, "Direct Text Trap press should preview without spending an action.")
-	_main.call("_handle_direct_text_tile_input", _screen_touch_event(false), "blank", "", blank_tile)
+	_main.call("_handle_direct_text_tile_input", _screen_touch_event(false, blank_touch_position), "blank", "", blank_tile)
 	_require(not _profile.is_level_completed(level_id), "Wrong direct Text Trap tile should not complete Level 3.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct Text Trap tile should count as one action.")
 	_require(str(_main.get("_last_direct_text_tile_id")) == "blank", "Direct Text Trap handler should record the wrong tile.")
@@ -97,11 +103,15 @@ func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseBut
 	return event
 
 
-func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
+func _screen_touch_event(pressed: bool, position: Vector2 = Vector2(16, 16)) -> InputEventScreenTouch:
 	var event := InputEventScreenTouch.new()
 	event.pressed = pressed
-	event.position = Vector2(16, 16)
+	event.position = position
 	return event
+
+
+func _touch_position(control: Control) -> Vector2:
+	return control.get_global_rect().position + Vector2(16, 16)
 
 
 func _level_by_number(level_number: int) -> Dictionary:

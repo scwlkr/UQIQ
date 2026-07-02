@@ -65,6 +65,12 @@ func _verify_tactile_memory_flash() -> void:
 	_require(_screen_has_label_text("Receipt hidden"), "Direct Memory Flash hidden state should use concise in-world copy.")
 	_require(not _screen_has_label_text("flash hidden - rebuild it from memory"), "Direct Memory Flash should not render old instruction-like hidden copy.")
 
+	_cancel_tile_release_outside("SUN")
+	_require(int(_main.get("_tap_count")) == 0, "Direct Memory Flash release outside should cancel without spending an action.")
+	_require(str(_main.get("_last_direct_memory_tile_id")).is_empty(), "Direct Memory Flash release outside should not record a tile.")
+	var memory_after_cancel: Array = _main.get("_memory_input")
+	_require(memory_after_cancel.is_empty(), "Direct Memory Flash release outside should not add recall input.")
+
 	_press_tiles_with_touch(["DUR", "SUN", "MOON"])
 	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong direct memory row should count one action per tile.")
@@ -85,7 +91,7 @@ func _verify_tactile_memory_flash() -> void:
 
 func _press_tiles_with_touch(item_ids: Array[String]) -> void:
 	for item_id in item_ids:
-		_press_tile(item_id, _screen_touch_event(true), _screen_touch_event(false))
+		_press_tile_with_touch(item_id)
 
 
 func _press_tiles_with_mouse(item_ids: Array[String]) -> void:
@@ -102,6 +108,24 @@ func _press_tile(item_id: String, press_event: InputEvent, release_event: InputE
 	_main.call("_handle_direct_memory_tile_input", press_event, item_id, tile)
 	_require(int(_main.get("_tap_count")) == tap_count_before_press, "Direct Memory Flash press should preview without spending an action.")
 	_main.call("_handle_direct_memory_tile_input", release_event, item_id, tile)
+
+
+func _press_tile_with_touch(item_id: String) -> void:
+	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+	_require(tile != null, "Expected direct memory tile %s." % item_id)
+	if _failed:
+		return
+	var touch_position := _touch_position(tile)
+	_press_tile(item_id, _screen_touch_event(true, touch_position), _screen_touch_event(false, touch_position))
+
+
+func _cancel_tile_release_outside(item_id: String) -> void:
+	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+	_require(tile != null, "Expected direct memory tile %s." % item_id)
+	if _failed:
+		return
+	_main.call("_handle_direct_memory_tile_input", _screen_touch_event(true, _touch_position(tile)), item_id, tile)
+	_main.call("_handle_direct_memory_tile_input", _screen_touch_event(false, Vector2(-500, -500)), item_id, tile)
 
 
 func _require_tile_label_fits(item_id: String) -> void:
@@ -137,11 +161,15 @@ func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseBut
 	return event
 
 
-func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
+func _screen_touch_event(pressed: bool, position: Vector2 = Vector2(16, 16)) -> InputEventScreenTouch:
 	var event := InputEventScreenTouch.new()
 	event.pressed = pressed
-	event.position = Vector2(16, 16)
+	event.position = position
 	return event
+
+
+func _touch_position(control: Control) -> Vector2:
+	return control.get_global_rect().position + Vector2(16, 16)
 
 
 func _level_by_number(level_number: int) -> Dictionary:
