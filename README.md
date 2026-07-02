@@ -140,6 +140,7 @@ godot --headless --path . --script res://scripts/verify_issue_13_pack_5_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_16_pack_6_specs.gd
 godot --headless --path . --script res://scripts/verify_issue_16_pack_6_smoke.gd
 godot --headless --path . --script res://scripts/verify_issue_19_scoring.gd
+godot --headless --path . --script res://scripts/verify_issue_20_feedback.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -169,6 +170,8 @@ godot --headless --path . --script res://scripts/verify_issue_19_scoring.gd
 `verify_issue_16_pack_6_smoke.gd` is the Pack 6 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3/4/5/6 grouping, completes Levels 51-60 through Score Roastcards, and checks Level 50 to Level 51 unlock, linear unlock through Level 60, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 60-Level progression.
 
 `verify_issue_19_scoring.gd` is the scoring polish check. It verifies one representative Level from each Pack against the UQIQ Score component formula, score clamps, DUR recovery scoring, capped replay Best Attempt behavior, and visible Speed/Actions/Roasts/DUR Score Roastcard rows.
+
+`verify_issue_20_feedback.gd` is the minimal feedback polish check. It verifies tap, fail, success, Roast, Dur Token spend, and Dur Token recovery hooks in headless mode without changing action counts, scoring, unlock order, or persistence.
 
 ## Desktop Smoke
 

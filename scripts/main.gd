@@ -14,6 +14,7 @@ const COLOR_BLUE := Color(0.12, 0.58, 0.92)
 const COLOR_ORANGE := Color(0.96, 0.43, 0.13)
 const COLOR_TEXT := Color(0.98, 0.98, 0.96)
 const COLOR_MUTED := Color(0.73, 0.75, 0.76)
+const FEEDBACK_MIX_RATE := 22050.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
 	"Drag Logic",
@@ -35,6 +36,10 @@ var _last_completed_attempt := {}
 var _last_score_result := {}
 var _level_list_notice := ""
 var _level_started_at_msec := 0
+var _feedback_counts := {}
+var _last_feedback_kind := ""
+var _feedback_player: AudioStreamPlayer
+var _feedback_generator: AudioStreamGenerator
 var _feedback_label: Label
 var _text_input: LineEdit
 var _selected_drag_id := ""
@@ -44,6 +49,7 @@ var _physics_choice := ""
 
 
 func _ready() -> void:
+	_setup_feedback()
 	_pack = _load_level_pack_set()
 	_packs = _pack_groups_from_pack_set(_pack)
 	_profile.load_or_create()
@@ -347,6 +353,7 @@ func _show_play_screen(level: Dictionary) -> void:
 
 func _handle_tap_target(target_id: String) -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 
 	var solution = _current_level.get("solution", {})
 	var winning_target := ""
@@ -358,16 +365,19 @@ func _handle_tap_target(target_id: String) -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Nope. Your finger has executive dysfunction.")
+	_trigger_feedback("fail")
 
 
 func _handle_drag_select(object_id: String) -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 	_selected_drag_id = object_id
 	_feedback_label.text = "Holding %s. Now move it somewhere questionable." % object_id
 
 
 func _handle_drag_drop(drop_target_id: String) -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 
 	var solution = _current_level.get("solution", {})
 	var winning_object := ""
@@ -381,10 +391,12 @@ func _handle_drag_drop(drop_target_id: String) -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Wrong thing, wrong place. Somehow both.")
+	_trigger_feedback("fail")
 
 
 func _handle_text_submit() -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 
 	var answer := ""
 	if _text_input != null:
@@ -404,6 +416,7 @@ func _handle_text_submit() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
+	_trigger_feedback("fail")
 
 
 func _handle_text_submitted(_submitted_text: String) -> void:
@@ -412,12 +425,14 @@ func _handle_text_submitted(_submitted_text: String) -> void:
 
 func _handle_pattern_cell(cell_id: String) -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 	_selected_pattern_cell = cell_id
 	_feedback_label.text = "Selected %s. Submit it if your pattern organs agree." % cell_id
 
 
 func _handle_pattern_submit() -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 
 	var solution := _solution()
 	if _selected_pattern_cell == str(solution.get("cell_id", "")):
@@ -425,10 +440,12 @@ func _handle_pattern_submit() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
+	_trigger_feedback("fail")
 
 
 func _handle_memory_flash(show_sequence: bool) -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 
 	var rules := _rules()
 	var sequence = rules.get("flash_items", [])
@@ -440,18 +457,21 @@ func _handle_memory_flash(show_sequence: bool) -> void:
 
 func _handle_memory_choice(item_id: String) -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 	_memory_input.append(item_id)
 	_feedback_label.text = "Input: %s" % "  ".join(_memory_input)
 
 
 func _handle_memory_clear() -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 	_memory_input = []
 	_feedback_label.text = "Cleared. That was probably wise."
 
 
 func _handle_memory_submit() -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 
 	var solution := _solution()
 	var sequence = solution.get("sequence", [])
@@ -460,16 +480,19 @@ func _handle_memory_submit() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Memory failed. The pixels had one job and so did you.")
+	_trigger_feedback("fail")
 
 
 func _handle_physics_draw(draw_id: String) -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 	_physics_choice = draw_id
 	_feedback_label.text = "Drew %s. Release the ball and let fake gravity judge you." % draw_id
 
 
 func _handle_physics_release() -> void:
 	_tap_count += 1
+	_trigger_feedback("tap")
 
 	var solution := _solution()
 	if _physics_choice == str(solution.get("draw_id", "")):
@@ -477,10 +500,12 @@ func _handle_physics_release() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "The ball saw your line and requested a different universe.")
+	_trigger_feedback("fail")
 
 
 func _handle_roast_action() -> void:
 	_roast_count += 1
+	_trigger_feedback("roast")
 	_feedback_label.text = _roast_line("delay", "Roast used. Your dignity is now a renewable resource.", _roast_count - 1)
 
 
@@ -488,6 +513,9 @@ func _complete_current_level() -> void:
 	_last_best_attempt = _profile.record_completed_attempt(_current_level, _tap_count, _roast_count, _elapsed_level_seconds())
 	_last_completed_attempt = _profile.last_completed_attempt
 	_last_score_result = _profile.last_score_result
+	_trigger_feedback("success")
+	if bool(_last_completed_attempt.get("dur_token_recovered", false)):
+		_trigger_feedback("dur_recover")
 	_show_score_roastcard()
 
 
@@ -558,6 +586,8 @@ func _show_score_roastcard() -> void:
 
 func _make_screen(background_color: Color) -> VBoxContainer:
 	for child in get_children():
+		if child == _feedback_player:
+			continue
 		remove_child(child)
 		child.queue_free()
 
@@ -814,6 +844,7 @@ func _target_color(target: Dictionary) -> Color:
 
 func _handle_dur_level(level: Dictionary) -> void:
 	if _profile.spend_dur_token(level):
+		_trigger_feedback("dur_spend")
 		var result := _profile.last_dur_spend_result
 		_level_list_notice = "DUR'D Level %02d. Dur %d/%d. Level %02d unlocked." % [
 			int(result.get("level_number", 0)),
@@ -822,6 +853,7 @@ func _handle_dur_level(level: Dictionary) -> void:
 			int(result.get("unlocked_level", 1)),
 		]
 	else:
+		_trigger_feedback("fail")
 		_level_list_notice = _profile.last_error
 
 	_show_level_list()
@@ -932,6 +964,82 @@ func _score_component_text(components: Dictionary, key: String, title: String, f
 	if detail.is_empty():
 		return "%s: %s (%+d)" % [title, label, delta]
 	return "%s: %s (%+d) | %s" % [title, label, delta, detail]
+
+
+func _setup_feedback() -> void:
+	if _feedback_player != null:
+		return
+	if DisplayServer.get_name() == "headless":
+		return
+
+	_feedback_generator = AudioStreamGenerator.new()
+	_feedback_generator.mix_rate = FEEDBACK_MIX_RATE
+	_feedback_generator.buffer_length = 0.08
+	_feedback_player = AudioStreamPlayer.new()
+	_feedback_player.name = "FeedbackPlayer"
+	_feedback_player.stream = _feedback_generator
+	_feedback_player.volume_db = -18.0
+	add_child(_feedback_player)
+	if _feedback_player.is_inside_tree():
+		_feedback_player.play()
+
+
+func _trigger_feedback(kind: String) -> void:
+	_last_feedback_kind = kind
+	_feedback_counts[kind] = int(_feedback_counts.get(kind, 0)) + 1
+	_play_feedback_tone(kind)
+	_pulse_feedback(kind)
+
+
+func _play_feedback_tone(kind: String) -> void:
+	if _feedback_player == null:
+		return
+	if not _feedback_player.is_inside_tree():
+		return
+	if not _feedback_player.playing:
+		_feedback_player.play()
+
+	var playback := _feedback_player.get_stream_playback() as AudioStreamGeneratorPlayback
+	if playback == null:
+		return
+
+	var spec := _feedback_spec(kind)
+	var frequency := float(spec.get("frequency", 440.0))
+	var duration := float(spec.get("duration", 0.04))
+	var volume := float(spec.get("volume", 0.10))
+	_feedback_player.volume_db = float(spec.get("volume_db", -18.0))
+
+	var frames := maxi(int(FEEDBACK_MIX_RATE * duration), 1)
+	for index in range(frames):
+		var progress := float(index) / float(frames)
+		var envelope: float = 1.0 - progress
+		var sample := sin(TAU * frequency * float(index) / FEEDBACK_MIX_RATE) * volume * envelope
+		playback.push_frame(Vector2(sample, sample))
+
+
+func _pulse_feedback(kind: String) -> void:
+	var spec := _feedback_spec(kind)
+	var haptic_ms := int(spec.get("haptic_ms", 0))
+	if haptic_ms > 0:
+		Input.vibrate_handheld(haptic_ms)
+
+
+func _feedback_spec(kind: String) -> Dictionary:
+	match kind:
+		"tap":
+			return {"frequency": 620.0, "duration": 0.025, "volume": 0.08, "volume_db": -22.0, "haptic_ms": 8}
+		"fail":
+			return {"frequency": 170.0, "duration": 0.075, "volume": 0.14, "volume_db": -18.0, "haptic_ms": 24}
+		"success":
+			return {"frequency": 880.0, "duration": 0.090, "volume": 0.12, "volume_db": -17.0, "haptic_ms": 32}
+		"roast":
+			return {"frequency": 330.0, "duration": 0.050, "volume": 0.10, "volume_db": -19.0, "haptic_ms": 14}
+		"dur_spend":
+			return {"frequency": 240.0, "duration": 0.070, "volume": 0.12, "volume_db": -18.0, "haptic_ms": 28}
+		"dur_recover":
+			return {"frequency": 760.0, "duration": 0.085, "volume": 0.12, "volume_db": -17.0, "haptic_ms": 34}
+		_:
+			return {"frequency": 440.0, "duration": 0.035, "volume": 0.08, "volume_db": -20.0, "haptic_ms": 0}
 
 
 func _first_roast(kind: String, fallback: String) -> String:
