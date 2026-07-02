@@ -1045,7 +1045,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
 
-	var hint := _new_label("labels are evidence, not instructions", 16, COLOR_INK)
+	var hint := _new_label("Evidence board", 16, COLOR_INK)
 	hint.position = Vector2(18, 18)
 	hint.size = Vector2(300, 28)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1073,7 +1073,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 	playfield.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(playfield)
 
-	var hint := _new_label("drag tiles to drop zones", 15, COLOR_INK)
+	var hint := _new_label("Loose claims", 15, COLOR_INK)
 	hint.position = Vector2(18, 16)
 	hint.size = Vector2(260, 28)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1402,7 +1402,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	cup.size = Vector2(76, 28)
 	surface.add_child(cup)
 
-	var guide := _new_label("Draw toward the cup", 18, COLOR_INK)
+	var guide := _new_label("Ramp sketch", 18, COLOR_INK)
 	guide.position = Vector2(20, 18)
 	guide.size = Vector2(300, 30)
 	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1448,7 +1448,7 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	surface_box.add_theme_constant_override("separation", 6)
 	surface.add_child(surface_box)
 
-	_add_label(surface_box, "Draw toward the cup", 18, COLOR_INK)
+	_add_label(surface_box, "Ramp sketch", 18, COLOR_INK)
 	_physics_choice_label = _new_label("Ramp ready", 16, COLOR_INK)
 	surface_box.add_child(_physics_choice_label)
 	_physics_result_label = _new_label("Draw from the ball", 16, COLOR_INK)
@@ -2275,7 +2275,7 @@ func _hide_direct_memory_flash(generation: int = -1) -> void:
 		return
 	if _direct_memory_flash_label == null or not is_instance_valid(_direct_memory_flash_label):
 		return
-	_direct_memory_flash_label.text = "flash hidden - rebuild it from memory"
+	_direct_memory_flash_label.text = "Receipt hidden"
 
 
 func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:

@@ -102,6 +102,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Fifty-fourth local polish loop compacted the play-screen Judge panel so direct game surfaces get more vertical room without changing Judge state behavior; screenshots refreshed and full verification floor passed again.
 - Fifty-fifth local polish loop changed initial direct-play feedback lines from repeated instructions into state labels for tap, drag, text, memory, and physics surfaces; screenshots refreshed and full verification floor passed again.
 - Fifty-sixth local polish loop changed Drag Logic feedback to use visible tile and box labels instead of internal ids like `word_wrong`; focused drag checks and the full verification floor passed again.
+- Fifty-seventh local polish loop changed direct playfield captions from repeated instructions into concise in-world state labels (`Evidence board`, `Loose claims`, `Receipt hidden`, `Ramp sketch`); focused tactile checks and the full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

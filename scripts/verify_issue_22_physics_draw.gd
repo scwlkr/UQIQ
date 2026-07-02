@@ -51,7 +51,7 @@ func _verify_physics_draw_feedback() -> void:
 	var correct_label := _draw_label(level, correct_draw_id)
 
 	_main.call("_show_play_screen", level)
-	_require(_screen_has_label_text("Draw toward the cup"), "Physics Draw should show the deterministic play surface.")
+	_require(_screen_has_label_text("Ramp sketch"), "Physics Draw should show the deterministic play surface.")
 	_require(_screen_has_label_text("Ramp ready"), "Physics Draw should start with no selected line.")
 	_require(_screen_has_label_text("Draw from the ball"), "Physics Draw should start with waiting release state.")
 

@@ -53,6 +53,8 @@ func _verify_direct_drag_drop() -> void:
 	_require(_node_named(_main, "drag_playfield") != null, "Drag Logic should render a named direct-manipulation playfield.")
 	_require(_node_named(_main, "drag_tile_word_wrong") != null, "Drag Logic should render the correct word as a draggable tile.")
 	_require(_node_named(_main, "drop_zone_truth_box") != null, "Drag Logic should render the Truth Box as a drop zone.")
+	_require(_screen_has_label_text("Loose claims"), "Drag Logic should render the playfield with in-world state copy.")
+	_require(not _screen_has_label_text("drag tiles to drop zones"), "Drag Logic should not render old instruction-like playfield copy.")
 	_require(not _has_button_prefix(_main, "Move:"), "Drag Logic should not expose Move: choice buttons as the primary interaction.")
 	_require(not _has_button_prefix(_main, "Drop on:"), "Drag Logic should not expose Drop on: choice buttons as the primary interaction.")
 
@@ -84,6 +86,8 @@ func _verify_direct_physics_draw() -> void:
 	_require(_node_named(_main, "physics_draw_surface") != null, "Physics Draw should render a named direct drawing surface.")
 	_require(_node_named(_main, "player_drawn_line") != null, "Physics Draw should render the player's drawn line.")
 	_require(not _has_button_prefix(_main, "Draw:"), "Physics Draw should not expose Draw: option buttons as the primary interaction.")
+	_require(_screen_has_label_text("Ramp sketch"), "Physics Draw should render the playfield with in-world state copy.")
+	_require(not _screen_has_label_text("Draw toward the cup"), "Physics Draw should not render old instruction-like playfield copy.")
 	_require(_screen_has_label_text("Ramp ready"), "Physics Draw should start with no selected line.")
 
 	_draw_line_on_surface(Vector2(48, 220), Vector2(260, 110))
