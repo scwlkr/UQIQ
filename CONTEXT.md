@@ -1,6 +1,6 @@
 # UQIQ Context
 
-UQIQ is a fake-IQ mobile puzzle game where each playable puzzle should make the player feel clever, judged, confused, and determined without presenting itself as a real IQ test.
+UQIQ is a tactile mobile puzzle game where each playable puzzle should make the player feel clever, physically engaged, confused, and determined. Funny judgment is secondary flavor, not the main payload, and the game must not present itself as a real IQ test.
 
 ## Language
 
@@ -45,8 +45,20 @@ A Level Template where the player briefly sees information, then must recall ord
 _Avoid_: Memory puzzle, recall level
 
 **Physics Draw**:
-A Level Template where the player draws or places simple geometry so a physics object reaches a target.
+A Level Template where the player draws or places simple geometry so a physics object reaches a target. UQIQ should treat Draw/Shape play as the strongest Level family: the interaction style the game is most known for and spends the most design energy on.
 _Avoid_: Physics level, ball puzzle, draw puzzle
+
+**Realish Physics**:
+The tactile feel target for Draw/Shape Levels: objects should move believably enough that drawing feels physical, but the checks stay forgiving and readable rather than becoming a strict simulation game.
+_Avoid_: Realistic physics sim, precision sandbox, unforgiving collision puzzle
+
+**Freehand Physics Drawing**:
+The Draw/Shape interaction target inspired by games like Q Remastered: the player draws freehand lines or shapes directly on the playfield, and those marks become physical objects that can push, bridge, tip, block, launch, or redirect moving pieces.
+_Avoid_: Preset shape tools, grid-based building, decorative drawing, answer-choice physics
+
+**Goal Delivery Physics**:
+The default Draw/Shape objective pattern: use Freehand Physics Drawing to move a ball, object, character, or token into a clear target such as a cup, flag, zone, or goal. Level variation should come from layout, material behavior, hidden assumptions, gravity, misleading prompts, or score twists.
+_Avoid_: Abstract physics sandbox, unclear objective, decorative motion
 
 **Chaos Modifier**:
 A modifier that adds timing, movement, fake pressure, or disruptive behavior to another Level Template. It is not a v1.0 Level Template by itself.
@@ -184,6 +196,10 @@ _Avoid_: Generic puzzle, straightforward skill check
 The v1.0 difficulty posture: average players should be able to finish all 60 Levels with 3 Dur Tokens and some Roasts, while still feeling tricked, mocked, and challenged.
 _Avoid_: Stuck forever, trivial, hardcore puzzle difficulty
 
+**Polished Six-Level Core**:
+The current product-definition target before scaling: perfect six total Levels across the strongest tactile Level families before adding a large content set. The current target mix is two Draw/Shape Levels, two Rearrange Levels, and two Memory/Reveal Levels. Text, Tap, and Pattern ideas can appear as modifiers inside those Levels rather than equal headline families.
+_Avoid_: 60-Level content push, broad content factory, adding levels before the core feels good
+
 **12+ Rating Target**:
 The intended App Store age-rating posture for v1.0. The final rating comes from Apple's questionnaire, but UQIQ should avoid content that would push the game toward 17+.
 _Avoid_: 4+ target, 17+ target
@@ -203,6 +219,18 @@ _Avoid_: Death loop, loss state, fail state
 **Flat Vector Style**:
 The visual style for UQIQ: bold shapes, minimalist geometry, vibrant color palettes, and 2D vector art. It avoids gradients, textures, and complex shadows so the game stays scalable, clean, and mobile-friendly.
 _Avoid_: Fake test-room theme, realistic art, textured art, complex shadows
+
+**Tactile Mobile Puzzle Game**:
+The primary product promise for UQIQ: screen-native puzzles built around touch, drag, draw, reveal, ordering, memory, and other phone-first interactions. Comedy and judgment support the interaction experience instead of replacing it.
+_Avoid_: Comedy-first quiz app, answer-choice joke game, fake IQ test
+
+**Small Multi-Step Puzzle**:
+A Level structure where the player performs a short sequence of touch interactions, observes feedback, adjusts, and solves. v1.0 should prefer this over one-tap punchlines when the extra step makes the Level feel more tactile.
+_Avoid_: Single-answer UI, one-tap punchline, static quiz question
+
+**Interpretation-First Difficulty**:
+The v1.0 difficulty rule: Levels should challenge the player to understand what the screen wants more than to execute precise finger movement. Touch targets, drag paths, drawing checks, timing windows, and retry loops should be forgiving.
+_Avoid_: Dexterity test, precision input challenge, punishing touch timing
 
 **Self-Generated Art Pipeline**:
 The v1.0 art production approach: the assistant creates and maintains the art through Godot-authored flat primitives, reusable scenes, and small generated SVG/icon assets when needed. The user should not need to manually create art.
