@@ -49,10 +49,12 @@ func _verify_main_flow_text_controls() -> void:
 
 	_main.call("_show_play_screen", _level_by_number(41))
 	_assert_play_header_metrics_visible("Memory Flash Play Screen")
+	_assert_roast_control_secondary("Memory Flash Play Screen")
 	_assert_text_controls("Memory Flash Play Screen")
 
 	_main.call("_show_play_screen", _level_by_number(51))
 	_assert_play_header_metrics_visible("Physics Draw Play Screen")
+	_assert_roast_control_secondary("Physics Draw Play Screen")
 	_assert_text_controls("Physics Draw Play Screen")
 
 	var level := _level_by_number(1)
@@ -79,6 +81,15 @@ func _assert_play_header_chip_visible(context: String, text: String, minimum_wid
 
 	var chip := label.get_parent() as Control
 	_require(chip != null and chip.custom_minimum_size.x >= minimum_width, "%s %s chip should be wide enough." % [context, text])
+
+
+func _assert_roast_control_secondary(context: String) -> void:
+	var roast_button := _button_with_exact_text(_main, "Roast")
+	_require(roast_button != null, "%s should expose the Roast control." % context)
+	if roast_button == null:
+		return
+	_require(roast_button.custom_minimum_size.x <= 120 and roast_button.custom_minimum_size.y <= 42, "%s Roast control should stay visually secondary." % context)
+	_require(roast_button.get_theme_font_size("font_size") <= 16, "%s Roast control should use secondary-sized text." % context)
 
 
 func _collect_text_controls(node: Node, context: String) -> void:
@@ -121,6 +132,16 @@ func _label_with_text(node: Node, text: String) -> Label:
 		var label := _label_with_text(child, text)
 		if label != null:
 			return label
+	return null
+
+
+func _button_with_exact_text(node: Node, text: String) -> Button:
+	if node is Button and str(node.text) == text:
+		return node as Button
+	for child in node.get_children():
+		var button := _button_with_exact_text(child, text)
+		if button != null:
+			return button
 	return null
 
 

@@ -523,9 +523,10 @@ func _show_play_screen(level: Dictionary) -> void:
 	actions.add_theme_constant_override("separation", 10)
 	root.add_child(actions)
 
-	var roast_button := _make_button("Roast", COLOR_PANEL_ALT, Vector2(148, 46))
+	var roast_button := _make_button("Roast", COLOR_PANEL, Vector2(120, 42))
+	roast_button.add_theme_font_size_override("font_size", 16)
 	roast_button.add_theme_color_override("font_color", COLOR_ORANGE)
-	_apply_button_frame(roast_button, COLOR_ORANGE)
+	_apply_button_frame(roast_button, COLOR_MUTED, COLOR_PANEL)
 	roast_button.pressed.connect(Callable(self, "_handle_roast_action"))
 	actions.add_child(roast_button)
 
