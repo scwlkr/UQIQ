@@ -87,6 +87,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Thirty-ninth local polish loop made Text Trap's answer slot read as a recessed target distinct from tappable word tiles; Text Trap screenshot refreshed and full verification floor passed again.
 - Fortieth local polish loop split Level List pack headings from level ranges so long pack names no longer wrap with a dangling separator; Level List screenshot refreshed and full verification floor passed again.
 - Forty-first local polish loop made Drag Logic wrong drops return the tile to its origin and added active drag contact feedback while a tile is moving; screenshot capture stayed stable and full verification floor passed again.
+- Forty-second local polish loop added deterministic verifier coverage for Drag Logic failed-drop return behavior so the bounce-back movement stays protected; screenshot capture stayed stable and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

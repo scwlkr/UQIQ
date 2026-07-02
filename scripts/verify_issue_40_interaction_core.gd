@@ -31,7 +31,7 @@ func _initialize() -> void:
 	if _failed:
 		return
 
-	print("Issue #40 interaction core verification passed: Drag Logic uses a direct drag/drop playfield, Physics Draw resolves from a direct draw-release surface, and both complete through Score Roastcard.")
+	print("Issue #40 interaction core verification passed: Drag Logic uses a direct drag/drop playfield with failed-drop bounce-back, Physics Draw resolves from a direct draw-release surface, and both complete through Score Roastcard.")
 	_cleanup()
 	quit(0)
 
@@ -59,6 +59,7 @@ func _verify_direct_drag_drop() -> void:
 	_drag_tile_to_zone("word_right", "confidence_box")
 	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
+	_require(str(_main.get("_last_failed_drag_return_id")) == "word_right", "Wrong direct drag/drop should schedule the dragged tile to return to origin.")
 
 	_main.call("_show_play_screen", level)
 	_release_overlapping_tile_with_bad_pointer("word_wrong", "truth_box")

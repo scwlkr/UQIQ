@@ -66,6 +66,7 @@ var _drag_origin := Vector2.ZERO
 var _drag_drop_zones := {}
 var _drag_hover_target_id := ""
 var _last_drag_drop_target_id := ""
+var _last_failed_drag_return_id := ""
 var _selected_pattern_cell := ""
 var _pattern_marked_cells: Array[String] = []
 var _pattern_cell_buttons := {}
@@ -428,6 +429,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_drag_drop_zones = {}
 	_drag_hover_target_id = ""
 	_last_drag_drop_target_id = ""
+	_last_failed_drag_return_id = ""
 	_selected_pattern_cell = ""
 	_pattern_marked_cells = []
 	_pattern_cell_buttons = {}
@@ -1662,6 +1664,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 			if _is_drag_drop_solution(object_id, drop_target_id):
 				_snap_drag_tile_to_zone(tile, drop_target_id)
 			else:
+				_last_failed_drag_return_id = object_id
 				_animate_control_position(tile, _drag_origin)
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
