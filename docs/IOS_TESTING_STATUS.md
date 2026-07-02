@@ -198,7 +198,7 @@ Type: Internal Group
 Automatic distribution: enabled
 Builds: 1
 Tester: Shane Walker <shane.caleb.walker@gmail.com>
-Tester status: Invited
+Tester status: Accepted, installed, launched
 ```
 
 Proof screenshots:
@@ -207,13 +207,21 @@ Proof screenshots:
 /tmp/uqiq-testflight-poll-1.png
 /tmp/uqiq-testflight-internal-group-ready.png
 /tmp/uqiq-testflight-tester-added-modal.png
+/tmp/uqiq-testflight-installed-launch-proof.png
+```
+
+Installed app proof from physical iPhone `17 Hoe Max`:
+
+```text
+xcrun devicectl device info apps --device 9820C039-3903-5542-9D4A-388ED65AEFDE --bundle-id com.wlkrlabs.uqiq
+UQIQ   com.wlkrlabs.uqiq   0.1.0   1
 ```
 
 No external TestFlight or public App Review path has been started.
 
 ## Current Blocker
 
-The remaining release blocker requires scwlkr to accept the internal TestFlight invite, install UQIQ `0.1.0 (1)` on a physical iPhone, and launch it once for proof.
+No current local iOS/TestFlight blocker after internal install and launch proof. External beta start, App Store Connect submission, live hosting/DNS, and manual App Store release still need explicit scwlkr approval/action.
 
 ## Next Commands After Apple Access
 
