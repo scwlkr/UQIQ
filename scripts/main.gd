@@ -561,13 +561,15 @@ func _handle_drag_select(object_id: String) -> void:
 func _handle_drag_drop(drop_target_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
-	_resolve_drag_drop(_selected_drag_id, drop_target_id)
+	var object_id := _selected_drag_id
+	_selected_drag_id = ""
+	_resolve_drag_drop(object_id, drop_target_id)
 
 
 func _handle_direct_drag_drop(object_id: String, drop_target_id: String) -> void:
 	_tap_count += 1
 	_trigger_feedback("tap")
-	_selected_drag_id = object_id
+	_selected_drag_id = ""
 	_last_drag_drop_target_id = drop_target_id
 	_resolve_drag_drop(object_id, drop_target_id)
 

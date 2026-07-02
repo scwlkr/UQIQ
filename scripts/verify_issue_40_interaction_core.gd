@@ -75,6 +75,7 @@ func _verify_direct_drag_drop() -> void:
 	_drag_tile_to_zone("word_right", "confidence_box", "Over Confidence Box. Release to drop RIGHT.")
 	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
+	_require(str(_main.get("_selected_drag_id")).is_empty(), "Wrong direct drag/drop should clear the held-tile state after release.")
 	_require(str(_main.get("_last_failed_drag_return_id")) == "word_right", "Wrong direct drag/drop should schedule the dragged tile to return to origin.")
 	_require(_screen_has_label_text("RIGHT does not belong in Confidence Box."), "Wrong direct drag/drop feedback should use visible tile and box labels.")
 	_require(not _screen_has_label_text("word_right"), "Wrong direct drag/drop feedback should not leak internal object ids.")
