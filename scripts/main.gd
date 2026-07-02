@@ -24,6 +24,8 @@ const SCREENSHOT_CAPTURE_ENV := "UQIQ_SCREENSHOT_CAPTURE"
 const FEEDBACK_MIX_RATE := 22050.0
 const MIN_DRAG_DROP_OVERLAP_RATIO := 0.28
 const MIN_PHYSICS_DRAW_LENGTH := 36.0
+const SCREEN_TRANSITION_DURATION := 0.14
+const SCREEN_TRANSITION_OFFSET_Y := 10.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
 	"Drag Logic",
@@ -2549,12 +2551,16 @@ func _apply_screen_transition(root: Control, transition_name: String) -> void:
 	_last_transition_name = transition_name
 	_transition_counts[transition_name] = int(_transition_counts.get(transition_name, 0)) + 1
 	root.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1":
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1" or DisplayServer.get_name() == "headless":
 		return
 	if is_inside_tree():
+		var resting_position := root.position
 		root.modulate.a = 0.0
+		root.position = resting_position + Vector2(0.0, SCREEN_TRANSITION_OFFSET_Y)
 		var tween := create_tween()
-		tween.tween_property(root, "modulate:a", 1.0, 0.10)
+		tween.set_parallel(true)
+		tween.tween_property(root, "modulate:a", 1.0, SCREEN_TRANSITION_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(root, "position", resting_position, SCREEN_TRANSITION_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 func _setup_feedback() -> void:

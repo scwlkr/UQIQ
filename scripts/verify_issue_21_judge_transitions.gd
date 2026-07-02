@@ -45,11 +45,13 @@ func _verify_judge_reactions_and_transitions() -> void:
 	var level := _level_by_number(1)
 	_main.call("_show_level_list")
 	_require(_transition_count("level_list") >= 1, "Level List should record a screen transition.")
+	_require(_current_screen_root_is_visible(), "Headless transition hook should leave the current screen root fully visible.")
 	_require(_judge_count("list") >= 1, "Level List should show neutral Judge Face state.")
 	_require(_screen_has_label_text("watching quietly"), "Level List should render Judge Face caption.")
 
 	_main.call("_show_play_screen", level)
 	_require(_transition_count("play_screen") >= 1, "Play Screen should record a screen transition.")
+	_require(_current_screen_root_is_visible(), "Headless Play Screen transition should not pause layout in a hidden state.")
 	_require(_judge_count("start") >= 1, "Play Screen should show start Judge Face state.")
 	_require(_screen_has_label_text("calibrating ego"), "Play Screen should render start Judge Face caption.")
 
@@ -85,6 +87,32 @@ func _transition_count(name: String) -> int:
 func _judge_count(name: String) -> int:
 	var counts := _dictionary_from(_main.get("_judge_state_counts"))
 	return int(counts.get(name, 0))
+
+
+func _current_screen_root_is_visible() -> bool:
+	var root := _current_screen_root(_main)
+	return root != null and is_equal_approx(root.modulate.a, 1.0)
+
+
+func _current_screen_root(node: Node) -> Control:
+	for child in node.get_children():
+		if child is ColorRect:
+			continue
+		if child is VBoxContainer:
+			return child as Control
+		if child is ScrollContainer:
+			return _first_vbox_descendant(child)
+	return null
+
+
+func _first_vbox_descendant(node: Node) -> Control:
+	if node is VBoxContainer:
+		return node as Control
+	for child in node.get_children():
+		var match := _first_vbox_descendant(child)
+		if match != null:
+			return match
+	return null
 
 
 func _screen_has_label_text(text: String) -> bool:
