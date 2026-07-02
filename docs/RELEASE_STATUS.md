@@ -55,6 +55,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Seventh local polish loop added non-spoiling TAP/DRAG/DROP affordance tags to direct Tap Logic, Text Trap, Drag Logic tiles, and drop zones; screenshots refreshed and full verification floor passed again.
 - Eighth local polish loop added SLOT/TAP/RESET affordance tags to Memory Flash, a draw runway cue to direct Physics Draw, refreshed screenshots, and re-ran the full verification floor with Godot error-log scanning.
 - Ninth local polish loop hid desktop-style scrollbars while preserving scroll containers for long play screens and Level List; screenshots refreshed and long-screen fit passed again.
+- Tenth local polish loop restyled direct Tap Logic targets as framed evidence tiles instead of bright answer-button blocks; Level 1 screenshot refreshed and focused Tap Logic/readability checks passed.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

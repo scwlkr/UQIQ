@@ -1429,7 +1429,13 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	pad.position = _vector2_from_array(target.get("scene_position", []), Vector2(28 + (index * 162), 92))
 	pad.mouse_filter = Control.MOUSE_FILTER_STOP
 	pad.set_meta("target_id", target_id)
-	pad.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
+	var pad_box := _flat_box(COLOR_PANEL_ALT, 8)
+	pad_box.border_width_left = 2
+	pad_box.border_width_top = 2
+	pad_box.border_width_right = 2
+	pad_box.border_width_bottom = 2
+	pad_box.border_color = COLOR_BLUE
+	pad.add_theme_stylebox_override("panel", pad_box)
 	pad.gui_input.connect(Callable(self, "_handle_direct_tap_scene_input").bind(target_id, pad))
 
 	var box := VBoxContainer.new()
@@ -1439,6 +1445,8 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	pad.add_child(box)
 
 	var action_label := _new_label("TAP", 11, COLOR_MUTED)
+	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(action_label)
 
