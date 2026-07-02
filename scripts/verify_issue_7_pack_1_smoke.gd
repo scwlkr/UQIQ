@@ -227,6 +227,10 @@ func _spend_dur_from_level_list(level: Dictionary) -> void:
 	var row := _find_level_row(level_number)
 	if not _require(row != null, "Level List should render Level %d before Dur Token spend." % level_number):
 		return
+	if not _require(str(row.name) == "level_row_%02d" % level_number, "Level List row should be named for Level %d." % level_number):
+		return
+	if not _require(int(row.get_meta("entry_motion_count", 0)) > 0, "Level List row should record entry motion for Level %d." % level_number):
+		return
 	var dur_button := _find_dur_button(row)
 	if not _require(dur_button != null, "Level List should render a DUR button for Level %d." % level_number):
 		return

@@ -393,9 +393,12 @@ func _add_level_row(parent: Node, level: Dictionary) -> void:
 	var is_playable := _is_level_playable(level)
 	var button_text := _level_row_button_text(level)
 	var row := HBoxContainer.new()
+	row.name = "level_row_%02d" % level_number
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 8)
+	row.set_meta("level_number", level_number)
 	parent.add_child(row)
+	_apply_board_entry_motion(row)
 
 	var button := _make_button(button_text, _level_button_color(level))
 	button.disabled = not is_playable
