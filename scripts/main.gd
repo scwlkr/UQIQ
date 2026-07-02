@@ -707,7 +707,7 @@ func _show_score_roastcard() -> void:
 	_set_judge_state("score")
 	var root := _make_screen(COLOR_INK, "score_roastcard", true)
 
-	_add_label(root, "Score Roastcard", 38, COLOR_YELLOW)
+	_add_label(root, "Score Roastcard", 34, COLOR_YELLOW)
 	_add_judge_face(root, _judge_state)
 	_add_label(root, str(_current_level.get("title", "Level complete")), 24, COLOR_TEXT)
 	_add_status(root, "Completed in %d action(s)" % int(_last_completed_attempt.get("action_count", _tap_count)), COLOR_GREEN)
@@ -724,18 +724,6 @@ func _show_score_roastcard() -> void:
 			_profile.current_uqiq_score(),
 		], COLOR_GREEN)
 
-	var card := PanelContainer.new()
-	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	card.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL, 8))
-	root.add_child(card)
-
-	var card_box := VBoxContainer.new()
-	card_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	card_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	card_box.add_theme_constant_override("separation", 16)
-	card.add_child(card_box)
-
 	var score_before := int(_last_score_result.get("score_before", _profile.current_uqiq_score()))
 	var score_after := int(_last_score_result.get("score_after", _profile.current_uqiq_score()))
 	var score_delta := int(_last_score_result.get("score_delta", 0))
@@ -743,18 +731,57 @@ func _show_score_roastcard() -> void:
 	var score_components := _dictionary_from(_last_score_result.get("score_components", {}))
 	var roast_count := int(_last_completed_attempt.get("roast_count", _roast_count))
 	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
-	_add_label(card_box, "UQIQ %d" % score_after, 36, COLOR_YELLOW)
-	_add_label(card_box, "Total Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 18, COLOR_MUTED)
+
+	var score_panel := PanelContainer.new()
+	score_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	score_panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL, 8))
+	root.add_child(score_panel)
+
+	var score_box := VBoxContainer.new()
+	score_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	score_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	score_box.add_theme_constant_override("separation", 8)
+	score_panel.add_child(score_box)
+
+	_add_label(score_box, "UQIQ %d" % score_after, 36, COLOR_YELLOW)
+	_add_label(score_box, "Total Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 18, COLOR_MUTED)
 	if attempt_score_delta != score_delta:
-		_add_label(card_box, "Attempt Delta: %+d before score cap" % attempt_score_delta, 16, COLOR_MUTED)
-	_add_label(card_box, _score_component_text(score_components, "speed", "Speed", "Chrono shrug"), 18, COLOR_TEXT)
-	_add_label(card_box, _score_component_text(score_components, "actions", "Actions", "Finger mystery"), 18, COLOR_TEXT)
-	_add_label(card_box, _score_component_text(score_components, "roasts", "Roasts", "Dignity intact"), 18, COLOR_TEXT)
+		_add_label(score_box, "Attempt Delta: %+d before score cap" % attempt_score_delta, 16, COLOR_MUTED)
+
+	var stat_grid := GridContainer.new()
+	stat_grid.columns = 2
+	stat_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stat_grid.add_theme_constant_override("h_separation", 10)
+	stat_grid.add_theme_constant_override("v_separation", 10)
+	root.add_child(stat_grid)
+
+	_add_score_stat_chip(stat_grid, score_components, "speed", "Speed", "Chrono shrug", COLOR_BLUE)
+	_add_score_stat_chip(stat_grid, score_components, "actions", "Actions", "Finger mystery", COLOR_GREEN)
+	_add_score_stat_chip(stat_grid, score_components, "roasts", "Roasts", "Dignity intact", COLOR_ORANGE)
 	if bool(_last_completed_attempt.get("durd_at_start", false)):
-		_add_label(card_box, _score_component_text(score_components, "dur", "DUR", "DUR parole"), 18, COLOR_YELLOW)
-	_add_label(card_box, "Raw: %d action(s), %d Roast(s)" % [action_count, roast_count], 16, COLOR_MUTED)
-	_add_label(card_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 20, COLOR_TEXT)
-	_add_label(card_box, str(_current_level.get("uqiq_moment", "")), 17, COLOR_MUTED)
+		_add_score_stat_chip(stat_grid, score_components, "dur", "DUR", "DUR parole", COLOR_YELLOW)
+	else:
+		_add_score_stat_chip(stat_grid, {
+			"raw": {
+				"delta": 0,
+				"label": "Attempt raw",
+				"detail": "%d action(s), %d Roast(s)" % [action_count, roast_count],
+			},
+		}, "raw", "Raw", "Attempt raw", COLOR_MUTED)
+
+	var note_panel := PanelContainer.new()
+	note_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	note_panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	root.add_child(note_panel)
+
+	var note_box := VBoxContainer.new()
+	note_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	note_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	note_box.add_theme_constant_override("separation", 10)
+	note_panel.add_child(note_box)
+
+	_add_label(note_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 19, COLOR_TEXT)
+	_add_label(note_box, str(_current_level.get("uqiq_moment", "")), 17, COLOR_MUTED)
 
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2078,14 +2105,28 @@ func _vector2_from_array(value: Variant, fallback: Vector2) -> Vector2:
 	return Vector2(float(values[0]), float(values[1]))
 
 
-func _score_component_text(components: Dictionary, key: String, title: String, fallback_label: String) -> String:
+func _add_score_stat_chip(parent: Node, components: Dictionary, key: String, title: String, fallback_label: String, accent: Color) -> void:
 	var component := _dictionary_from(components.get(key, {}))
 	var label := str(component.get("label", fallback_label))
 	var delta := int(component.get("delta", 0))
 	var detail := str(component.get("detail", ""))
-	if detail.is_empty():
-		return "%s: %s (%+d)" % [title, label, delta]
-	return "%s: %s (%+d) | %s" % [title, label, delta, detail]
+
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size = Vector2(0, 116)
+	chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chip.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	parent.add_child(chip)
+
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	chip.add_child(box)
+
+	_add_label(box, "%s: %+d" % [title, delta], 18, accent)
+	_add_label(box, label, 15, COLOR_TEXT)
+	if not detail.is_empty():
+		_add_label(box, detail, 13, COLOR_MUTED)
 
 
 func _physics_draw_label(draw_id: String) -> String:
