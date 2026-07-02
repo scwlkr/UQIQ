@@ -544,20 +544,22 @@ func _handle_direct_drag_drop(object_id: String, drop_target_id: String) -> void
 
 
 func _resolve_drag_drop(object_id: String, drop_target_id: String) -> void:
-	var solution = _current_level.get("solution", {})
-	var winning_object := ""
-	var winning_target := ""
-	if typeof(solution) == TYPE_DICTIONARY:
-		winning_object = str(solution.get("object_id", ""))
-		winning_target = str(solution.get("drop_target_id", ""))
-
-	if object_id == winning_object and drop_target_id == winning_target:
+	if _is_drag_drop_solution(object_id, drop_target_id):
 		_complete_current_level()
 		return
 
 	_feedback_label.text = _first_roast("failure", "Wrong thing, wrong place. Somehow both.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
+
+
+func _is_drag_drop_solution(object_id: String, drop_target_id: String) -> bool:
+	var solution = _current_level.get("solution", {})
+	if typeof(solution) != TYPE_DICTIONARY:
+		return false
+
+	return object_id == str(solution.get("object_id", "")) \
+		and drop_target_id == str(solution.get("drop_target_id", ""))
 
 
 func _handle_text_submit() -> void:
@@ -1586,6 +1588,17 @@ func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	return tile
 
 
+func _apply_drag_tile_style(tile: Control, is_dragging: bool) -> void:
+	var tile_panel := tile as PanelContainer
+	if tile_panel == null or not is_instance_valid(tile_panel):
+		return
+
+	if is_dragging:
+		tile_panel.add_theme_stylebox_override("panel", _framed_box(COLOR_YELLOW.darkened(0.16), COLOR_YELLOW, 8))
+	else:
+		tile_panel.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
+
+
 func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	var zone := PanelContainer.new()
 	zone.name = "drop_zone_%s" % str(target.get("id", "target"))
@@ -1621,6 +1634,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_drag_offset = _event_position_in_control(event, tile, tile)
 		_drag_origin = tile.position
 		_animate_control_scale(tile, Vector2(1.04, 1.04), 0.05)
+		_apply_drag_tile_style(tile, true)
 		tile.move_to_front()
 		_set_drag_hover_target(_drop_target_for_released_tile(_event_canvas_position(event, tile), tile))
 		_feedback_label.text = "Dragging %s. Drop it where truth will tolerate it." % object_id
@@ -1640,11 +1654,15 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_dragging_tile = null
 		_drag_offset = Vector2.ZERO
 		_animate_control_scale(tile, Vector2.ONE, 0.06)
+		_apply_drag_tile_style(tile, false)
 		_set_drag_hover_target("")
 		if drop_target_id.is_empty():
 			_handle_direct_drag_miss(object_id, tile)
 		else:
-			_snap_drag_tile_to_zone(tile, drop_target_id)
+			if _is_drag_drop_solution(object_id, drop_target_id):
+				_snap_drag_tile_to_zone(tile, drop_target_id)
+			else:
+				_animate_control_position(tile, _drag_origin)
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
 
