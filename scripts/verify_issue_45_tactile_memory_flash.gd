@@ -22,12 +22,13 @@ func _initialize() -> void:
 	_boot_main_scene()
 	if _failed:
 		return
+	await process_frame
 
-	_verify_tactile_memory_flash()
+	await _verify_tactile_memory_flash()
 	if _failed:
 		return
 
-	print("Issue #45 Memory Flash verification passed: Level 5 renders direct memory tiles and recall slots, rejects a wrong row, and completes through Score Roastcard from direct tile taps.")
+	print("Issue #45/#52 Memory Flash verification passed: Level 5 hides the flash order for recall, dedupes touch-emulated mouse presses, clears cleanly, rejects a wrong row, and completes through Score Roastcard from direct tile taps.")
 	_cleanup()
 	quit(0)
 
@@ -58,15 +59,33 @@ func _verify_tactile_memory_flash() -> void:
 	_require(not _has_button_text(_main, "SUN"), "Direct Memory Flash should not expose SUN as a choice button.")
 	_require(not _has_button_text(_main, "MOON"), "Direct Memory Flash should not expose MOON as a choice button.")
 	_require(not _has_button_text(_main, "DUR"), "Direct Memory Flash should not expose DUR as a choice button.")
+	_require(_node_named(_main, "memory_flash_order") != null, "Memory Flash should briefly render the flash order.")
+	await create_timer(float(_dictionary_from(level.get("rules", {})).get("flash_seconds", 1.0)) + 0.2).timeout
+	_require(not _screen_has_label_text("flash: SUN"), "Memory Flash should hide the flash sequence during recall.")
+
+	_press_tile("SUN", _screen_touch_event(true))
+	_press_tile("SUN", _mouse_button_event(Vector2(16, 16), true))
+	_require(_memory_input_size() == 1, "One iOS-shaped tap should record exactly one memory entry.")
+	_require(int(_main.get("_tap_count")) == 1, "One iOS-shaped tap should count exactly one action.")
+	_require(_recall_slot_text(0) == "SUN", "First recall slot should become SUN after one tap.")
+	_require(_recall_slot_text(1) == "_", "Second recall slot should stay empty after one tap.")
+
+	_press_clear_tile(_screen_touch_event(true))
+	_press_clear_tile(_mouse_button_event(Vector2(16, 16), true))
+	_require(_memory_input_size() == 0, "Clear should reset memory input once.")
+	_require(int(_main.get("_tap_count")) == 2, "Touch plus emulated mouse clear should count exactly one clear action.")
+	_require(_recall_slot_text(0) == "_", "Clear should reset the first recall slot.")
+	_require(_recall_slot_text(1) == "_", "Clear should reset the second recall slot.")
 
 	_press_tiles_with_touch(["DUR", "SUN", "MOON"])
 	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
-	_require(int(_main.get("_tap_count")) == 3, "Wrong direct memory row should count one action per tile.")
+	_require(int(_main.get("_tap_count")) == 5, "Wrong direct memory row should count one action per tile after earlier tap and clear.")
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "MOON", "Direct memory handler should record the last touched tile.")
 	_require(_screen_has_label_text("DUR"), "Recall slots should show tapped memory input.")
 
 	_main.call("_show_play_screen", level)
-	_press_tiles_with_mouse(["SUN", "MOON", "DUR"])
+	await create_timer(float(_dictionary_from(level.get("rules", {})).get("flash_seconds", 1.0)) + 0.2).timeout
+	_press_tiles_with_touch(["SUN", "MOON", "DUR"])
 	_require(_profile.is_level_completed(level_id), "Correct direct memory row should complete Level 5.")
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "DUR", "Direct memory handler should record the winning final tile.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct memory row should route to Score Roastcard.")
@@ -90,6 +109,28 @@ func _press_tile(item_id: String, event: InputEvent) -> void:
 	if _failed:
 		return
 	_main.call("_handle_direct_memory_tile_input", event, item_id, tile)
+
+
+func _press_clear_tile(event: InputEvent) -> void:
+	var tile := _node_named(_main, "memory_tile_clear") as Control
+	_require(tile != null, "Expected direct memory clear tile.")
+	if _failed:
+		return
+	_main.call("_handle_direct_memory_clear_input", event, tile)
+
+
+func _memory_input_size() -> int:
+	var memory_input = _main.get("_memory_input")
+	if typeof(memory_input) != TYPE_ARRAY:
+		return -1
+	return memory_input.size()
+
+
+func _recall_slot_text(index: int) -> String:
+	var label := _node_named(_main, "memory_recall_slot_label_%d" % index) as Label
+	if label == null:
+		return ""
+	return str(label.text)
 
 
 func _require_tile_label_fits(item_id: String) -> void:
@@ -130,6 +171,12 @@ func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
 	event.pressed = pressed
 	event.position = Vector2(16, 16)
 	return event
+
+
+func _dictionary_from(value: Variant) -> Dictionary:
+	if typeof(value) == TYPE_DICTIONARY:
+		return value
+	return {}
 
 
 func _level_by_number(level_number: int) -> Dictionary:

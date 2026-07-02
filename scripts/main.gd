@@ -70,6 +70,9 @@ var _pattern_cell_buttons := {}
 var _memory_input: Array[String] = []
 var _memory_slot_labels := {}
 var _last_direct_memory_tile_id := ""
+var _last_direct_memory_press_item_id := ""
+var _last_direct_memory_press_msec := -1000
+var _last_direct_memory_press_was_touch := false
 var _physics_choice := ""
 var _last_physics_result := ""
 var _physics_choice_label: Label
@@ -398,6 +401,9 @@ func _show_play_screen(level: Dictionary) -> void:
 	_memory_input = []
 	_memory_slot_labels = {}
 	_last_direct_memory_tile_id = ""
+	_last_direct_memory_press_item_id = ""
+	_last_direct_memory_press_msec = -1000
+	_last_direct_memory_press_was_touch = false
 	_physics_choice = ""
 	_last_physics_result = ""
 	_physics_choice_label = null
@@ -1216,16 +1222,36 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
 	stage_box.add_child(surface)
 
-	var flash_label := _new_label("flash order: %s" % "  ".join(_string_array(_rules().get("flash_items", []))), 16, COLOR_INK)
+	var flash_label := _new_label("flash: %s" % "  ".join(_string_array(_rules().get("flash_items", []))), 16, COLOR_INK)
 	flash_label.name = "memory_flash_order"
 	flash_label.position = Vector2(18, 18)
 	flash_label.size = Vector2(320, 30)
 	flash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(flash_label)
+	_hide_direct_memory_flash_after_delay(flash_label, maxf(float(_rules().get("flash_seconds", 1.0)), 0.1))
 
 	_render_memory_recall_slots(surface)
 	_render_memory_tile_bank(surface)
 	_add_feedback(stage_box, "Tap tiles into slots. It judges the moment the row is full.")
+
+
+func _hide_direct_memory_flash_after_delay(label: Label, delay_seconds: float) -> void:
+	if not is_inside_tree():
+		return
+
+	var tree := get_tree()
+	if tree == null:
+		return
+
+	var timer := tree.create_timer(delay_seconds)
+	timer.timeout.connect(Callable(self, "_hide_direct_memory_flash_label").bind(label), CONNECT_ONE_SHOT)
+
+
+func _hide_direct_memory_flash_label(label: Label) -> void:
+	if label == null or not is_instance_valid(label):
+		return
+	label.text = "flash hidden"
+	label.add_theme_color_override("font_color", Color(0.28, 0.29, 0.31))
 
 
 func _render_memory_recall_slots(surface: Control) -> void:
@@ -1526,7 +1552,11 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: Control) -> void:
 	if not _is_primary_press(event):
 		return
+	if _should_ignore_duplicate_direct_memory_press(event, item_id):
+		_mark_input_handled()
+		return
 
+	_remember_direct_memory_press(event, item_id)
 	_last_direct_memory_tile_id = item_id
 	if tile != null and is_instance_valid(tile):
 		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
@@ -1539,13 +1569,35 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void:
 	if not _is_primary_press(event):
 		return
+	if _should_ignore_duplicate_direct_memory_press(event, "CLEAR"):
+		_mark_input_handled()
+		return
 
+	_remember_direct_memory_press(event, "CLEAR")
 	_last_direct_memory_tile_id = "CLEAR"
 	if tile != null and is_instance_valid(tile):
 		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	_handle_memory_clear()
 	_update_memory_recall_slots()
 	_mark_input_handled()
+
+
+func _should_ignore_duplicate_direct_memory_press(event: InputEvent, item_id: String) -> bool:
+	if not (event is InputEventMouseButton or event is InputEventScreenTouch):
+		return false
+	if item_id != _last_direct_memory_press_item_id:
+		return false
+
+	var current_press_is_touch := event is InputEventScreenTouch
+	if current_press_is_touch == _last_direct_memory_press_was_touch:
+		return false
+	return Time.get_ticks_msec() - _last_direct_memory_press_msec <= 160
+
+
+func _remember_direct_memory_press(event: InputEvent, item_id: String) -> void:
+	_last_direct_memory_press_item_id = item_id
+	_last_direct_memory_press_msec = Time.get_ticks_msec()
+	_last_direct_memory_press_was_touch = event is InputEventScreenTouch
 
 
 func _move_drag_tile(event: InputEvent, tile: Control) -> void:

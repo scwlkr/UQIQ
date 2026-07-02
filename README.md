@@ -202,7 +202,7 @@ godot --headless --path . --script res://scripts/verify_issue_51_scorecard_safe_
 
 `verify_issue_43_tactile_tap_logic.gd` is the tactile Tap Logic check. It verifies Level 1 renders a direct tap scene instead of `CORRECT` / `WRONG` answer-choice buttons, rejects a wrong direct tap, accepts mouse/touch-shaped input, and completes through Score Roastcard.
 
-`verify_issue_45_tactile_memory_flash.gd` is the tactile Memory Flash check. It verifies Level 5 renders direct memory tiles and recall slots instead of `Flash` / `Hide` / choice buttons, rejects a wrong row, accepts mouse/touch-shaped input, and completes through Score Roastcard.
+`verify_issue_45_tactile_memory_flash.gd` is the tactile Memory Flash check. It verifies Level 5 renders direct memory tiles and recall slots instead of `Flash` / `Hide` / choice buttons, hides the flash order during recall, dedupes touch-emulated mouse presses, clears cleanly, rejects a wrong row, and completes through Score Roastcard.
 
 `verify_issue_46_playtest_level_jump.gd` is the debug playtest access check. It verifies normal launch stays on the Level List while debug env `UQIQ_PLAYTEST_LEVEL=5` opens Level 5 directly without changing Local Profile unlock progression.
 
