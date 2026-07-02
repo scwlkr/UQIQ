@@ -360,12 +360,16 @@ func _add_level_row(parent: Node, level: Dictionary) -> void:
 
 	var button := _make_button(button_text, _level_button_color(level))
 	button.disabled = not is_playable
+	if is_playable:
+		_apply_button_frame(button, _level_button_color(level))
 	button.pressed.connect(Callable(self, "_show_play_screen").bind(level))
 	row.add_child(button)
 
-	var dur_button := _make_button("DUR", COLOR_ORANGE, Vector2(76, 58))
+	var dur_button := _make_button("DUR", COLOR_PANEL_ALT, Vector2(76, 58))
 	dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	dur_button.disabled = not _is_supported_playable_level_spec(level) or not _profile.can_spend_dur_token(level)
+	if not dur_button.disabled:
+		_apply_button_frame(dur_button, COLOR_ORANGE)
 	dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
 	row.add_child(dur_button)
 
@@ -473,9 +477,7 @@ func _show_play_screen(level: Dictionary) -> void:
 
 	var roast_button := _make_button("Roast", COLOR_PANEL_ALT, Vector2(148, 46))
 	roast_button.add_theme_color_override("font_color", COLOR_ORANGE)
-	roast_button.add_theme_stylebox_override("normal", _framed_box(COLOR_PANEL_ALT, COLOR_ORANGE, 8))
-	roast_button.add_theme_stylebox_override("hover", _framed_box(COLOR_PANEL_ALT.lightened(0.04), COLOR_ORANGE, 8))
-	roast_button.add_theme_stylebox_override("pressed", _framed_box(COLOR_PANEL_ALT.darkened(0.04), COLOR_ORANGE.darkened(0.08), 8))
+	_apply_button_frame(roast_button, COLOR_ORANGE)
 	roast_button.pressed.connect(Callable(self, "_handle_roast_action"))
 	actions.add_child(roast_button)
 
@@ -924,6 +926,12 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	button.button_up.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	button.mouse_exited.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	return button
+
+
+func _apply_button_frame(button: Button, accent: Color, fill: Color = COLOR_PANEL_ALT) -> void:
+	button.add_theme_stylebox_override("normal", _framed_box(fill, accent, 8))
+	button.add_theme_stylebox_override("hover", _framed_box(fill.lightened(0.04), accent, 8))
+	button.add_theme_stylebox_override("pressed", _framed_box(fill.darkened(0.04), accent.darkened(0.08), 8))
 
 
 func _render_level_stage(stage_box: VBoxContainer, level: Dictionary) -> void:
