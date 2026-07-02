@@ -1812,9 +1812,7 @@ func _flat_box(color: Color, radius: int) -> StyleBoxFlat:
 
 func _target_color(target: Dictionary) -> Color:
 	var role := str(target.get("role", "neutral"))
-	if role == "correct":
-		return COLOR_RED
-	if role == "decoy":
+	if role == "correct" or role == "decoy":
 		return COLOR_BLUE
 	return COLOR_PANEL_ALT
 
