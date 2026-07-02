@@ -712,6 +712,10 @@ func _handle_memory_choice(item_id: String) -> void:
 
 
 func _handle_memory_clear() -> void:
+	if _memory_input.is_empty():
+		_feedback_label.text = "Recall row ready."
+		return
+
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_memory_input = []
@@ -1794,10 +1798,15 @@ func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void
 			_mark_input_handled()
 			return
 		_hide_direct_memory_flash(_direct_memory_flash_generation)
-		_last_direct_memory_tile_id = "CLEAR"
+		var had_memory_input := not _memory_input.is_empty()
+		if had_memory_input:
+			_last_direct_memory_tile_id = "CLEAR"
 		if tile != null and is_instance_valid(tile):
 			_pulse_control(tile)
-			_apply_direct_selected_panel_style(tile)
+			if had_memory_input:
+				_apply_direct_selected_panel_style(tile)
+			else:
+				_apply_direct_base_panel_style(tile, COLOR_ORANGE)
 		_handle_memory_clear()
 		_update_memory_recall_slots()
 		_mark_input_handled()

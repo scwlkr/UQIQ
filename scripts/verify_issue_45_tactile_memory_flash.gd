@@ -71,6 +71,19 @@ func _verify_tactile_memory_flash() -> void:
 	var memory_after_cancel: Array = _main.get("_memory_input")
 	_require(memory_after_cancel.is_empty(), "Direct Memory Flash release outside should not add recall input.")
 
+	_press_clear_with_touch()
+	_require(int(_main.get("_tap_count")) == 0, "Direct Memory Flash empty clear should not spend an action.")
+	_require(str(_main.get("_last_direct_memory_tile_id")).is_empty(), "Direct Memory Flash empty clear should not record CLEAR as a tile.")
+	_require(_screen_has_label_text("Recall row ready."), "Direct Memory Flash empty clear should keep ready-state feedback.")
+
+	_press_tile_with_touch("SUN")
+	_press_clear_with_touch()
+	_require(int(_main.get("_tap_count")) == 2, "Direct Memory Flash non-empty clear should count as one action after one tile.")
+	_require(str(_main.get("_last_direct_memory_tile_id")) == "CLEAR", "Direct Memory Flash non-empty clear should record the CLEAR tile.")
+	var memory_after_clear: Array = _main.get("_memory_input")
+	_require(memory_after_clear.is_empty(), "Direct Memory Flash non-empty clear should reset recall input.")
+
+	_main.call("_show_play_screen", level)
 	_press_tiles_with_touch(["DUR", "SUN", "MOON"])
 	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong direct memory row should count one action per tile.")
@@ -126,6 +139,18 @@ func _cancel_tile_release_outside(item_id: String) -> void:
 		return
 	_main.call("_handle_direct_memory_tile_input", _screen_touch_event(true, _touch_position(tile)), item_id, tile)
 	_main.call("_handle_direct_memory_tile_input", _screen_touch_event(false, Vector2(-500, -500)), item_id, tile)
+
+
+func _press_clear_with_touch() -> void:
+	var tile := _node_named(_main, "memory_tile_clear") as Control
+	_require(tile != null, "Expected direct memory CLEAR tile.")
+	if _failed:
+		return
+	var touch_position := _touch_position(tile)
+	var tap_count_before_press := int(_main.get("_tap_count"))
+	_main.call("_handle_direct_memory_clear_input", _screen_touch_event(true, touch_position), tile)
+	_require(int(_main.get("_tap_count")) == tap_count_before_press, "Direct Memory Flash CLEAR press should preview without spending an action.")
+	_main.call("_handle_direct_memory_clear_input", _screen_touch_event(false, touch_position), tile)
 
 
 func _require_tile_label_fits(item_id: String) -> void:
