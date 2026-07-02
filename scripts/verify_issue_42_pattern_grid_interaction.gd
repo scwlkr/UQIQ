@@ -66,6 +66,7 @@ func _verify_direct_pattern_grid() -> void:
 	_require(int(_main.get("_tap_count")) == 3, "Wrong row should count one action per marked cell.")
 	var marked_after_wrong: Array = _main.get("_pattern_marked_cells")
 	_require(marked_after_wrong.is_empty(), "Wrong full Pattern Grid set should clear marks for a clean retry.")
+	_require(_pattern_cells_have_border(["r1c1", "r1c2", "r1c3"], Color(0.95, 0.22, 0.24)), "Wrong full Pattern Grid set should frame the rejected row as a fail state.")
 
 	_main.call("_show_play_screen", level)
 	_press_cells(["r2c1", "r2c2", "r2c3"])
@@ -82,6 +83,27 @@ func _press_cells(cell_ids: Array[String]) -> void:
 		if _failed:
 			return
 		button.emit_signal("pressed")
+
+
+func _pattern_cells_have_border(cell_ids: Array[String], expected_color: Color) -> bool:
+	for cell_id in cell_ids:
+		var button := _node_named(_main, "pattern_mark_cell_%s" % cell_id) as Button
+		_require(button != null, "Expected markable Pattern Grid cell %s." % cell_id)
+		if button == null:
+			return false
+		var border_color := _button_border_color(button)
+		if not border_color.is_equal_approx(expected_color):
+			_require(false, "Pattern Grid cell %s border %s should match %s." % [cell_id, border_color, expected_color])
+			return false
+	return true
+
+
+func _button_border_color(button: Button) -> Color:
+	var style := button.get_theme_stylebox("normal") as StyleBoxFlat
+	_require(style != null, "Expected framed Pattern Grid cell style.")
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
 
 
 func _level_by_number(level_number: int) -> Dictionary:

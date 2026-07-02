@@ -671,6 +671,8 @@ func _handle_pattern_submit() -> void:
 
 
 func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
+	if _pattern_marked_cells.is_empty():
+		_refresh_pattern_mark_styles()
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_pulse_control(button)
@@ -694,7 +696,11 @@ func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
 	var mark_count := int(_rules().get("mark_count", solution_cells.size()))
 	if mark_count > 0 and _pattern_marked_cells.size() >= mark_count:
 		_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
-		_clear_pattern_marks()
+		var failed_cells: Array[String] = []
+		for marked_cell in _pattern_marked_cells:
+			failed_cells.append(marked_cell)
+		_pattern_marked_cells = []
+		_apply_pattern_result_style(failed_cells, false)
 		_set_judge_state("fail")
 		_trigger_feedback("fail")
 
@@ -2545,10 +2551,23 @@ func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
 
 func _clear_pattern_marks() -> void:
 	_pattern_marked_cells = []
+	_refresh_pattern_mark_styles()
+
+
+func _refresh_pattern_mark_styles() -> void:
 	for cell_id in _pattern_cell_buttons.keys():
 		var button = _pattern_cell_buttons[cell_id] as Button
 		if button != null and is_instance_valid(button):
 			_apply_pattern_mark_style(str(cell_id), button)
+
+
+func _apply_pattern_result_style(cell_ids: Array[String], success: bool) -> void:
+	var color := COLOR_GREEN.darkened(0.16) if success else COLOR_RED.darkened(0.18)
+	var border_color := COLOR_GREEN if success else COLOR_RED
+	for cell_id in cell_ids:
+		var button = _pattern_cell_buttons.get(cell_id) as Button
+		if button != null and is_instance_valid(button):
+			_apply_pattern_button_style(button, color, border_color)
 
 
 func _apply_pattern_button_style(button: Button, color: Color, border_color: Color) -> void:
