@@ -1142,13 +1142,26 @@ func _render_pattern_grid(stage_box: VBoxContainer) -> void:
 func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 	_add_label(stage_box, _direct_pattern_prompt(), 17, COLOR_INK)
 
+	var surface := PanelContainer.new()
+	surface.name = "pattern_grid_surface"
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
+	stage_box.add_child(surface)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_right", 14)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	surface.add_child(margin)
+
 	var grid := GridContainer.new()
 	grid.name = "pattern_mark_grid"
 	grid.columns = int(_rules().get("columns", 3))
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
-	stage_box.add_child(grid)
+	margin.add_child(grid)
 
 	var cells = _rules().get("cells", [])
 	if typeof(cells) == TYPE_ARRAY:

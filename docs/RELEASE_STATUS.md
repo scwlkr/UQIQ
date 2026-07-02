@@ -73,6 +73,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Twenty-fifth local polish loop shifted shared play surfaces from tan paper to a cooler app-integrated palette; screenshots refreshed and full verification floor passed again.
 - Twenty-sixth local polish loop made screen transitions fade in more visibly while skipping animation during screenshot capture; screenshot capture stayed stable and full verification floor passed again.
 - Twenty-seventh local polish loop framed Drag Logic drop zones to match draggable tiles and sharpen hover target feedback; Drag Logic screenshot refreshed and full verification floor passed again.
+- Twenty-eighth local polish loop wrapped direct Pattern Grid cells in the shared playfield surface so every direct interaction mode uses the same target stage language; Pattern Grid screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
