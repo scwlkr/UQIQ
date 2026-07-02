@@ -155,12 +155,14 @@ func _verify_direct_physics_draw() -> void:
 	_require(int(_main.get("_tap_count")) == 0, "A tiny Physics Draw stroke should not spend an action.")
 	_require(not _profile.is_level_completed(level_id), "A tiny Physics Draw stroke should not complete Level 6.")
 	_require(_screen_has_label_text("Line too short."), "A tiny Physics Draw stroke should ask for a longer line.")
+	_require(_physics_surface_failure_pulse_count() > 0, "A tiny Physics Draw stroke should pulse the draw surface as failed feedback.")
 
 	_draw_curved_line_on_surface(Vector2(48, 220), [Vector2(-120, 360), Vector2(500, -80)], Vector2(260, 220))
 	_require(str(_main.get("_last_physics_result")) == "fail", "A wrong curved Physics Draw stroke should fail without completing.")
 	_require(_drawn_line_point_count() >= 4, "Physics Draw should preserve a multi-point finger path instead of snapping to start/end.")
 	_require(_drawn_line_points_inside_surface(), "Physics Draw should clamp off-surface finger movement inside the playfield.")
 	_require(_player_line_color().is_equal_approx(Color(0.95, 0.22, 0.24)), "A wrong Physics Draw stroke should color the player line as failure.")
+	_require(_physics_surface_failure_pulse_count() > 1, "A wrong curved Physics Draw stroke should pulse the draw surface as failed feedback.")
 	_require(not _profile.is_level_completed(level_id), "A wrong curved Physics Draw stroke should not complete Level 6.")
 
 	_main.call("_show_play_screen", level)
@@ -334,6 +336,14 @@ func _player_line_color() -> Color:
 	if line == null:
 		return Color.TRANSPARENT
 	return line.default_color
+
+
+func _physics_surface_failure_pulse_count() -> int:
+	var surface := _node_named(_main, "physics_draw_surface") as Control
+	_require(surface != null, "Expected Physics Draw surface.")
+	if surface == null:
+		return 0
+	return int(surface.get_meta("failure_pulse_count", 0))
 
 
 func _physics_hint_is_secondary() -> bool:

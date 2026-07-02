@@ -791,6 +791,7 @@ func _resolve_physics_release(count_action: bool) -> void:
 	_last_physics_result = "fail"
 	_set_physics_line_color(COLOR_RED)
 	_update_physics_result_label(false)
+	_pulse_physics_surface_failure()
 	_feedback_label.text = _first_roast("failure", "The ball saw your line and requested a different universe.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -2178,7 +2179,14 @@ func _cancel_short_physics_stroke() -> void:
 	_physics_draw_points = PackedVector2Array()
 	_clear_physics_line()
 	_update_physics_choice_label()
+	_pulse_physics_surface_failure()
 	_feedback_label.text = "Line too short."
+
+
+func _pulse_physics_surface_failure() -> void:
+	if _physics_draw_surface == null or not is_instance_valid(_physics_draw_surface):
+		return
+	_failure_pulse_control(_physics_draw_surface, 0.985, 0.04)
 
 
 func _classify_physics_line(start: Vector2, end: Vector2) -> String:
