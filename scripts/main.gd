@@ -22,6 +22,7 @@ const PLAYTEST_LEVEL_ENV := "UQIQ_PLAYTEST_LEVEL"
 const PLAYTEST_UNLOCK_ALL_ENV := "UQIQ_PLAYTEST_UNLOCK_ALL"
 const SCREENSHOT_CAPTURE_ENV := "UQIQ_SCREENSHOT_CAPTURE"
 const FEEDBACK_MIX_RATE := 22050.0
+const MIN_DRAG_DROP_OVERLAP_RATIO := 0.28
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
 	"Drag Logic",
@@ -1785,16 +1786,26 @@ func _drop_target_for_released_tile(canvas_position: Vector2, tile: Control) -> 
 	var tile_rect := tile.get_global_rect()
 	var best_target_id := ""
 	var best_overlap_area := 0.0
+	var best_target_area := 0.0
 	for target_id in _drag_drop_zones.keys():
 		var zone = _drag_drop_zones[target_id] as Control
 		if zone == null or not is_instance_valid(zone):
 			continue
 
-		var overlap_area := _rect_overlap_area(tile_rect, zone.get_global_rect())
+		var zone_rect := zone.get_global_rect()
+		var overlap_area := _rect_overlap_area(tile_rect, zone_rect)
 		if overlap_area > best_overlap_area:
 			best_overlap_area = overlap_area
 			best_target_id = str(target_id)
+			best_target_area = zone_rect.size.x * zone_rect.size.y
 
+	if best_target_id.is_empty():
+		return ""
+
+	var tile_area := tile_rect.size.x * tile_rect.size.y
+	var required_overlap := minf(tile_area, best_target_area) * MIN_DRAG_DROP_OVERLAP_RATIO
+	if best_overlap_area < required_overlap:
+		return ""
 	return best_target_id
 
 

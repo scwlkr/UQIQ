@@ -65,6 +65,12 @@ func _verify_direct_drag_drop() -> void:
 	_require(not _screen_has_label_text("word_right"), "Direct Drag Logic miss feedback should not leak internal object ids.")
 
 	_main.call("_show_play_screen", level)
+	_release_tile_with_tiny_overlap("word_right", "confidence_box")
+	_require(not _profile.is_level_completed(level_id), "Tiny edge overlap with pointer outside should not count as a drop.")
+	_require(str(_main.get("_last_drag_drop_target_id")).is_empty(), "Tiny edge overlap should leave the drop target empty.")
+	_require(_screen_has_label_text("RIGHT missed every box."), "Tiny edge overlap should fall back to miss feedback.")
+
+	_main.call("_show_play_screen", level)
 	_drag_tile_to_zone("word_right", "confidence_box")
 	_require(not _profile.is_level_completed(level_id), "Wrong direct drag/drop should not complete Level 2.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
@@ -136,6 +142,22 @@ func _release_overlapping_tile_with_bad_pointer(object_id: String, target_id: St
 	var press := _mouse_button_event(Vector2(12, 12), true)
 	_main.call("_handle_drag_tile_input", press, object_id, tile)
 	tile.position = zone.position
+	tile.move_to_front()
+	var release := _mouse_button_event(Vector2(-500, -500), false)
+	_main.call("_handle_drag_tile_input", release, object_id, tile)
+
+
+func _release_tile_with_tiny_overlap(object_id: String, target_id: String) -> void:
+	var tile := _node_named(_main, "drag_tile_%s" % object_id) as Control
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(tile != null, "Expected draggable tile for %s." % object_id)
+	_require(zone != null, "Expected drop zone for %s." % target_id)
+	if _failed:
+		return
+
+	var press := _mouse_button_event(Vector2(12, 12), true)
+	_main.call("_handle_drag_tile_input", press, object_id, tile)
+	tile.position = zone.position + Vector2(zone.size.x - 2.0, 0.0)
 	tile.move_to_front()
 	var release := _mouse_button_event(Vector2(-500, -500), false)
 	_main.call("_handle_drag_tile_input", release, object_id, tile)

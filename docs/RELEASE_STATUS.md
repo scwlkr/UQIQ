@@ -104,6 +104,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Fifty-sixth local polish loop changed Drag Logic feedback to use visible tile and box labels instead of internal ids like `word_wrong`; focused drag checks and the full verification floor passed again.
 - Fifty-seventh local polish loop changed direct playfield captions from repeated instructions into concise in-world state labels (`Evidence board`, `Loose claims`, `Receipt hidden`, `Ramp sketch`); focused tactile checks and the full verification floor passed again.
 - Fifty-eighth local polish loop changed direct-surface idle feedback from negative `No ...` states into positive ready states (`Scene waiting`, `Tile ready`, `Answer slot ready`, `Grid unmarked`, `Recall row ready`, `Line ready`); focused tactile checks and the full verification floor passed again.
+- Fifty-ninth local polish loop tightened Drag Logic drop hit-testing so pointer-outside releases need meaningful tile/zone overlap instead of accepting tiny edge clips; focused drag checks and the full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
