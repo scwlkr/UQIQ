@@ -627,8 +627,7 @@ func _resolve_text_answer(raw_answer: String) -> void:
 		_complete_current_level()
 		return
 
-	if _text_input != null and is_instance_valid(_text_input):
-		_shake_control(_text_input)
+	_prepare_text_retry_feedback()
 	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -645,6 +644,15 @@ func _is_text_answer_correct(raw_answer: String) -> bool:
 
 	var solution := _solution()
 	return answer == _normalize_answer(str(solution.get("answer", "")))
+
+
+func _prepare_text_retry_feedback() -> void:
+	if _text_input == null or not is_instance_valid(_text_input):
+		return
+	_text_input.select_all()
+	if _text_input.is_inside_tree():
+		_text_input.grab_focus()
+	_shake_control(_text_input)
 
 
 func _handle_text_submitted(_submitted_text: String) -> void:

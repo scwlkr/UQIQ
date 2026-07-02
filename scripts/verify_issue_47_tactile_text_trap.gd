@@ -122,6 +122,7 @@ func _verify_typed_text_trap_focus_and_fail_motion() -> void:
 	_main.call("_handle_text_submit")
 	_require(not _profile.is_level_completed(level_id), "Wrong typed Text Trap submit should not complete Level 9.")
 	_require(_failure_shake_count(input) > 0, "Wrong typed Text Trap submit should shake the text field.")
+	_require(input.get_selected_text() == "landscape", "Wrong typed Text Trap submit should select the bad text for quick replacement.")
 
 	input.text = "portrait"
 	_main.call("_handle_text_submit")
