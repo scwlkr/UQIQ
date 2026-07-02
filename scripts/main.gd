@@ -666,6 +666,7 @@ func _handle_pattern_mark_cell(cell_id: String, button: Button) -> void:
 	var mark_count := int(_rules().get("mark_count", solution_cells.size()))
 	if mark_count > 0 and _pattern_marked_cells.size() >= mark_count:
 		_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
+		_clear_pattern_marks()
 		_set_judge_state("fail")
 		_trigger_feedback("fail")
 
@@ -2315,6 +2316,14 @@ func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
 	var color := COLOR_YELLOW.darkened(0.16) if is_marked else COLOR_PANEL_ALT
 	var border_color := COLOR_YELLOW if is_marked else COLOR_BLUE
 	_apply_pattern_button_style(button, color, border_color)
+
+
+func _clear_pattern_marks() -> void:
+	_pattern_marked_cells = []
+	for cell_id in _pattern_cell_buttons.keys():
+		var button = _pattern_cell_buttons[cell_id] as Button
+		if button != null and is_instance_valid(button):
+			_apply_pattern_mark_style(str(cell_id), button)
 
 
 func _apply_pattern_button_style(button: Button, color: Color, border_color: Color) -> void:

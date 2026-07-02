@@ -55,6 +55,8 @@ func _verify_direct_pattern_grid() -> void:
 	_press_cells(["r1c1", "r1c2", "r1c3"])
 	_require(not _profile.is_level_completed(level_id), "Wrong marked row should not complete Level 4.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong row should count one action per marked cell.")
+	var marked_after_wrong: Array = _main.get("_pattern_marked_cells")
+	_require(marked_after_wrong.is_empty(), "Wrong full Pattern Grid set should clear marks for a clean retry.")
 
 	_main.call("_show_play_screen", level)
 	_press_cells(["r2c1", "r2c2", "r2c3"])
