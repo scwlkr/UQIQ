@@ -1271,7 +1271,10 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false, tile
 	tile.size = tile_size
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
-	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_ORANGE if is_clear else COLOR_BLUE, 8))
+	tile.add_theme_stylebox_override(
+		"panel",
+		_framed_box(COLOR_PANEL_ALT, COLOR_ORANGE if is_clear else COLOR_BLUE, 8)
+	)
 	if is_clear:
 		tile.gui_input.connect(Callable(self, "_handle_direct_memory_clear_input").bind(tile))
 	else:
@@ -1473,7 +1476,7 @@ func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
 	tile.set_meta("token_id", tile_id)
-	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
+	tile.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
 	tile.gui_input.connect(Callable(self, "_handle_direct_text_tile_input").bind(
 		tile_id,
 		str(tile_data.get("answer", tile_data.get("label", ""))),
@@ -1487,6 +1490,8 @@ func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
 	tile.add_child(box)
 
 	var action_label := _new_label("TAP", 10, COLOR_MUTED)
+	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(action_label)
 
