@@ -4,12 +4,12 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; tiny TestFlight beta instructions are the active slice.
+Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; release-candidate verification floor is the active slice.
 
 ## Active Next Step
 
-- GitHub issue: [#32 Tiny TestFlight beta instructions](https://github.com/scwlkr/UQIQ/issues/32)
-- Branch: `codex/issue-32-testflight-beta-instructions`
+- GitHub issue: [#33 Release-candidate verification floor](https://github.com/scwlkr/UQIQ/issues/33)
+- Branch: `codex/issue-33-rc-verification-floor`
 
 ## Latest Proof
 
@@ -26,6 +26,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; tiny Te
 - Privacy/support page draft added: `docs/PRIVACY_SUPPORT_PAGE_DRAFT.md`.
 - Draft App Store screenshots added under `docs/app-store/screenshots/`; icon proof confirms `assets/icons/ios/app_store_1024x1024.png` is 1024x1024.
 - Tiny TestFlight beta instructions added: `docs/TESTFLIGHT_BETA_DRAFT.md`.
+- Release-candidate floor passed: README verification commands through `verify_issue_23_ui_readability.gd`, plus screenshot capture rerun.
 - Physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
 - `com.wlkrlabs.uqiq` device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png`.
 - Device smoke covered 60-spec load, isolated Local Profile, Level List, Play -> Score Roastcard, save/load, Dur spend/recovery, and no launch crash.
@@ -36,7 +37,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; tiny Te
 - Issue #19 scoring/Roastcard slice closed with proof: `90c2cec`.
 - Polish Pass PRD added for next slices: `69f0cdf`.
 - Latest full floor passed through `verify_issue_23_ui_readability.gd`.
-- GitHub `next-step` label points to issue #32.
+- GitHub `next-step` label points to issue #33.
 
 ## Known Blockers
 
@@ -44,4 +45,4 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; tiny Te
 
 ## Next Gate Needing scwlkr
 
-Finish tiny beta instructions; external beta still needs scwlkr tester list, support email, and approval for a non-internal build/Beta App Review.
+Finish RC verification proof; external beta still needs scwlkr tester list, support email, and approval for a non-internal build/Beta App Review.
