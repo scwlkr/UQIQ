@@ -17,6 +17,7 @@ const COLOR_TEXT := Color(0.98, 0.98, 0.96)
 const COLOR_MUTED := Color(0.73, 0.75, 0.76)
 const DEVICE_SMOKE_ARG := "--uqiq-device-smoke"
 const DEVICE_SMOKE_ENV := "UQIQ_DEVICE_SMOKE"
+const PLAYTEST_LEVEL_ENV := "UQIQ_PLAYTEST_LEVEL"
 const FEEDBACK_MIX_RATE := 22050.0
 const SUPPORTED_LEVEL_TEMPLATES := [
 	"Tap Logic",
@@ -84,6 +85,8 @@ func _ready() -> void:
 	_show_level_list()
 	if _should_run_device_smoke():
 		call_deferred("_run_device_smoke")
+	elif _debug_playtest_level_number() > 0:
+		call_deferred("_show_playtest_level_from_env")
 
 
 func _should_run_device_smoke() -> bool:
@@ -97,6 +100,30 @@ func _should_run_device_smoke() -> bool:
 func _run_device_smoke() -> void:
 	var runner = DeviceSmokeRunnerScript.new()
 	_show_device_smoke_result(runner.run(self))
+
+
+func _debug_playtest_level_number() -> int:
+	if not OS.is_debug_build():
+		return 0
+
+	var value := OS.get_environment(PLAYTEST_LEVEL_ENV).strip_edges()
+	if value.is_empty():
+		return 0
+	return max(0, int(value))
+
+
+func _show_playtest_level_from_env() -> void:
+	var level_number := _debug_playtest_level_number()
+	if level_number <= 0:
+		return
+
+	var level := _loader.find_level_by_number(_pack, level_number)
+	if level.is_empty():
+		_level_list_notice = "Playtest Level %02d not found." % level_number
+		_show_level_list()
+		return
+
+	_show_play_screen(level)
 
 
 func _show_device_smoke_result(result: Dictionary) -> void:
@@ -1076,8 +1103,8 @@ func _render_memory_recall_slots(surface: Control) -> void:
 	for index in range(sequence.size()):
 		var slot := PanelContainer.new()
 		slot.name = "memory_recall_slot_%d" % index
-		slot.position = Vector2(20 + (index * 104), 70)
-		slot.size = Vector2(88, 70)
+		slot.position = Vector2(18 + (index * 102), 70)
+		slot.size = Vector2(96, 70)
 		slot.custom_minimum_size = slot.size
 		slot.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
 		surface.add_child(slot)
@@ -1100,15 +1127,15 @@ func _render_memory_tile_bank(surface: Control) -> void:
 
 	var clear_tile := _make_memory_tile("CLEAR", 0, true)
 	clear_tile.name = "memory_tile_clear"
-	clear_tile.position = Vector2(20, 242)
+	clear_tile.position = Vector2(18, 242)
 	surface.add_child(clear_tile)
 
 
 func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> PanelContainer:
 	var tile := PanelContainer.new()
 	tile.name = "memory_tile_%s" % item_id.to_lower()
-	tile.position = Vector2(20 + (index * 104), 164)
-	tile.size = Vector2(88, 62)
+	tile.position = Vector2(18 + (index * 102), 164)
+	tile.size = Vector2(96, 62)
 	tile.custom_minimum_size = tile.size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
 	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_ORANGE if is_clear else COLOR_BLUE, 8))
@@ -1117,8 +1144,10 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> P
 	else:
 		tile.gui_input.connect(Callable(self, "_handle_direct_memory_tile_input").bind(item_id, tile))
 
-	var label := _new_label(item_id, 19, COLOR_TEXT)
+	var label := _new_label(item_id, 18 if is_clear else 17, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tile.add_child(label)
 	return tile

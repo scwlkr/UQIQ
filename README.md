@@ -150,6 +150,7 @@ godot --headless --path . --script res://scripts/verify_issue_41_pack_6_direct_d
 godot --headless --path . --script res://scripts/verify_issue_42_pattern_grid_interaction.gd
 godot --headless --path . --script res://scripts/verify_issue_43_tactile_tap_logic.gd
 godot --headless --path . --script res://scripts/verify_issue_45_tactile_memory_flash.gd
+godot --headless --path . --script res://scripts/verify_issue_46_playtest_level_jump.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -200,6 +201,8 @@ godot --headless --path . --script res://scripts/verify_issue_45_tactile_memory_
 
 `verify_issue_45_tactile_memory_flash.gd` is the tactile Memory Flash check. It verifies Level 5 renders direct memory tiles and recall slots instead of `Flash` / `Hide` / choice buttons, rejects a wrong row, accepts mouse/touch-shaped input, and completes through Score Roastcard.
 
+`verify_issue_46_playtest_level_jump.gd` is the debug playtest access check. It verifies normal launch stays on the Level List while debug env `UQIQ_PLAYTEST_LEVEL=5` opens Level 5 directly without changing Local Profile unlock progression.
+
 ## Desktop Smoke
 
 Manual smoke:
@@ -243,6 +246,7 @@ Useful overrides:
 
 ```sh
 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_43_tactile_tap_logic.gd scripts/deploy_phone.sh
+UQIQ_PLAYTEST_LEVEL=5 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_45_tactile_memory_flash.gd scripts/deploy_phone.sh
 UQIQ_DEVICE_ID=9820C039-3903-5542-9D4A-388ED65AEFDE scripts/deploy_phone.sh
 UQIQ_XCODE_DEVICE_ID=00008150-001435EA1480401C scripts/deploy_phone.sh
 UQIQ_BUILD_NUMBER=3 scripts/deploy_phone.sh

@@ -8,8 +8,8 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Active Next Step
 
-- GitHub issue: [#45 Build tactile Memory Flash prototype](https://github.com/scwlkr/UQIQ/issues/45)
-- Branch: `codex/issue-45-tactile-memory-flash`
+- GitHub issue: [#46 Add debug phone playtest level jump](https://github.com/scwlkr/UQIQ/issues/46)
+- Branch: `codex/issue-46-playtest-level-jump`
 
 ## Current Gameplay Proof
 
@@ -29,6 +29,9 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - `verify_issue_45_tactile_memory_flash.gd` passed locally.
 - Full README verification floor passed through `verify_issue_45_tactile_memory_flash.gd`.
 - #45 phone deploy passed: installed/launched UQIQ `0.1.1 (20260701225006)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701225006.png`.
+- `verify_issue_46_playtest_level_jump.gd` passed locally.
+- Full README verification floor passed through `verify_issue_46_playtest_level_jump.gd`.
+- #46 phone deploy passed with `UQIQ_PLAYTEST_LEVEL=5`: installed/launched UQIQ `0.1.1 (20260701225719)` and saved `/tmp/uqiq-ios-quick/uqiq-phone-20260701225719.png`.
 
 ## Known Blockers
 
@@ -37,4 +40,4 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Next Gate
 
-Close #45 with proof, then route the next `next-step` to direct phone playtest access for target mechanics.
+Close #46 with proof, then route the next `next-step` to the next tactile gameplay prototype.
