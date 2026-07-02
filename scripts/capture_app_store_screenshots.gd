@@ -37,8 +37,9 @@ func _initialize() -> void:
 	await _capture_play_screen("04_memory_flash.png", 41)
 	await _capture_play_screen("05_physics_draw.png", 51)
 	await _capture_score_roastcard()
+	await _capture_play_screen("07_drag_logic.png", 2)
 
-	print("App Store screenshot capture passed: wrote 6 draft screenshots to %s." % ProjectSettings.globalize_path(OUTPUT_DIR))
+	print("App Store screenshot capture passed: wrote 7 draft screenshots to %s." % ProjectSettings.globalize_path(OUTPUT_DIR))
 	_finish()
 
 

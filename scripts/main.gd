@@ -1013,7 +1013,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 				continue
 
 			var tile := _make_drag_tile(object)
-			tile.position = Vector2(20, 58 + (index * 78))
+			tile.position = Vector2(18, 62 + (index * 82))
 			playfield.add_child(tile)
 
 	var targets = _rules().get("drop_targets", [])
@@ -1024,7 +1024,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 				continue
 
 			var zone := _make_drop_zone(target)
-			zone.position = Vector2(190, 58 + (index * 88))
+			zone.position = Vector2(176, 62 + (index * 88))
 			playfield.add_child(zone)
 			_drag_drop_zones[str(target.get("id", ""))] = zone
 
@@ -1500,7 +1500,7 @@ func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
 func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	var tile := PanelContainer.new()
 	tile.name = "drag_tile_%s" % str(object.get("id", "object"))
-	tile.custom_minimum_size = Vector2(136, 62)
+	tile.custom_minimum_size = Vector2(126, 64)
 	tile.size = tile.custom_minimum_size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
 	tile.add_theme_stylebox_override("panel", _flat_box(_concealed_play_piece_color(object), 8))
@@ -1514,11 +1514,15 @@ func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	tile.add_child(box)
 
 	var action_label := _new_label("DRAG", 10, COLOR_MUTED)
+	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(action_label)
 
 	var label := _new_label(str(object.get("label", "Object")), 21, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(label)
 	return tile
@@ -1527,7 +1531,7 @@ func _make_drag_tile(object: Dictionary) -> PanelContainer:
 func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	var zone := PanelContainer.new()
 	zone.name = "drop_zone_%s" % str(target.get("id", "target"))
-	zone.custom_minimum_size = Vector2(150, 72)
+	zone.custom_minimum_size = Vector2(132, 74)
 	zone.size = zone.custom_minimum_size
 	zone.mouse_filter = Control.MOUSE_FILTER_PASS
 	zone.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
@@ -1540,10 +1544,12 @@ func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	zone.add_child(box)
 
 	var action_label := _new_label("DROP", 10, COLOR_MUTED)
+	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(action_label)
 
-	var label := _new_label(str(target.get("label", "Target")), 17, COLOR_TEXT)
+	var label := _new_label(str(target.get("label", "Target")), 15, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(label)
