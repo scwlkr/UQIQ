@@ -2122,10 +2122,13 @@ func _update_physics_result_label(success: bool) -> void:
 
 
 func _set_judge_state(state: String) -> void:
+	var changed := state != _judge_state
 	_judge_state = state
 	_judge_state_counts[state] = int(_judge_state_counts.get(state, 0)) + 1
 	if _judge_face_label != null and is_instance_valid(_judge_face_label):
 		_judge_face_label.text = _judge_face_text(state)
+		if changed:
+			_pulse_control(_judge_face_label, 0.90, 0.05)
 	if _judge_caption_label != null and is_instance_valid(_judge_caption_label):
 		_judge_caption_label.text = _judge_caption_text(state)
 

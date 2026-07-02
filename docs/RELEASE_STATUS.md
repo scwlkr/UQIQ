@@ -49,6 +49,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Windowed Godot screenshot capture passed and refreshed `docs/app-store/screenshots/01_level_list.png` through `06_score_roastcard.png`.
 - Second local polish loop compacted app chrome, added press/drag/release motion feedback, refreshed screenshots, and re-ran the full verification floor with Godot error-log scanning.
 - Third local polish loop added live Drag Logic drop-zone hover feedback, snap-to-zone release motion, and verifier assertions for hover clearing; full verification floor passed again.
+- Fourth local polish loop added Judge Face reaction pulse on visible state changes; focused transition/feedback checks and the full verification floor passed again.
 - Physical phone deploy attempted for this pass, but `scripts/deploy_phone.sh` stopped before build/install because `17 Hoe Max` was paired but `devicectl` reported `tunnelState=disconnected`.
 
 ## Known Blockers
