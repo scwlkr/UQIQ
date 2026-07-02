@@ -153,6 +153,7 @@ godot --headless --path . --script res://scripts/verify_issue_45_tactile_memory_
 godot --headless --path . --script res://scripts/verify_issue_46_playtest_level_jump.gd
 godot --headless --path . --script res://scripts/verify_issue_47_tactile_text_trap.gd
 godot --headless --path . --script res://scripts/verify_issue_48_debug_playtest_all.gd
+godot --headless --path . --script res://scripts/verify_issue_51_scorecard_safe_area.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -208,6 +209,8 @@ godot --headless --path . --script res://scripts/verify_issue_48_debug_playtest_
 `verify_issue_47_tactile_text_trap.gd` is the tactile Text Trap check. It verifies Level 3 renders direct word tiles and an answer slot instead of a `LineEdit` / `Submit` flow, rejects a wrong tile, and completes through Score Roastcard from a direct tile tap.
 
 `verify_issue_48_debug_playtest_all.gd` is the debug all-level phone playtest check. It verifies normal launch keeps later Levels locked, debug env `UQIQ_PLAYTEST_UNLOCK_ALL=1` makes supported Levels playable from the Level List without mutating Local Profile progression, and `UQIQ_PLAYTEST_LEVEL` still opens a target Level directly.
+
+`verify_issue_51_scorecard_safe_area.gd` is the Score Roastcard safe-area and continuation check. It verifies notched-phone margin math, Level 01 completion to Next Level, later Pack 1 completion back to Level List, and score/profile persistence.
 
 ## Desktop Smoke
 

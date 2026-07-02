@@ -15,6 +15,8 @@ const COLOR_BLUE := Color(0.12, 0.58, 0.92)
 const COLOR_ORANGE := Color(0.96, 0.43, 0.13)
 const COLOR_TEXT := Color(0.98, 0.98, 0.96)
 const COLOR_MUTED := Color(0.73, 0.75, 0.76)
+const SCREEN_MARGIN_X := 20
+const SCREEN_MARGIN_Y := 22
 const DEVICE_SMOKE_ARG := "--uqiq-device-smoke"
 const DEVICE_SMOKE_ENV := "UQIQ_DEVICE_SMOKE"
 const PLAYTEST_LEVEL_ENV := "UQIQ_PLAYTEST_LEVEL"
@@ -714,6 +716,7 @@ func _show_score_roastcard() -> void:
 			int(_profile.data.get("unlocked_level", 1)),
 			_profile.current_uqiq_score(),
 		], COLOR_GREEN)
+	_add_score_roastcard_actions(root)
 
 	var card := PanelContainer.new()
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -747,18 +750,38 @@ func _show_score_roastcard() -> void:
 	_add_label(card_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 20, COLOR_TEXT)
 	_add_label(card_box, str(_current_level.get("uqiq_moment", "")), 17, COLOR_MUTED)
 
+
+func _add_score_roastcard_actions(parent: Node) -> HBoxContainer:
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.add_theme_constant_override("separation", 10)
-	root.add_child(actions)
+	parent.add_child(actions)
 
 	var replay_button := _make_button("Replay", COLOR_BLUE)
 	replay_button.pressed.connect(Callable(self, "_show_play_screen").bind(_current_level))
 	actions.add_child(replay_button)
 
+	var next_level := _next_level_after_current()
+	if not next_level.is_empty():
+		var next_button := _make_button("Next Level", COLOR_GREEN)
+		next_button.pressed.connect(Callable(self, "_show_play_screen").bind(next_level))
+		actions.add_child(next_button)
+
 	var list_button := _make_button("Level List", COLOR_GREEN)
 	list_button.pressed.connect(Callable(self, "_show_level_list"))
 	actions.add_child(list_button)
+	return actions
+
+
+func _next_level_after_current() -> Dictionary:
+	var current_level_number := int(_current_level.get("level_number", 0))
+	if current_level_number <= 0:
+		return {}
+
+	var next_level := _loader.find_level_by_number(_pack, current_level_number + 1)
+	if next_level.is_empty() or not _is_level_playable(next_level):
+		return {}
+	return next_level
 
 
 func _make_screen(background_color: Color, transition_name: String = "", use_scroll: bool = false) -> VBoxContainer:
@@ -783,26 +806,72 @@ func _make_screen(background_color: Color, transition_name: String = "", use_scr
 		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 		add_child(scroll)
 
+		var margins := _screen_margins()
 		var margin := MarginContainer.new()
 		margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		margin.add_theme_constant_override("margin_left", 20)
-		margin.add_theme_constant_override("margin_top", 22)
-		margin.add_theme_constant_override("margin_right", 20)
-		margin.add_theme_constant_override("margin_bottom", 22)
+		margin.add_theme_constant_override("margin_left", int(margins.get("left", SCREEN_MARGIN_X)))
+		margin.add_theme_constant_override("margin_top", int(margins.get("top", SCREEN_MARGIN_Y)))
+		margin.add_theme_constant_override("margin_right", int(margins.get("right", SCREEN_MARGIN_X)))
+		margin.add_theme_constant_override("margin_bottom", int(margins.get("bottom", SCREEN_MARGIN_Y)))
 		scroll.add_child(margin)
 
 		root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		margin.add_child(root)
 	else:
+		var margins := _screen_margins()
 		root.set_anchors_preset(Control.PRESET_FULL_RECT)
-		root.offset_left = 20
-		root.offset_top = 22
-		root.offset_right = -20
-		root.offset_bottom = -22
+		root.offset_left = int(margins.get("left", SCREEN_MARGIN_X))
+		root.offset_top = int(margins.get("top", SCREEN_MARGIN_Y))
+		root.offset_right = -int(margins.get("right", SCREEN_MARGIN_X))
+		root.offset_bottom = -int(margins.get("bottom", SCREEN_MARGIN_Y))
 		add_child(root)
 	root.add_theme_constant_override("separation", 14)
 	_apply_screen_transition(root, transition_name)
 	return root
+
+
+func _screen_margins() -> Dictionary:
+	var viewport_size := Vector2(
+		float(ProjectSettings.get_setting("display/window/size/viewport_width", 390)),
+		float(ProjectSettings.get_setting("display/window/size/viewport_height", 844))
+	)
+	var viewport := get_viewport()
+	if viewport != null:
+		viewport_size = viewport.get_visible_rect().size
+
+	return _screen_margins_for_safe_area(
+		DisplayServer.get_display_safe_area(),
+		DisplayServer.screen_get_size(),
+		viewport_size
+	)
+
+
+func _screen_margins_for_safe_area(safe_area: Rect2i, screen_size: Vector2i, viewport_size: Vector2) -> Dictionary:
+	var insets := _safe_area_insets_for_rect(safe_area, screen_size, viewport_size)
+	return {
+		"left": SCREEN_MARGIN_X + int(insets.get("left", 0)),
+		"top": SCREEN_MARGIN_Y + int(insets.get("top", 0)),
+		"right": SCREEN_MARGIN_X + int(insets.get("right", 0)),
+		"bottom": SCREEN_MARGIN_Y + int(insets.get("bottom", 0)),
+	}
+
+
+func _safe_area_insets_for_rect(safe_area: Rect2i, screen_size: Vector2i, viewport_size: Vector2) -> Dictionary:
+	if safe_area.size.x <= 0 or safe_area.size.y <= 0:
+		return {"left": 0, "top": 0, "right": 0, "bottom": 0}
+	if screen_size.x <= 0 or screen_size.y <= 0 or viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return {"left": 0, "top": 0, "right": 0, "bottom": 0}
+
+	var scale_x := viewport_size.x / float(screen_size.x)
+	var scale_y := viewport_size.y / float(screen_size.y)
+	var safe_right := safe_area.position.x + safe_area.size.x
+	var safe_bottom := safe_area.position.y + safe_area.size.y
+	return {
+		"left": int(round(maxf(float(safe_area.position.x), 0.0) * scale_x)),
+		"top": int(round(maxf(float(safe_area.position.y), 0.0) * scale_y)),
+		"right": int(round(maxf(float(screen_size.x - safe_right), 0.0) * scale_x)),
+		"bottom": int(round(maxf(float(screen_size.y - safe_bottom), 0.0) * scale_y)),
+	}
 
 
 func _elapsed_level_seconds() -> float:
