@@ -21,8 +21,8 @@ Status: Internal-only. scwlkr is the only tester until UQIQ is more advanced.
    - Keep feedback private/local unless scwlkr asks to publish details.
 
 3. Scorecard and long-screen fit
-   - Draft App Store screenshot review showed useful Score Roastcard content, but lower content can be clipped in static full-screen captures.
-   - Verify whether real play needs scrolling/fitting improvements before final screenshots.
+   - Done: content-heavy play screens and Score Roastcard now use portrait scroll containers.
+   - Done: `verify_issue_38_long_screen_fit.gd` covers lower actions/content access.
 
 4. Final screenshot polish
    - Current screenshots are draft local captures resized to 6.9-inch portrait dimensions.

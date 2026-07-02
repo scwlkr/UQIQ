@@ -161,7 +161,7 @@ Draft App Store screenshot set:
 
 Still needed before submission:
 
-- Review or replace draft screenshots before upload; Scorecard and Physics Draw drafts show useful content but clip lower page content.
+- Review or replace draft screenshots before upload; Scorecard and content-heavy play screens are now scrollable, but static screenshots still show only the current scroll position.
 - Capture final App Store screenshots from the release/TestFlight build in the intended portrait presentation if scwlkr wants device-native assets instead of local draft captures.
 - Recommended set: Level List, Level 01 play, a Pattern Grid level, a Memory Flash level, a Physics Draw level, and Score Roastcard.
 - Verify whether App Store Connect accepts only the 6.9-inch iPhone set for this phone-only app, or whether it asks for additional sizes in the current app record.

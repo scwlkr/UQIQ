@@ -4,12 +4,12 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; internal playtest notes template is the active slice.
+Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; long-screen fit is the active slice.
 
 ## Active Next Step
 
-- GitHub issue: [#37 Internal playtest notes template](https://github.com/scwlkr/UQIQ/issues/37)
-- Branch: `codex/issue-37-internal-playtest-template`
+- GitHub issue: [#38 Score Roastcard and long-screen fit](https://github.com/scwlkr/UQIQ/issues/38)
+- Branch: `codex/issue-38-long-screen-fit`
 
 ## Latest Proof
 
@@ -33,6 +33,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; interna
 - Internal-only maturity backlog added: `docs/INTERNAL_TESTFLIGHT_MATURITY_BACKLOG.md`.
 - Physical iPhone orientation was set/read as `portrait`; TestFlight portrait screenshot proof: `/tmp/uqiq-issue-36-portrait-proof.png` at 1320x2868.
 - Internal playtest notes template added: `docs/INTERNAL_PLAYTEST_NOTES_TEMPLATE.md`.
+- Long-screen fit fixed with portrait scroll containers for content-heavy Play Screens and Score Roastcard; `verify_issue_38_long_screen_fit.gd` passed.
 - Physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
 - `com.wlkrlabs.uqiq` device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png`.
 - Device smoke covered 60-spec load, isolated Local Profile, Level List, Play -> Score Roastcard, save/load, Dur spend/recovery, and no launch crash.
@@ -43,7 +44,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; interna
 - Issue #19 scoring/Roastcard slice closed with proof: `90c2cec`.
 - Polish Pass PRD added for next slices: `69f0cdf`.
 - Latest full floor passed through `verify_issue_23_ui_readability.gd`.
-- GitHub `next-step` label points to issue #37.
+- GitHub `next-step` label points to issue #38.
 
 ## Known Blockers
 
@@ -52,4 +53,4 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; interna
 
 ## Next Gate Needing scwlkr
 
-Finish the internal playtest template, then audit Score Roastcard and long-screen fit.
+Finish long-screen fit proof, then continue internal-only maturity work before any external tester path.

@@ -335,7 +335,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_physics_choice_label = null
 	_physics_result_label = null
 
-	var root := _make_screen(COLOR_PANEL, "play_screen")
+	var root := _make_screen(COLOR_PANEL, "play_screen", true)
 
 	var top_bar := HBoxContainer.new()
 	top_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -583,7 +583,7 @@ func _complete_current_level() -> void:
 
 func _show_score_roastcard() -> void:
 	_set_judge_state("score")
-	var root := _make_screen(COLOR_INK, "score_roastcard")
+	var root := _make_screen(COLOR_INK, "score_roastcard", true)
 
 	_add_label(root, "Score Roastcard", 38, COLOR_YELLOW)
 	_add_judge_face(root, _judge_state)
@@ -648,7 +648,7 @@ func _show_score_roastcard() -> void:
 	actions.add_child(list_button)
 
 
-func _make_screen(background_color: Color, transition_name: String = "") -> VBoxContainer:
+func _make_screen(background_color: Color, transition_name: String = "", use_scroll: bool = false) -> VBoxContainer:
 	for child in get_children():
 		if child == _feedback_player:
 			continue
@@ -664,13 +664,30 @@ func _make_screen(background_color: Color, transition_name: String = "") -> VBox
 	add_child(background)
 
 	var root := VBoxContainer.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.offset_left = 20
-	root.offset_top = 22
-	root.offset_right = -20
-	root.offset_bottom = -22
+	if use_scroll:
+		var scroll := ScrollContainer.new()
+		scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		add_child(scroll)
+
+		var margin := MarginContainer.new()
+		margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		margin.add_theme_constant_override("margin_left", 20)
+		margin.add_theme_constant_override("margin_top", 22)
+		margin.add_theme_constant_override("margin_right", 20)
+		margin.add_theme_constant_override("margin_bottom", 22)
+		scroll.add_child(margin)
+
+		root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		margin.add_child(root)
+	else:
+		root.set_anchors_preset(Control.PRESET_FULL_RECT)
+		root.offset_left = 20
+		root.offset_top = 22
+		root.offset_right = -20
+		root.offset_bottom = -22
+		add_child(root)
 	root.add_theme_constant_override("separation", 14)
-	add_child(root)
 	_apply_screen_transition(root, transition_name)
 	return root
 
