@@ -1,0 +1,28 @@
+; Engine configuration file.
+; Edit with the Godot editor when project settings grow beyond this boot slice.
+
+config_version=5
+
+[application]
+
+config/name="UQIQ"
+run/main_scene="res://scenes/Main.tscn"
+
+[display]
+
+window/size/viewport_width=390
+window/size/viewport_height=844
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+pointing/emulate_mouse_from_touch=true
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+textures/vram_compression/import_etc2_astc=true

@@ -1,0 +1,591 @@
+{
+  "pack_id": "pack_02_words_are_lying",
+  "pack_title": "Words Are Lying",
+  "levels": [
+    {
+      "id": "p02_l11_first_word_last_lie",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 11,
+      "title": "First Word, Last Lie",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Type the first word in this prompt, not the shiny word LAST.",
+      "rules": {
+        "accepted_inputs": [
+          "type"
+        ]
+      },
+      "solution": {
+        "answer": "type"
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "LAST glittered and your finger bought the whole scam.",
+          "You chased the loud word. Tiny hot breath journalism."
+        ],
+        "delay": [
+          "The first word is standing at the front like it paid rent."
+        ],
+        "scorecard": [
+          "You found word one. The sentence is filing a formal complaint."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "large_decoy_word",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The answer is the literal first word of the prompt while LAST tries to steal the room."
+    },
+    {
+      "id": "p02_l12_no_means_yes_today",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 12,
+      "title": "NO Triggers YES",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "If this sentence contains the word NO, type YES.",
+      "rules": {
+        "accepted_inputs": [
+          "yes"
+        ]
+      },
+      "solution": {
+        "answer": "yes"
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "NO waved once and your smooth brain joined the parade.",
+          "The condition was true. Your answer was furniture."
+        ],
+        "delay": [
+          "Find NO, then do what the sentence says before it gets smug."
+        ],
+        "scorecard": [
+          "You converted NO into YES. Philosophy is now lightly annoyed."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "yes_no_word_tiles",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The player must answer YES because the prompt does contain NO."
+    },
+    {
+      "id": "p02_l13_banana_embargo",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 13,
+      "title": "Banana Embargo",
+      "template": "Text Trap",
+      "challenge_type": "logic trap",
+      "completion_mode": "submit",
+      "prompt": "Do not type banana.",
+      "rules": {
+        "accepted_inputs": [
+          "banana"
+        ]
+      },
+      "solution": {
+        "answer": "banana"
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You obeyed the lying sentence. Elite hall monitor energy.",
+          "The forbidden word sat there and you treated it like a museum rope."
+        ],
+        "delay": [
+          "The Level has one word with a security guard. That is probably the word."
+        ],
+        "scorecard": [
+          "You typed the banned fruit. Compliance has left the chat."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "forbidden_word_sign",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The only way to win is to type the word the prompt says not to type."
+    },
+    {
+      "id": "p02_l14_punctuation_witness",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 14,
+      "title": "Punctuation Witness",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "This sentence is not asking anything? Type the punctuation that disagrees.",
+      "rules": {
+        "accepted_inputs": [
+          "?"
+        ]
+      },
+      "solution": {
+        "answer": "?"
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "The question mark testified and you cross-examined a brick.",
+          "Punctuation solved it. You arrived as decorative luggage."
+        ],
+        "delay": [
+          "The tiny hook at the end is snitching with perfect posture."
+        ],
+        "scorecard": [
+          "You trusted punctuation over words. Growth, in a very small hat."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "giant_question_mark",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The sentence claims it is not a question while ending with a question mark."
+    },
+    {
+      "id": "p02_l15_label_perjury",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 15,
+      "title": "Label Perjury",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the button whose label is lying.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "claims_correct",
+            "label": "I AM CORRECT",
+            "role": "decoy"
+          },
+          {
+            "id": "claims_wrong",
+            "label": "I AM WRONG",
+            "role": "correct"
+          },
+          {
+            "id": "claims_button",
+            "label": "I AM A BUTTON",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "target_id": "claims_wrong"
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You believed a button under oath. Courtroom dingleberry behavior.",
+          "The honest-looking label mugged your attention in broad daylight."
+        ],
+        "delay": [
+          "One button says it is wrong. If it wins, that label is the liar."
+        ],
+        "scorecard": [
+          "You caught a rectangle committing perjury. The law remains tiny."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_large_buttons",
+          "lying_label_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The correct button is labeled I AM WRONG, making its label the lie."
+    },
+    {
+      "id": "p02_l16_second_word_problem",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 16,
+      "title": "Word Count Problem",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Type the number of words after the colon: one two three.",
+      "rules": {
+        "accepted_inputs": [
+          "3",
+          "three"
+        ]
+      },
+      "solution": {
+        "answer": "3",
+        "explanation": "Only the words after the colon count, so one two three makes the answer 3."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You argued with the colon and lost to three tiny words.",
+          "The count was three. Your confidence filed the wrong invoice."
+        ],
+        "delay": [
+          "Only count after the colon. The words before it are lobby noise."
+        ],
+        "scorecard": [
+          "You counted to three without adopting the whole sentence. Historic restraint."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "numbered_word_strip",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The colon is the boundary: only one two three count, so the answer is 3."
+    },
+    {
+      "id": "p02_l17_word_only_intruder",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 17,
+      "title": "Word-Only Intruder",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "submit",
+      "prompt": "Find the cell that breaks the word-only pattern.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "LIE",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "FAKE",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "TRUTH",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "NOPE",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "404",
+            "role": "correct"
+          },
+          {
+            "id": "r2c3",
+            "label": "YES",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "WRONG",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "RIGHT",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "MAYBE",
+            "role": "decoy"
+          }
+        ]
+      },
+      "solution": {
+        "cell_id": "r2c2",
+        "explanation": "404 is the only numbered cell in a grid of word labels."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You selected a word in the word-only trap. Spectacularly decorative.",
+          "The number wore a siren and you interviewed the alphabet."
+        ],
+        "delay": [
+          "Eight cells are words. One cell showed up as math paperwork."
+        ],
+        "scorecard": [
+          "You found the number pretending it belonged. The grid is embarrassed."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "word_tiles",
+          "selected_cell_state",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A number sits in the middle of a grid where every other cell is a word."
+    },
+    {
+      "id": "p02_l18_word_before_lie",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 18,
+      "title": "Word Before Lie",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Type the word before LIE: truth LIE.",
+      "rules": {
+        "accepted_inputs": [
+          "truth"
+        ]
+      },
+      "solution": {
+        "answer": "truth"
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "LIE shouted and you forgot the word standing directly before it.",
+          "Your attention got pickpocketed by three capital letters."
+        ],
+        "delay": [
+          "Look immediately left of LIE. This is not a treasure map."
+        ],
+        "scorecard": [
+          "You found truth before lie. The theme is coping poorly."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "two_word_banner",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The loud word LIE is only a locator; the answer is the quieter word before it."
+    },
+    {
+      "id": "p02_l19_flash_of_false_confidence",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 19,
+      "title": "Flash of False Confidence",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the words, then choose the order they actually appeared.",
+      "rules": {
+        "flash_items": [
+          "LIE",
+          "TRUE",
+          "NO"
+        ],
+        "choices": [
+          "NO",
+          "TRUE",
+          "LIE"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "LIE",
+          "TRUE",
+          "NO"
+        ],
+        "explanation": "Recall the original flash order instead of the reversed choice order."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 9
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "The words shuffled once and your memory fell into a folding chair.",
+          "You remembered the button row, not the flash. Premium wrong receipt."
+        ],
+        "delay": [
+          "Flash first, hide second, press the original order before confidence spoils."
+        ],
+        "scorecard": [
+          "You held three dishonest words in order. Tiny miracle, loud paperwork."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "flash_tiles",
+          "choice_buttons",
+          "sequence_input_row",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The choice order is reversed, so trusting the visible buttons gives the wrong sequence."
+    },
+    {
+      "id": "p02_l20_final_answer_is_not_final",
+      "pack_id": "pack_02_words_are_lying",
+      "level_number": 20,
+      "title": "Final Answer Is Not Final",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Type the final word of this prompt: decoy answer.",
+      "rules": {
+        "accepted_inputs": [
+          "answer"
+        ]
+      },
+      "solution": {
+        "answer": "answer"
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 9,
+          "ok": 22
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "DECOY put on a tiny crown and you pledged loyalty.",
+          "The final word was last in line. You still tackled the wrong guest."
+        ],
+        "delay": [
+          "Read all the way to the end. The last word is doing zero cardio."
+        ],
+        "scorecard": [
+          "You finished Pack 2 by reading the end. Literature has peaked."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "decoy_word_banner",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The final word is answer, while decoy exists only to pull the player's eyes off target."
+    }
+  ]
+}

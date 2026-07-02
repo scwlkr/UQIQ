@@ -1,0 +1,682 @@
+{
+  "pack_id": "pack_01_orientation_is_a_trap",
+  "pack_title": "Orientation Is a Trap",
+  "levels": [
+    {
+      "id": "p01_l01_wrong_button",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 1,
+      "title": "The Wrong Button",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the correct button. Try not to make this a whole personality.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "correct_button",
+            "label": "CORRECT",
+            "role": "decoy"
+          },
+          {
+            "id": "wrong_button",
+            "label": "WRONG",
+            "role": "correct"
+          }
+        ],
+        "feedback_on_wrong_tap": "Nope. The label was loud, not right."
+      },
+      "solution": {
+        "target_id": "wrong_button",
+        "explanation": "The prompt asks for the correct button, and the correct button is the one labeled WRONG."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 5,
+          "ok": 15
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You trusted a button label. Historic dingleberry behavior.",
+          "The button said correct and your brain saluted."
+        ],
+        "delay": [
+          "The answer is waiting. Your courage is still buffering."
+        ],
+        "scorecard": [
+          "You beat Level 1. The app is legally required to pretend this is progress."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "two_large_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The correct answer is the button labeled WRONG."
+    },
+    {
+      "id": "p01_l02_move_the_word",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 2,
+      "title": "Move the Word",
+      "template": "Drag Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_drop",
+      "prompt": "Move the word WRONG into the only place a smart person would hide it.",
+      "rules": {
+        "draggable_objects": [
+          {
+            "id": "word_right",
+            "label": "RIGHT",
+            "role": "decoy"
+          },
+          {
+            "id": "word_wrong",
+            "label": "WRONG",
+            "role": "correct"
+          }
+        ],
+        "drop_targets": [
+          {
+            "id": "truth_box",
+            "label": "Truth Box",
+            "role": "correct"
+          },
+          {
+            "id": "confidence_box",
+            "label": "Confidence Box",
+            "role": "decoy"
+          }
+        ],
+    "interaction_model": "direct_drag_drop"
+      },
+      "solution": {
+        "object_id": "word_wrong",
+        "drop_target_id": "truth_box",
+        "explanation": "The wrong word belongs in the Truth Box because this pack is allergic to honest labels."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You moved confidence instead of truth. Boldly wrong, like a tiny executive.",
+          "Wrong object, wrong box, fully on brand."
+        ],
+        "delay": [
+          "Try moving the suspicious word before it unionizes."
+        ],
+        "scorecard": [
+          "You moved one word and called it spatial reasoning. Inspiringly small."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "word_tiles",
+          "two_drop_zones",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The player must move WRONG into the Truth Box instead of trusting RIGHT."
+    },
+    {
+      "id": "p01_l03_type_nothing",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 3,
+      "title": "Type Nothing",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Type the word nothing.",
+      "rules": {
+        "placeholder": "hint: the answer is not empty",
+        "accepted_inputs": [
+          "nothing"
+        ],
+        "case_sensitive": false
+      },
+      "solution": {
+        "answer": "nothing",
+        "explanation": "The prompt asks for the word nothing, not a blank answer."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You gave the void a keyboard and still missed.",
+          "Blank confidence. Premium nonsense."
+        ],
+        "delay": [
+          "The prompt contains the answer. Terrifying development."
+        ],
+        "scorecard": [
+          "You typed nothing. Literally. Somehow this counts as literacy."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The correct answer is the literal word nothing."
+    },
+    {
+      "id": "p01_l04_one_square_panicked",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 4,
+      "title": "One Square Panicked",
+      "template": "Pattern Grid",
+      "challenge_type": "pattern puzzle",
+      "completion_mode": "auto_complete_on_marked_cells",
+      "prompt": "Mark the row containing the square that forgot the pattern.",
+      "rules": {
+        "columns": 3,
+        "cells": [
+          {
+            "id": "r1c1",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c2",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r1c3",
+            "label": "A",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c1",
+            "label": "B",
+            "role": "decoy"
+          },
+          {
+            "id": "r2c2",
+            "label": "8",
+            "role": "correct"
+          },
+          {
+            "id": "r2c3",
+            "label": "B",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c1",
+            "label": "C",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c2",
+            "label": "C",
+            "role": "decoy"
+          },
+          {
+            "id": "r3c3",
+            "label": "C",
+            "role": "decoy"
+          }
+        ],
+        "interaction_model": "direct_mark_cells",
+        "mark_count": 3
+      },
+      "solution": {
+        "cell_id": "r2c2",
+        "cell_ids": [
+          "r2c1",
+          "r2c2",
+          "r2c3"
+        ],
+        "explanation": "Every row repeats one letter except the middle cell, which is a number pretending to be helpful."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 25
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "The pattern was three rows deep and you still fell into the kiddie pool.",
+          "You selected a normal square. Brave commitment to boring."
+        ],
+        "delay": [
+          "One tile is wearing a fake mustache. Stare less dramatically."
+        ],
+        "scorecard": [
+          "You found the impostor square. The alphabet is shaken."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_by_three_grid",
+          "selected_cell_state",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The center cell is 8, breaking a grid where every row otherwise repeats a letter."
+    },
+    {
+      "id": "p01_l05_blink_tax",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 5,
+      "title": "Blink Tax",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the tiles, hide them, then rebuild the sequence.",
+      "rules": {
+        "flash_items": [
+          "SUN",
+          "MOON",
+          "DUR"
+        ],
+        "choices": [
+          "DUR",
+          "SUN",
+          "MOON"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "SUN",
+          "MOON",
+          "DUR"
+        ],
+        "explanation": "Recall the revealed order, not the shuffled choice order."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 9
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "Short-term memory left the building and took your shoes.",
+          "You remembered vibes. The Level requested facts."
+        ],
+        "delay": [
+          "Flash, hide, choose. Three verbs. Monumental workload."
+        ],
+        "scorecard": [
+          "You retained three tiny words. Neuroscience has been notified."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "flash_tiles",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The choice buttons appear in a different order than the flashed sequence."
+    },
+    {
+      "id": "p01_l06_ramp_for_one_braincell",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 6,
+      "title": "Ramp for One Braincell",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "Draw one line so the ball reaches the cup.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "flat_line",
+            "label": "flat line",
+            "role": "decoy"
+          },
+          {
+            "id": "ramp_to_cup",
+            "label": "ramp to cup",
+            "role": "correct"
+          },
+          {
+            "id": "wall",
+            "label": "tiny wall",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "left",
+        "target_id": "cup_right",
+    "interaction_model": "direct_draw_line_then_release",
+    "direct_draw_gesture": "rising_ramp"
+      },
+      "solution": {
+        "draw_id": "ramp_to_cup",
+        "target_id": "cup_right",
+        "explanation": "The ramp is the only drawn line that sends the ball toward the cup."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "Gravity looked at your line and quietly resigned.",
+          "The ball avoided the cup out of respect for itself."
+        ],
+        "delay": [
+          "Draw a ramp. Not a monument to hesitation."
+        ],
+        "scorecard": [
+          "You solved fake physics with one line. Newton remains mostly unbothered."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "ball",
+          "cup",
+      "draw_surface",
+          "judge_face_stub"
+        ]
+      },
+  "uqiq_moment": "The ball only reaches the cup when the player draws a rising ramp instead of a flat line or wall."
+    },
+    {
+      "id": "p01_l07_arrow_trial",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 7,
+      "title": "Arrow Trial",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the arrow that refuses the obvious direction.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "arrow_right",
+            "label": "RIGHT ARROW",
+            "role": "decoy"
+          },
+          {
+            "id": "arrow_left",
+            "label": "LEFT ARROW",
+            "role": "correct"
+          },
+          {
+            "id": "arrow_up",
+            "label": "UP ARROW",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "You followed the crowd arrow. Tiny parade, wrong street."
+      },
+      "solution": {
+        "target_id": "arrow_left",
+        "explanation": "The prompt asks for the arrow refusing the obvious direction, so LEFT is correct."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You picked the popular arrow. Very brave group project energy.",
+          "The obvious direction got your vote. Democracy wept softly."
+        ],
+        "delay": [
+          "One arrow is refusing the room. Let that tiny rebel cook."
+        ],
+        "scorecard": [
+          "You discovered left after meeting right. Cartography is shaken."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_large_arrow_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The correct arrow is LEFT because it refuses the obvious rightward answer."
+    },
+    {
+      "id": "p01_l08_tiny_loud",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 8,
+      "title": "Tiny Loud",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the quiet answer. The loud one is doing unpaid theater.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "loud_wrong",
+            "label": "LOUD IMPORTANT ANSWER",
+            "role": "decoy"
+          },
+          {
+            "id": "tiny_correct",
+            "label": "tiny answer",
+            "role": "correct"
+          },
+          {
+            "id": "medium_wrong",
+            "label": "Medium Confidence",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "Volume is not wisdom. It is just noise wearing shoes."
+      },
+      "solution": {
+        "target_id": "tiny_correct",
+        "explanation": "The quiet answer is the button labeled tiny answer, not the loud decoy."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 6,
+          "ok": 16
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You trusted the loud rectangle. Classic hot breath scholarship.",
+          "The shouty button waved a flag and your finger joined the parade."
+        ],
+        "delay": [
+          "Tiny does not mean hidden. It means stop letting labels yell at you."
+        ],
+        "scorecard": [
+          "You found the small answer. The loud one is filing a complaint."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "loud_decoy_button",
+          "tiny_answer_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The quiet lowercase answer beats the loud important-looking decoy."
+    },
+    {
+      "id": "p01_l09_no_rotate",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 9,
+      "title": "No Rotate",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Do not rotate the phone. Type the direction it is already facing.",
+      "rules": {
+        "placeholder": "one word, no gymnastics",
+        "accepted_inputs": [
+          "portrait"
+        ],
+        "case_sensitive": false
+      },
+      "solution": {
+        "answer": "portrait",
+        "explanation": "The app is portrait-first, so the phone is already facing portrait."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You tried to out-rotate a portrait app. Outstanding furniture behavior.",
+          "The phone stayed still. Your confidence did a cartwheel."
+        ],
+        "delay": [
+          "It is already the answer. The screen is practically pointing at itself."
+        ],
+        "scorecard": [
+          "You obeyed the no-rotate sign. This counts as discipline somehow."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "portrait_phone_frame",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The answer is the current portrait orientation, not a physical rotation."
+    },
+    {
+      "id": "p01_l10_finally_sideways",
+      "pack_id": "pack_01_orientation_is_a_trap",
+      "level_number": 10,
+      "title": "Finally Sideways",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Fine. Tap SIDEWAYS. Do not turn the phone into a whole event.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "upright",
+            "label": "UPRIGHT",
+            "role": "decoy"
+          },
+          {
+            "id": "sideways",
+            "label": "SIDEWAYS",
+            "role": "correct"
+          },
+          {
+            "id": "rotate_phone",
+            "label": "ROTATE PHONE",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "The Level said tap, not enroll in a furniture-moving course."
+      },
+      "solution": {
+        "target_id": "sideways",
+        "explanation": "The correct move is tapping the button labeled SIDEWAYS, not rotating the device."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You made sideways complicated. Premium dingleberry logistics.",
+          "The button was named SIDEWAYS and you still went on a side quest."
+        ],
+        "delay": [
+          "The word SIDEWAYS is standing right there, trying not to make eye contact."
+        ],
+        "scorecard": [
+          "You ended Pack 1 by tapping a word. The victory parade is very short."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_large_buttons",
+          "portrait_phone_frame",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The final sideways gag is a tap target, not an orientation change."
+    }
+  ]
+}

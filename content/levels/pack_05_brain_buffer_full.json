@@ -1,0 +1,657 @@
+{
+  "pack_id": "pack_05_brain_buffer_full",
+  "pack_title": "Brain Buffer Full",
+  "levels": [
+    {
+      "id": "p05_l41_receipt_panic",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 41,
+      "title": "Receipt Panic",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the receipt, hide it, then rebuild the tiny disaster in order.",
+      "rules": {
+        "flash_items": [
+          "TAP",
+          "DUR",
+          "ZIP"
+        ],
+        "choices": [
+          "ZIP",
+          "TAP",
+          "DUR"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "TAP",
+          "DUR",
+          "ZIP"
+        ],
+        "explanation": "Repeat the flashed receipt order, not the shuffled choice order."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 9
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You filed the receipt by vibes. Accounting is unimpressed.",
+          "Three tiny tiles entered. Your confidence left with the wrong bag."
+        ],
+        "delay": [
+          "TAP, DUR, ZIP. The receipt is short enough to fit in a sneeze."
+        ],
+        "scorecard": [
+          "You rebuilt the receipt order. The buffer stopped making modem sounds."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "flash_receipt_tiles",
+          "choice_buttons",
+          "tiny_buffer_meter",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The first Pack 5 sequence looks like a receipt, but the choices arrive in reverse order."
+    },
+    {
+      "id": "p05_l42_queue_cutters",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 42,
+      "title": "Queue Cutters",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the queue, then put the cutters back where they were.",
+      "rules": {
+        "flash_items": [
+          "RED",
+          "BLUE",
+          "OK"
+        ],
+        "choices": [
+          "OK",
+          "RED",
+          "BLUE"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "RED",
+          "BLUE",
+          "OK"
+        ],
+        "explanation": "The correct queue is the flashed order: RED, BLUE, OK."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 9
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You let OK cut the line. Tiny clipboard chaos.",
+          "The queue had three spots and still became a parking problem."
+        ],
+        "delay": [
+          "RED starts it. BLUE follows. OK gets to stop being dramatic."
+        ],
+        "scorecard": [
+          "You restored the queue. The line stopped pretending it was a strategy."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "queue_flash_cards",
+          "color_word_tiles",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The word OK appears last in the flash but first in the choice row, baiting a lazy tap."
+    },
+    {
+      "id": "p05_l43_cache_spill",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 43,
+      "title": "Cache Spill",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "The cache spills four tiles. Flash it, hide it, rebuild it.",
+      "rules": {
+        "flash_items": [
+          "SAVE",
+          "LOAD",
+          "DUR",
+          "WIN"
+        ],
+        "choices": [
+          "DUR",
+          "WIN",
+          "SAVE",
+          "LOAD"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "SAVE",
+          "LOAD",
+          "DUR",
+          "WIN"
+        ],
+        "explanation": "Four-item Memory Flash Levels still use the exact flashed order."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 15,
+          "ok": 36
+        },
+        "action_count": {
+          "great": 6,
+          "ok": 11
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You spilled the cache twice and called it sorting.",
+          "SAVE and LOAD wore name tags. The buffer still needed a map."
+        ],
+        "delay": [
+          "SAVE, LOAD, DUR, WIN. It is a tiny menu, not a legal contract."
+        ],
+        "scorecard": [
+          "You rebuilt four tiles. The cache is only mildly embarrassed now."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "four_flash_cards",
+          "cache_spill_splash",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The pack raises the buffer load by adding a fourth flashed tile before shuffling the choices."
+    },
+    {
+      "id": "p05_l44_wait_is_first",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 44,
+      "title": "Wait Is First",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the first thing your buffer should do before it guesses.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "tap_now",
+            "label": "TAP",
+            "role": "decoy"
+          },
+          {
+            "id": "wait_first",
+            "label": "WAIT",
+            "role": "correct"
+          },
+          {
+            "id": "skip_it",
+            "label": "SKIP",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "The buffer needed a pause, not a button parade."
+      },
+      "solution": {
+        "target_id": "wait_first",
+        "explanation": "The prompt asks what comes before guessing, so WAIT is the correct tap."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 7,
+          "ok": 18
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 4
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "TAP sparkled and your finger joined the fan club.",
+          "You skipped patience and landed in decorative wrongness."
+        ],
+        "delay": [
+          "The correct move is the one that tells the guessing factory to sit down."
+        ],
+        "scorecard": [
+          "You tapped WAIT. For one glorious second, impulse lost."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_large_buttons",
+          "pause_badge",
+          "buffer_meter",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A Memory Pack breaks rhythm by rewarding the pause button instead of the active-looking TAP button."
+    },
+    {
+      "id": "p05_l45_missing_three",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 45,
+      "title": "Missing Three",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the count. The missing number is bait, not an answer.",
+      "rules": {
+        "flash_items": [
+          "ONE",
+          "TWO",
+          "FOUR"
+        ],
+        "choices": [
+          "FOUR",
+          "TWO",
+          "ONE"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "ONE",
+          "TWO",
+          "FOUR"
+        ],
+        "explanation": "The Level asks for the flashed order, not the missing count value."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 9
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You went looking for THREE in a room that never hired it.",
+          "The missing number waved from offscreen and your attention followed."
+        ],
+        "delay": [
+          "Ignore the absent drama. Rebuild ONE, TWO, FOUR."
+        ],
+        "scorecard": [
+          "You remembered the count that actually appeared. THREE can keep sulking."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "number_flash_cards",
+          "missing_number_shadow",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The flashed count skips THREE, but the correct play is to repeat the skip exactly."
+    },
+    {
+      "id": "p05_l46_second_word_tax",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 46,
+      "title": "Second Word Tax",
+      "template": "Text Trap",
+      "challenge_type": "word puzzle",
+      "completion_mode": "submit",
+      "prompt": "Type the second word in this fake memory: ALPHA BETA GAMMA.",
+      "rules": {
+        "accepted_inputs": [
+          "beta"
+        ]
+      },
+      "solution": {
+        "answer": "beta",
+        "explanation": "The second word in the fake memory list is BETA."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 8,
+          "ok": 20
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "ALPHA walked in first and stole your entire clipboard.",
+          "GAMMA stood at the end waving a foam finger. You bought it."
+        ],
+        "delay": [
+          "Second means middle here. BETA is trying to look casual."
+        ],
+        "scorecard": [
+          "You taxed the second word correctly. BETA has paid in full."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "single_line_input",
+          "three_word_banner",
+          "submit_button",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A fake memory prompt turns into a direct Text Trap where the middle word is the answer."
+    },
+    {
+      "id": "p05_l47_desk_cache",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 47,
+      "title": "Desk Cache",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the messy desk, then rebuild the order before it files a complaint.",
+      "rules": {
+        "flash_items": [
+          "KEY",
+          "MUG",
+          "PEN",
+          "SUN"
+        ],
+        "choices": [
+          "SUN",
+          "PEN",
+          "KEY",
+          "MUG"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "KEY",
+          "MUG",
+          "PEN",
+          "SUN"
+        ],
+        "explanation": "Repeat the desk items in the exact flashed order."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 15,
+          "ok": 36
+        },
+        "action_count": {
+          "great": 6,
+          "ok": 11
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You turned a desk into a yard sale with buttons.",
+          "The mug was second. Your sequence gave it a new career."
+        ],
+        "delay": [
+          "KEY, MUG, PEN, SUN. The desk is messy, not mysterious."
+        ],
+        "scorecard": [
+          "You restored the desk cache. The mug stopped judging the pen."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "desk_flash_cards",
+          "small_item_icons",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "Every desk item is ordinary, but the win depends on preserving the exact item order."
+    },
+    {
+      "id": "p05_l48_status_stack",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 48,
+      "title": "Status Stack",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the status stack, hide it, then rebuild the stack from top to bottom.",
+      "rules": {
+        "flash_items": [
+          "LOW",
+          "MID",
+          "HIGH"
+        ],
+        "choices": [
+          "HIGH",
+          "LOW",
+          "MID"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "LOW",
+          "MID",
+          "HIGH"
+        ],
+        "explanation": "The stack should be rebuilt in the order it flashed: LOW, MID, HIGH."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 13,
+          "ok": 32
+        },
+        "action_count": {
+          "great": 5,
+          "ok": 10
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "HIGH yelled from the button row and you gave it a promotion.",
+          "The stack was simple. Your order added office politics."
+        ],
+        "delay": [
+          "LOW starts, MID middles, HIGH gets the dramatic top shelf."
+        ],
+        "scorecard": [
+          "You rebuilt the status stack. HIGH is no longer cutting the line."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "stack_flash_cards",
+          "status_badges",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The visible choice row starts with HIGH, but the flashed stack starts at LOW."
+    },
+    {
+      "id": "p05_l49_roast_reorder",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 49,
+      "title": "Roast Reorder",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the tiny roast order. Then repeat all four without letting YES act helpful.",
+      "rules": {
+        "flash_items": [
+          "NO",
+          "YES",
+          "DUR",
+          "HUH"
+        ],
+        "choices": [
+          "YES",
+          "DUR",
+          "HUH",
+          "NO"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "NO",
+          "YES",
+          "DUR",
+          "HUH"
+        ],
+        "explanation": "YES is only second because that is where it appeared in the four-item flash."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 15,
+          "ok": 36
+        },
+        "action_count": {
+          "great": 6,
+          "ok": 11
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "YES smiled first and your finger signed the lease.",
+          "You reordered the roast like a menu with trust issues."
+        ],
+        "delay": [
+          "NO begins this one. YES waits, DUR follows, HUH closes."
+        ],
+        "scorecard": [
+          "You kept YES in second place. Confidence is coping quietly."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "roast_flash_cards",
+          "yes_no_tiles",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The friendliest label is first in the choices but second in a four-item roast order."
+    },
+    {
+      "id": "p05_l50_full_buffer_final",
+      "pack_id": "pack_05_brain_buffer_full",
+      "level_number": 50,
+      "title": "Full Buffer Final",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Final buffer dump: flash it once, hide it, rebuild the exact order.",
+      "rules": {
+        "flash_items": [
+          "UQIQ",
+          "DUR",
+          "WIN",
+          "DONE"
+        ],
+        "choices": [
+          "DONE",
+          "WIN",
+          "DUR",
+          "UQIQ"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "UQIQ",
+          "DUR",
+          "WIN",
+          "DONE"
+        ],
+        "explanation": "The final Pack 5 sequence is the flashed order from UQIQ through DONE."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 17,
+          "ok": 42
+        },
+        "action_count": {
+          "great": 6,
+          "ok": 12
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "The final buffer dumped four tiles and your order wore a fake mustache.",
+          "DONE was last in the flash and first in your confidence trap."
+        ],
+        "delay": [
+          "UQIQ, DUR, WIN, DONE. The finale came with labels and still wants discipline."
+        ],
+        "scorecard": [
+          "You cleared the full buffer. DONE finally earned its parking spot."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "final_flash_cards",
+          "buffer_overflow_meter",
+          "choice_buttons",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The final Memory Flash reverses the choice row so DONE appears before it is allowed to be done."
+    }
+  ]
+}

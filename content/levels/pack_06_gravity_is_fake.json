@@ -1,0 +1,717 @@
+{
+  "pack_id": "pack_06_gravity_is_fake",
+  "pack_title": "Gravity Is Fake",
+  "levels": [
+    {
+      "id": "p06_l51_soft_launch_ramp",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 51,
+      "title": "Soft Launch Ramp",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "Draw the fake ramp that makes the ball fall up into the cup.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "honest_down_ramp",
+            "label": "honest down ramp",
+            "role": "decoy"
+          },
+          {
+            "id": "fake_up_ramp",
+            "label": "fake up ramp",
+            "role": "correct"
+          },
+          {
+            "id": "flat_excuse",
+            "label": "flat excuse",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "bottom_left",
+        "target_id": "cup_upper_right",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "rising_ramp"
+      },
+      "solution": {
+        "draw_id": "fake_up_ramp",
+        "target_id": "cup_upper_right",
+        "explanation": "The fake up ramp is the only option marked to send the ball to the upper-right cup."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 12,
+          "ok": 30
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You trusted regular gravity in the fake-gravity Pack. Bold little tragedy.",
+          "The ball went down because your plan had the spine of wet paper."
+        ],
+        "delay": [
+          "Pick the ramp that literally says up. The floor is not hiring today."
+        ],
+        "scorecard": [
+          "You made the ball fall up. Physics is filling out an incident form."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "ball",
+          "upper_right_cup",
+          "drawn_line_options",
+          "fake_gravity_arrow",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The Pack opens by making the correct ramp the one that breaks normal gravity on purpose."
+    },
+    {
+      "id": "p06_l52_ceiling_cup",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 52,
+      "title": "Ceiling Cup",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "The cup is on the ceiling. Draw the line gravity would hate most.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "floor_scoot",
+            "label": "floor scoot",
+            "role": "decoy"
+          },
+          {
+            "id": "ceiling_bridge",
+            "label": "ceiling bridge",
+            "role": "correct"
+          },
+          {
+            "id": "short_wall",
+            "label": "short wall",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "center_floor",
+        "target_id": "cup_ceiling",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "high_bridge"
+      },
+      "solution": {
+        "draw_id": "ceiling_bridge",
+        "target_id": "cup_ceiling",
+        "explanation": "The ceiling bridge is the deterministic path that carries the ball to the ceiling cup."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 13,
+          "ok": 32
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You drew floor furniture for a ceiling cup. Interior design is pressing charges.",
+          "The ball stared at your line and chose retirement."
+        ],
+        "delay": [
+          "Ceiling cup. Ceiling bridge. The hint is wearing a giant hard hat."
+        ],
+        "scorecard": [
+          "You bridged the ceiling. Gravity has been demoted to suggestion."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "ball",
+          "ceiling_cup",
+          "bridge_line_options",
+          "inverted_arrow_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The target sits above the ball, so the win comes from treating the ceiling like the floor."
+    },
+    {
+      "id": "p06_l53_heavy_bubble",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 53,
+      "title": "Heavy Bubble",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "A heavy bubble wants the top pocket. Draw the line that believes nonsense.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "stone_drop",
+            "label": "stone drop",
+            "role": "decoy"
+          },
+          {
+            "id": "bubble_lift",
+            "label": "bubble lift",
+            "role": "correct"
+          },
+          {
+            "id": "panic_shelf",
+            "label": "panic shelf",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "lower_center",
+        "target_id": "top_pocket",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "rising_vertical"
+      },
+      "solution": {
+        "draw_id": "bubble_lift",
+        "target_id": "top_pocket",
+        "explanation": "Bubble lift is the correct fake-physics choice that sends the heavy bubble to the top pocket."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 14,
+          "ok": 34
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You made the heavy bubble act heavy. Stunning obedience to the wrong universe.",
+          "That line had all the lift of a sleepy sandwich."
+        ],
+        "delay": [
+          "It says bubble lift. Your hesitation is the heaviest object here."
+        ],
+        "scorecard": [
+          "You lifted the heavy bubble. Logic put on a fake mustache and left."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "heavy_bubble_ball",
+          "top_pocket",
+          "lift_line_options",
+          "weight_label",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The object is labeled heavy, but the correct solution treats it like a bubble anyway."
+    },
+    {
+      "id": "p06_l54_sideways_rain",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 54,
+      "title": "Sideways Rain",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "The ball is rain now. Draw the line that sends it sideways into the gutter.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "vertical_drain",
+            "label": "vertical drain",
+            "role": "decoy"
+          },
+          {
+            "id": "sideways_gutter",
+            "label": "sideways gutter",
+            "role": "correct"
+          },
+          {
+            "id": "umbrella_wall",
+            "label": "umbrella wall",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "upper_left_cloud",
+        "target_id": "gutter_right",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "right_flat"
+      },
+      "solution": {
+        "draw_id": "sideways_gutter",
+        "target_id": "gutter_right",
+        "explanation": "The sideways gutter is the only draw option that routes the ball to the right-side target."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 14,
+          "ok": 34
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You let rain fall down. Weather school called and still wants less from you.",
+          "The gutter was sideways and your plan showed up wearing vertical shoes."
+        ],
+        "delay": [
+          "Sideways rain needs the sideways gutter. This cloud is not subtle."
+        ],
+        "scorecard": [
+          "You made rain travel sideways. The forecast is now legally confused."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "rain_ball",
+          "right_gutter",
+          "cloud_start",
+          "sideways_arrow",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A normal falling object becomes rain that only wins by moving sideways."
+    },
+    {
+      "id": "p06_l55_gravity_button_hearing",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 55,
+      "title": "Gravity Button Hearing",
+      "template": "Tap Logic",
+      "challenge_type": "logic trap",
+      "completion_mode": "auto_complete_on_correct_tap",
+      "prompt": "Tap the button that tells the truth about Pack 6 gravity.",
+      "rules": {
+        "tap_targets": [
+          {
+            "id": "button_down",
+            "label": "DOWN IS DOWN",
+            "role": "decoy"
+          },
+          {
+            "id": "button_up",
+            "label": "UP FALLS",
+            "role": "correct"
+          },
+          {
+            "id": "button_normal",
+            "label": "NORMAL PHYSICS",
+            "role": "decoy"
+          }
+        ],
+        "feedback_on_wrong_tap": "That button believes in regular gravity. Embarrassing."
+      },
+      "solution": {
+        "target_id": "button_up",
+        "explanation": "Pack 6 gravity is fake, so the true statement is UP FALLS."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 10,
+          "ok": 24
+        },
+        "action_count": {
+          "great": 1,
+          "ok": 3
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You voted for normal physics in the anti-physics hearing. Tiny gavel, huge shame.",
+          "The correct button yelled UP FALLS and you still wandered into the basement."
+        ],
+        "delay": [
+          "UP FALLS is the one telling Pack 6's ugly little truth."
+        ],
+        "scorecard": [
+          "You ruled that up can fall. The court stenographer needs a nap."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "three_large_buttons",
+          "gravity_court_badge",
+          "up_down_arrows",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The Physics Pack pauses to make the player tap the statement that openly contradicts normal gravity."
+    },
+    {
+      "id": "p06_l56_anchor_balloon",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 56,
+      "title": "Anchor Balloon",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "The anchor wants to float. Draw the line that gives heavy things bad ideas.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "sink_chute",
+            "label": "sink chute",
+            "role": "decoy"
+          },
+          {
+            "id": "balloon_hook",
+            "label": "balloon hook",
+            "role": "correct"
+          },
+          {
+            "id": "dead_stop",
+            "label": "dead stop",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "anchor_lower_left",
+        "target_id": "sky_ring",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "balloon_hook"
+      },
+      "solution": {
+        "draw_id": "balloon_hook",
+        "target_id": "sky_ring",
+        "explanation": "The balloon hook is the fake-physics path that carries the anchor to the sky ring."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 15,
+          "ok": 36
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You sank the anchor. Marine biology did not ask for this paperwork.",
+          "The sky ring was above it and your idea brought a shovel."
+        ],
+        "delay": [
+          "Balloon hook. Heavy object. Fake gravity. Connect the tiny parade."
+        ],
+        "scorecard": [
+          "You floated the anchor. The ocean has lost custody."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "anchor_ball",
+          "sky_ring_target",
+          "balloon_hook_line",
+          "float_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The heavy anchor reaches a sky target by using the least anchor-like draw option."
+    },
+    {
+      "id": "p06_l57_sink_the_cloud",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 57,
+      "title": "Sink the Cloud",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "This cloud belongs in the drain. Draw the line that makes fluff lose.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "floaty_smile",
+            "label": "floaty smile",
+            "role": "decoy"
+          },
+          {
+            "id": "drain_slope",
+            "label": "drain slope",
+            "role": "correct"
+          },
+          {
+            "id": "ceiling_loft",
+            "label": "ceiling loft",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "cloud_upper_center",
+        "target_id": "floor_drain",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "falling_slope"
+      },
+      "solution": {
+        "draw_id": "drain_slope",
+        "target_id": "floor_drain",
+        "explanation": "The drain slope is the deterministic draw choice that sinks the cloud into the floor drain."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 15,
+          "ok": 36
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You let the cloud float. It already knew that trick, professor.",
+          "The drain was waiting and your line started a weather podcast instead."
+        ],
+        "delay": [
+          "Cloud goes down. Drain slope is the rude little slide it deserves."
+        ],
+        "scorecard": [
+          "You sank a cloud. The sky is checking the lease."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "cloud_ball",
+          "floor_drain",
+          "slope_options",
+          "downward_cloud_arrow",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The lightest-looking object wins by being forced downward into a drain."
+    },
+    {
+      "id": "p06_l58_orbit_receipt",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 58,
+      "title": "Orbit Receipt",
+      "template": "Memory Flash",
+      "challenge_type": "memory challenge",
+      "completion_mode": "submit",
+      "prompt": "Flash the fake orbit order, hide it, then rebuild the loop without trusting gravity.",
+      "rules": {
+        "flash_items": [
+          "UP",
+          "SIDE",
+          "DROP",
+          "CUP"
+        ],
+        "choices": [
+          "CUP",
+          "DROP",
+          "UP",
+          "SIDE"
+        ],
+        "flash_seconds": 1,
+        "interaction_model": "manual_flash_hide_choose"
+      },
+      "solution": {
+        "sequence": [
+          "UP",
+          "SIDE",
+          "DROP",
+          "CUP"
+        ],
+        "explanation": "Repeat the flashed fake orbit order exactly: UP, SIDE, DROP, CUP."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 17,
+          "ok": 40
+        },
+        "action_count": {
+          "great": 6,
+          "ok": 11
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You turned the orbit receipt into alphabet soup with buttons.",
+          "The loop flashed once and your buffer went sightseeing."
+        ],
+        "delay": [
+          "UP, SIDE, DROP, CUP. It is a fake orbit, not a wedding toast."
+        ],
+        "scorecard": [
+          "You rebuilt the orbit receipt. Gravity stopped pretending it had notes."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "flash_orbit_tiles",
+          "choice_buttons",
+          "loop_arrow_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "A Physics Pack briefly becomes memory work where the fake gravity path must be recalled as a sequence."
+    },
+    {
+      "id": "p06_l59_newton_apology_form",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 59,
+      "title": "Newton Apology Form",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "Draw the line that apologizes to Newton by ignoring him completely.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "apple_drop",
+            "label": "apple drop",
+            "role": "decoy"
+          },
+          {
+            "id": "apology_curve",
+            "label": "apology curve",
+            "role": "correct"
+          },
+          {
+            "id": "lawful_floor",
+            "label": "lawful floor",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "apple_left",
+        "target_id": "signature_cup",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "shallow_rise"
+      },
+      "solution": {
+        "draw_id": "apology_curve",
+        "target_id": "signature_cup",
+        "explanation": "The apology curve is the intended fake path from the apple start to the signature cup."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 16,
+          "ok": 40
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "You picked lawful floor. The apple yawned in classical mechanics.",
+          "That was less apology and more paperwork with shoe prints."
+        ],
+        "delay": [
+          "Apology curve. Ignore the apple drop like it owes you rent."
+        ],
+        "scorecard": [
+          "You apologized by breaking the rule harder. Academic behavior, somehow."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "apple_ball",
+          "signature_cup",
+          "curve_line_options",
+          "paper_form_panel",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The near-finale frames fake physics as an apology form where the correct answer ignores the famous apple drop."
+    },
+    {
+      "id": "p06_l60_final_fakefall",
+      "pack_id": "pack_06_gravity_is_fake",
+      "level_number": 60,
+      "title": "Final Fakefall",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "submit",
+      "prompt": "Final fall: draw the path that refuses to fall and still lands in DONE.",
+      "rules": {
+        "draw_options": [
+          {
+            "id": "normal_fall",
+            "label": "normal fall",
+            "role": "decoy"
+          },
+          {
+            "id": "fakefall_ramp",
+            "label": "fakefall ramp",
+            "role": "correct"
+          },
+          {
+            "id": "victory_wall",
+            "label": "victory wall",
+            "role": "decoy"
+          }
+        ],
+        "ball_start": "final_lower_left",
+        "target_id": "done_cup_upper_center",
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "rising_ramp"
+      },
+      "solution": {
+        "draw_id": "fakefall_ramp",
+        "target_id": "done_cup_upper_center",
+        "explanation": "The fakefall ramp is the only final draw option that reaches the DONE cup."
+      },
+      "scoring": {
+        "speed_seconds": {
+          "great": 18,
+          "ok": 44
+        },
+        "action_count": {
+          "great": 2,
+          "ok": 5
+        },
+        "roast_penalty": 5
+      },
+      "roasts": {
+        "failure": [
+          "At Level 60 you picked normal fall. The whole Pack just sighed in unison.",
+          "The DONE cup was above you and your plan brought gravity back like a bad sequel."
+        ],
+        "delay": [
+          "Fakefall ramp ends it. Normal fall is the trap with a diploma."
+        ],
+        "scorecard": [
+          "You finished by refusing to fall. DONE has never looked so suspicious."
+        ]
+      },
+      "assets": {
+        "style": "flat_vector",
+        "shapes": [
+          "final_ball",
+          "done_cup",
+          "fakefall_line_options",
+          "pack_final_badge",
+          "judge_face_stub"
+        ]
+      },
+      "uqiq_moment": "The final Level completes the 60-Level run by making the winning fall go upward into DONE."
+    }
+  ]
+}
