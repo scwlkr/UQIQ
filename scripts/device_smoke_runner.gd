@@ -86,7 +86,7 @@ func _run_smoke_path() -> bool:
 	if not _start_level(_levels[0]):
 		return false
 	_use_roast()
-	if not _complete_with_scorecard(_levels[0], Callable(self, "_tap_logic_win").bind(_levels[0])):
+	if not _complete_with_scorecard(_levels[0], Callable(self, "_physics_draw_win").bind(_levels[0])):
 		return false
 	if not _require(_profile.is_level_unlocked(2), "Level 02 should unlock after Level 01 completion."):
 		return false
@@ -187,6 +187,12 @@ func _use_roast() -> void:
 func _tap_logic_win(level: Dictionary) -> void:
 	var solution := _dictionary_from(level.get("solution", {}))
 	_main.call("_handle_tap_target", str(solution.get("target_id", "")))
+
+
+func _physics_draw_win(level: Dictionary) -> void:
+	var solution := _dictionary_from(level.get("solution", {}))
+	_main.call("_handle_physics_draw", str(solution.get("draw_id", "")))
+	_main.call("_handle_physics_release")
 
 
 func _drag_logic_win(level: Dictionary) -> void:

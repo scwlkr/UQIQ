@@ -75,6 +75,7 @@ func _verify_tap_targets_neutral_then_feedback(level_number: int) -> void:
 	var solution := _dictionary_from(level.get("solution", {}))
 	var correct_id := str(solution.get("target_id", ""))
 	var labels: Array[String] = []
+	var target_ids: Array[String] = []
 	var wrong_target := {}
 	var correct_label := ""
 
@@ -84,21 +85,40 @@ func _verify_tap_targets_neutral_then_feedback(level_number: int) -> void:
 			continue
 		var label := str(target.get("label", ""))
 		labels.append(label)
+		target_ids.append(str(target.get("id", "")))
 		if str(target.get("id", "")) == correct_id:
 			correct_label = label
 		elif wrong_target.is_empty():
 			wrong_target = target
 
 	_require(labels.size() >= 2, "Level %02d should expose at least two tap targets." % level_number)
-	_require(_tap_buttons_share_normal_color(labels), "Level %02d tap targets should start with one neutral color." % level_number)
-	_require(not _button_is_color(_button_with_text(_main, correct_label), COLOR_RED), "Level %02d correct tap target should not start red." % level_number)
+	if str(rules.get("interaction_model", "")) == "direct_tap_scene":
+		_require(_tap_scene_targets_share_panel_color(target_ids), "Level %02d direct tap targets should start with one neutral color." % level_number)
+		_require(not _control_is_color(_node_named(_main, "tap_scene_target_%s" % correct_id) as Control, COLOR_RED), "Level %02d correct direct tap target should not start red." % level_number)
+	else:
+		_require(_tap_buttons_share_normal_color(labels), "Level %02d tap targets should start with one neutral color." % level_number)
+		_require(not _button_is_color(_button_with_text(_main, correct_label), COLOR_RED), "Level %02d correct tap target should not start red." % level_number)
 
-	_press_button_with_text(str(wrong_target.get("label", "")))
+	if str(rules.get("interaction_model", "")) == "direct_tap_scene":
+		var wrong_pad := _node_named(_main, "tap_scene_target_%s" % str(wrong_target.get("id", ""))) as Control
+		_require(wrong_pad != null, "Expected direct tap target %s." % str(wrong_target.get("id", "")))
+		if _failed:
+			return
+		_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true), str(wrong_target.get("id", "")), wrong_pad)
+	else:
+		_press_button_with_text(str(wrong_target.get("label", "")))
 	_require(not _profile.is_level_completed(level_id), "Wrong Level %02d target should not complete." % level_number)
 	_require(str(_main.get("_judge_state")) == "fail", "Wrong Level %02d tap should still show fail feedback." % level_number)
 
 	_main.call("_show_play_screen", level)
-	_press_button_with_text(correct_label)
+	if str(rules.get("interaction_model", "")) == "direct_tap_scene":
+		var correct_pad := _node_named(_main, "tap_scene_target_%s" % correct_id) as Control
+		_require(correct_pad != null, "Expected direct tap target %s." % correct_id)
+		if _failed:
+			return
+		_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true), correct_id, correct_pad)
+	else:
+		_press_button_with_text(correct_label)
 	_require(_profile.is_level_completed(level_id), "Correct Level %02d target should still complete." % level_number)
 	_require(_screen_has_label_text("Score Roastcard"), "Correct Level %02d tap should route to Score Roastcard." % level_number)
 
@@ -152,14 +172,43 @@ func _tap_buttons_share_normal_color(labels: Array[String]) -> bool:
 	return has_reference
 
 
+func _tap_scene_targets_share_panel_color(target_ids: Array[String]) -> bool:
+	var reference := Color.TRANSPARENT
+	var has_reference := false
+	for target_id in target_ids:
+		var control := _node_named(_main, "tap_scene_target_%s" % target_id) as Control
+		if control == null:
+			return false
+		var color := _control_panel_color(control)
+		if not has_reference:
+			reference = color
+			has_reference = true
+		elif not _same_color(reference, color):
+			return false
+	return has_reference
+
+
 func _button_is_color(button: Button, color: Color) -> bool:
 	if button == null:
 		return false
 	return _same_color(_button_normal_color(button), color)
 
 
+func _control_is_color(control: Control, color: Color) -> bool:
+	if control == null:
+		return false
+	return _same_color(_control_panel_color(control), color)
+
+
 func _button_normal_color(button: Button) -> Color:
 	var stylebox := button.get_theme_stylebox("normal") as StyleBoxFlat
+	if stylebox == null:
+		return Color.TRANSPARENT
+	return stylebox.bg_color
+
+
+func _control_panel_color(control: Control) -> Color:
+	var stylebox := control.get_theme_stylebox("panel") as StyleBoxFlat
 	if stylebox == null:
 		return Color.TRANSPARENT
 	return stylebox.bg_color
@@ -223,6 +272,13 @@ func _array_from(value: Variant) -> Array:
 	if typeof(value) == TYPE_ARRAY:
 		return value
 	return []
+
+
+func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
+	var event := InputEventScreenTouch.new()
+	event.pressed = pressed
+	event.position = Vector2(16, 16)
+	return event
 
 
 func _require(condition: bool, message: String) -> void:

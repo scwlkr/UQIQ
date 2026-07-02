@@ -4,7 +4,7 @@ const LevelLoaderScript := preload("res://scripts/level_loader.gd")
 const LocalProfileScript := preload("res://scripts/local_profile.gd")
 const TEST_SAVE_PATH := "user://issue_4_profile_verify.json"
 const REQUIRED_TEMPLATES := [
-	"Tap Logic",
+	"Physics Draw",
 	"Drag Logic",
 	"Text Trap",
 	"Pattern Grid",
@@ -26,7 +26,7 @@ func _initialize() -> void:
 		_require(not level.is_empty(), "Level %d was not found." % level_number)
 		levels.append(level)
 
-	_require(_templates_match_vertical_slice(levels), "Levels 1-6 should be one playable Level per required template.")
+	_require(_templates_match_vertical_slice(levels), "Levels 1-6 should match the current playable Pack 1 prototype templates.")
 	for level in levels:
 		_require(_level_has_template_solution(level), "Level %d has incomplete template rules." % int(level.get("level_number", 0)))
 		_require(_level_has_roasts(level), "Level %d should have all Roast buckets." % int(level.get("level_number", 0)))
@@ -38,7 +38,7 @@ func _initialize() -> void:
 	_require(profile.is_level_unlocked(1), "Level 1 should start unlocked.")
 
 	var score_before := profile.current_uqiq_score()
-	_complete_and_assert(profile, levels[0], 1, 1, score_before)
+	_complete_and_assert(profile, levels[0], 2, 1, score_before)
 	_require(profile.is_level_unlocked(2), "Completing Level 1 should unlock Level 2.")
 
 	score_before = profile.current_uqiq_score()
@@ -135,6 +135,15 @@ func _level_has_template_solution(level: Dictionary) -> bool:
 		"Memory Flash":
 			return _has_array(rules, "flash_items") and _has_array(rules, "choices") and _has_array(solution, "sequence")
 		"Physics Draw":
+			if str(rules.get("interaction_model", "")) == "freehand_physics_then_release":
+				var moving_object := _dictionary_from(rules.get("moving_object", {}))
+				var goal_zone := _dictionary_from(rules.get("goal_zone", {}))
+				var draw_limit := _dictionary_from(rules.get("draw_limit", {}))
+				return _has_array(moving_object, "start") \
+					and _has_array(goal_zone, "rect") \
+					and draw_limit.has("min_length_px") \
+					and draw_limit.has("collision_thickness_px") \
+					and not str(solution.get("success_condition", "")).is_empty()
 			return _has_array(rules, "draw_options") and not str(solution.get("draw_id", "")).is_empty()
 
 	return false
@@ -151,6 +160,12 @@ func _level_has_roasts(level: Dictionary) -> bool:
 func _has_array(source: Dictionary, key: String) -> bool:
 	var value = source.get(key, [])
 	return typeof(value) == TYPE_ARRAY and not value.is_empty()
+
+
+func _dictionary_from(value: Variant) -> Dictionary:
+	if typeof(value) == TYPE_DICTIONARY:
+		return value
+	return {}
 
 
 func _require(condition: bool, message: String) -> void:

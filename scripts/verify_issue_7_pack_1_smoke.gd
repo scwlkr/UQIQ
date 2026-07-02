@@ -445,6 +445,15 @@ func _level_has_template_solution(level: Dictionary) -> bool:
 				and _has_array(rules, "choices") \
 				and _has_array(solution, "sequence")
 		"Physics Draw":
+			if str(rules.get("interaction_model", "")) == "freehand_physics_then_release":
+				var moving_object := _dictionary_from(rules.get("moving_object", {}))
+				var goal_zone := _dictionary_from(rules.get("goal_zone", {}))
+				var draw_limit := _dictionary_from(rules.get("draw_limit", {}))
+				return _has_array(moving_object, "start") \
+					and _has_array(goal_zone, "rect") \
+					and draw_limit.has("min_length_px") \
+					and draw_limit.has("collision_thickness_px") \
+					and _has_nonempty_string(solution, "success_condition")
 			return _has_array(rules, "draw_options") \
 				and _has_nonempty_string(solution, "draw_id") \
 				and _array_has_id(rules.get("draw_options", []), str(solution.get("draw_id", "")))

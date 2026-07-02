@@ -53,8 +53,9 @@ func _verify_play_screen_scroll(level_number: int, required_button_text: String)
 func _verify_score_roastcard_scroll() -> void:
 	var level := _level_by_number(1)
 	_main.call("_show_play_screen", level)
-	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
-	_require(_scroll_has_label_text(_main, "The correct answer is the button labeled WRONG."), "Score Roastcard should expose lower UQIQ Moment content inside a scroll container.")
+	_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
+	_main.call("_handle_physics_release")
+	_require(_scroll_has_label_text(_main, "The player learns that a drawn line becomes physical enough to move the ball."), "Score Roastcard should expose lower UQIQ Moment content inside a scroll container.")
 	_require(_scroll_has_button_text(_main, "Level List"), "Score Roastcard should expose Level List action inside a scroll container.")
 
 

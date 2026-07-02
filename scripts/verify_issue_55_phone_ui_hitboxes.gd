@@ -36,7 +36,7 @@ func _initialize() -> void:
 	if _failed:
 		return
 
-	print("Issue #55 phone UI verification passed: Level 01 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with portrait, and notched-phone margins remain applied.")
+	print("Issue #55 phone UI verification passed: Level 07 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with portrait, and notched-phone margins remain applied.")
 	_cleanup()
 	quit(0)
 
@@ -52,22 +52,26 @@ func _boot_main_scene() -> void:
 
 
 func _verify_level_01_direct_tap_labels_fit() -> void:
-	_main.call("_show_play_screen", _level_by_number(1))
+	_main.call("_show_play_screen", _level_by_number(7))
 	await process_frame
 
 	var surface := _node_named(_main, "tap_scene_surface") as Control
-	var correct_pad := _node_named(_main, "tap_scene_target_correct_button") as Control
-	var wrong_pad := _node_named(_main, "tap_scene_target_wrong_button") as Control
-	_require(surface != null, "Level 01 should render the direct tap surface.")
-	_require(correct_pad != null, "Level 01 should render the CORRECT direct target.")
-	_require(wrong_pad != null, "Level 01 should render the WRONG direct target.")
+	var right_pad := _node_named(_main, "tap_scene_target_arrow_right") as Control
+	var left_pad := _node_named(_main, "tap_scene_target_arrow_left") as Control
+	var up_pad := _node_named(_main, "tap_scene_target_arrow_up") as Control
+	_require(surface != null, "Level 07 should render the direct tap surface.")
+	_require(right_pad != null, "Level 07 should render the RIGHT direct target.")
+	_require(left_pad != null, "Level 07 should render the LEFT direct target.")
+	_require(up_pad != null, "Level 07 should render the UP direct target.")
 	if _failed:
 		return
 
-	_require(_control_fits_inside(correct_pad, surface), "CORRECT direct target should remain inside the phone play surface.")
-	_require(_control_fits_inside(wrong_pad, surface), "WRONG direct target should remain inside the phone play surface.")
-	_require(_target_label_fits_single_line(correct_pad, "CORRECT"), "CORRECT target label should fit as one readable line.")
-	_require(_target_label_fits_single_line(wrong_pad, "WRONG"), "WRONG target label should fit as one readable line.")
+	_require(_control_fits_inside(right_pad, surface), "RIGHT direct target should remain inside the phone play surface.")
+	_require(_control_fits_inside(left_pad, surface), "LEFT direct target should remain inside the phone play surface.")
+	_require(_control_fits_inside(up_pad, surface), "UP direct target should remain inside the phone play surface.")
+	_require(_target_label_fits_single_line(right_pad, "RIGHT"), "RIGHT target label should fit as one readable line.")
+	_require(_target_label_fits_single_line(left_pad, "LEFT"), "LEFT target label should fit as one readable line.")
+	_require(_target_label_fits_single_line(up_pad, "UP"), "UP target label should fit as one readable line.")
 
 
 func _verify_level_09_text_focus_and_completion() -> void:

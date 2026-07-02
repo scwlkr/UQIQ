@@ -61,7 +61,7 @@ func _verify_safe_area_margin_math() -> void:
 
 func _complete_level_01_to_next_level() -> void:
 	var level := _level_by_number(1)
-	_complete_tap_logic(level)
+	_complete_freehand_physics(level)
 	_require(str(_main.get("_last_transition_name")) == "score_roastcard", "Level 01 should route to Score Roastcard.")
 	_require(_screen_has_label_text("Score Roastcard"), "Level 01 Score Roastcard should render its title.")
 	_require(_screen_has_button_text("Next Level"), "Level 01 Score Roastcard should expose a top-level Next Level action.")
@@ -82,9 +82,10 @@ func _complete_level_02_to_level_list() -> void:
 	_require(str(_main.get("_last_transition_name")) == "level_list", "Level List action should return to the Level List after a later Pack 1 completion.")
 
 
-func _complete_tap_logic(level: Dictionary) -> void:
+func _complete_freehand_physics(level: Dictionary) -> void:
 	_main.call("_show_play_screen", level)
-	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
+	_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
+	_main.call("_handle_physics_release")
 	_assert_completion_persisted(level)
 
 

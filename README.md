@@ -157,9 +157,10 @@ godot --headless --path . --script res://scripts/verify_issue_51_scorecard_safe_
 godot --headless --path . --script res://scripts/verify_issue_53_physics_draw_ios_path.gd
 godot --headless --path . --script res://scripts/verify_issue_54_neutral_targets.gd
 godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitboxes.gd
+godot --headless --path . --script res://scripts/verify_issue_64_first_ramp_freehand_physics.gd
 ```
 
-`verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6, one Level per required template, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
+`verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6 match the current playable Pack 1 prototype templates, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
 
 `verify_issue_5_desktop_smoke.gd` is the scripted desktop smoke/stability check. It boots the main scene with a clean test save, completes Levels 1-6, checks Score Roastcards, replay, Dur Token recovery, save/load, and repeated replay cycles.
 
@@ -203,7 +204,7 @@ godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitbox
 
 `verify_issue_42_pattern_grid_interaction.gd` is the direct Pattern Grid check. It verifies Level 4 renders a markable grid instead of the old single-cell `Submit Pattern` flow, rejects a wrong row, and completes from marked grid state.
 
-`verify_issue_43_tactile_tap_logic.gd` is the tactile Tap Logic check. It verifies Level 1 renders a direct tap scene instead of `CORRECT` / `WRONG` answer-choice buttons, rejects a wrong direct tap, accepts mouse/touch-shaped input, and completes through Score Roastcard.
+`verify_issue_43_tactile_tap_logic.gd` is the tactile Tap Logic check. It verifies Level 7 renders a direct tap scene instead of answer-choice buttons, rejects a wrong direct tap, accepts mouse/touch-shaped input, and completes through Score Roastcard.
 
 `verify_issue_45_tactile_memory_flash.gd` is the tactile Memory Flash check. It verifies Level 5 renders direct memory tiles and recall slots instead of `Flash` / `Hide` / choice buttons, hides the flash order during recall, dedupes touch-emulated mouse presses, clears cleanly, rejects a wrong row, and completes through Score Roastcard.
 
@@ -219,7 +220,9 @@ godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitbox
 
 `verify_issue_54_neutral_targets.gd` is the neutral target styling check. It verifies Level 04 grid cells and Levels 07/08/10 tap targets start with role-neutral colors while wrong/correct input feedback still works.
 
-`verify_issue_55_phone_ui_hitboxes.gd` is the Pack 1 phone UI hitbox/readability check. It verifies Level 01 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with `portrait`, and notched-phone margins remain applied.
+`verify_issue_55_phone_ui_hitboxes.gd` is the Pack 1 phone UI hitbox/readability check. It verifies Level 07 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with `portrait`, and notched-phone margins remain applied.
+
+`verify_issue_64_first_ramp_freehand_physics.gd` is the Level 1 First Ramp freehand physics check. It verifies no answer-choice draw UI, touch-created thick stroke geometry, StaticBody2D collision, Release motion, success by ball/cup overlap, too-short and flat failures, and Reset cleanup.
 
 ## Desktop Smoke
 

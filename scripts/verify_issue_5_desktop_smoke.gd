@@ -71,8 +71,9 @@ func _assert_clean_profile() -> void:
 func _run_clean_six_level_flow() -> void:
 	_start_level(_levels[0])
 	_use_roast()
-	_main.call("_handle_tap_target", "correct_button")
-	_complete_with_scorecard(_levels[0], Callable(self, "_tap_logic_win").bind(_levels[0]))
+	_main.call("_handle_physics_draw", "flat_line")
+	_main.call("_handle_physics_release")
+	_complete_with_scorecard(_levels[0], Callable(self, "_physics_draw_win").bind(_levels[0]))
 	_require(_profile.is_level_unlocked(2), "Level 2 should unlock after Level 1 completion.")
 
 	_start_level(_levels[1])
@@ -120,18 +121,19 @@ func _run_best_attempt_replay_checks() -> void:
 	var level_id := str(level.get("id", ""))
 
 	_start_level(level)
-	_complete_with_scorecard(level, Callable(self, "_tap_logic_win").bind(level), true)
+	_complete_with_scorecard(level, Callable(self, "_physics_draw_win").bind(level), true)
 	var better_best: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(better_best.get("action_count", 0)) == 1, "Better replay should improve Level 1 best action count.")
+	_require(int(better_best.get("action_count", 0)) == 2, "Better replay should improve Level 1 best action count.")
 	_require(int(better_best.get("roast_count", -1)) == 0, "Better replay should improve Level 1 best Roast count.")
 
 	_start_level(level)
 	_use_roast()
 	_use_roast()
-	_main.call("_handle_tap_target", "correct_button")
-	_complete_with_scorecard(level, Callable(self, "_tap_logic_win").bind(level), true)
+	_main.call("_handle_physics_draw", "flat_line")
+	_main.call("_handle_physics_release")
+	_complete_with_scorecard(level, Callable(self, "_physics_draw_win").bind(level), true)
 	var kept_best: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(kept_best.get("action_count", 0)) == 1, "Worse replay should keep Level 1 best action count.")
+	_require(int(kept_best.get("action_count", 0)) == 2, "Worse replay should keep Level 1 best action count.")
 	_require(int(kept_best.get("roast_count", -1)) == 0, "Worse replay should keep Level 1 best Roast count.")
 	_assert_save_load_state("best attempt replay")
 

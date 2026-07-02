@@ -53,15 +53,17 @@ func _verify_judge_reactions_and_transitions() -> void:
 	_require(_judge_count("start") >= 1, "Play Screen should show start Judge Face state.")
 	_require(_screen_has_label_text("calibrating ego"), "Play Screen should render start Judge Face caption.")
 
-	_main.call("_handle_tap_target", "wrong_target")
-	_require(_judge_count("fail") >= 1, "Wrong action should set fail Judge Face state.")
+	_main.call("_handle_physics_draw", "flat_line")
+	_main.call("_handle_physics_release")
+	_require(_judge_count("fail") >= 1, "Wrong freehand release should set fail Judge Face state.")
 	_require(_screen_has_label_text("incorrect aura detected"), "Fail Judge Face caption should render.")
 
 	_main.call("_handle_roast_action")
 	_require(_judge_count("roast") >= 1, "Roast action should set Roast Judge Face state.")
 	_require(_screen_has_label_text("roast protocol armed"), "Roast Judge Face caption should render.")
 
-	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
+	_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
+	_main.call("_handle_physics_release")
 	_require(_judge_count("success") >= 1, "Completion should record success Judge Face state.")
 	_require(_judge_count("score") >= 1, "Score Roastcard should set score Judge Face state.")
 	_require(_transition_count("score_roastcard") >= 1, "Score Roastcard should record a screen transition.")

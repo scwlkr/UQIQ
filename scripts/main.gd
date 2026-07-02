@@ -86,6 +86,16 @@ var _physics_is_drawing := false
 var _physics_has_drawn_line := false
 var _physics_draw_start := Vector2.ZERO
 var _physics_draw_end := Vector2.ZERO
+var _freehand_physics_runtime: Node2D = null
+var _freehand_stroke_body: StaticBody2D = null
+var _freehand_ball_body: RigidBody2D = null
+var _freehand_goal_area: Area2D = null
+var _freehand_ball_visual: Control = null
+var _freehand_cup_visual: Control = null
+var _freehand_stroke_points: Array[Vector2] = []
+var _freehand_ball_start := Vector2.ZERO
+var _freehand_last_ball_position := Vector2.ZERO
+var _freehand_ball_moved := false
 
 
 func _ready() -> void:
@@ -420,6 +430,16 @@ func _show_play_screen(level: Dictionary) -> void:
 	_physics_has_drawn_line = false
 	_physics_draw_start = Vector2.ZERO
 	_physics_draw_end = Vector2.ZERO
+	_freehand_physics_runtime = null
+	_freehand_stroke_body = null
+	_freehand_ball_body = null
+	_freehand_goal_area = null
+	_freehand_ball_visual = null
+	_freehand_cup_visual = null
+	_freehand_stroke_points = []
+	_freehand_ball_start = Vector2.ZERO
+	_freehand_last_ball_position = Vector2.ZERO
+	_freehand_ball_moved = false
 
 	var root := _make_screen(COLOR_PANEL, "play_screen", true)
 
@@ -494,7 +514,7 @@ func _handle_tap_target(target_id: String) -> void:
 	if typeof(solution) == TYPE_DICTIONARY:
 		winning_target = str(solution.get("target_id", ""))
 
-	if target_id == winning_target:
+	if not winning_target.is_empty() and target_id == winning_target:
 		_complete_current_level()
 		return
 
@@ -663,6 +683,16 @@ func _handle_memory_submit() -> void:
 
 
 func _handle_physics_draw(draw_id: String) -> void:
+	if _uses_freehand_physics_draw():
+		var start := Vector2(42, 232)
+		var end := Vector2(288, 176)
+		if draw_id == "flat_line":
+			end = Vector2(288, 232)
+		elif draw_id == "wall":
+			end = Vector2(58, 174)
+		_simulate_physics_draw_line(start, end)
+		return
+
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_physics_choice = draw_id
@@ -673,6 +703,10 @@ func _handle_physics_draw(draw_id: String) -> void:
 
 
 func _handle_physics_release() -> void:
+	if _uses_freehand_physics_draw():
+		_handle_freehand_physics_release()
+		return
+
 	_tap_count += 1
 	_trigger_feedback("tap")
 
@@ -1323,7 +1357,11 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> P
 
 
 func _render_physics_draw(stage_box: VBoxContainer) -> void:
-	_add_label(stage_box, "Draw one line so the ball reaches the cup.", 17, COLOR_INK)
+	_add_label(stage_box, str(_current_level.get("prompt", "Draw one line so the ball reaches the cup.")), 17, COLOR_INK)
+	if _uses_freehand_physics_draw():
+		_render_freehand_physics_draw(stage_box)
+		return
+
 	if not _uses_direct_physics_draw():
 		_render_physics_draw_choice_fallback(stage_box)
 		return
@@ -1378,6 +1416,63 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_add_feedback(stage_box, "Draw the ramp, then release the ball.")
 
 
+func _render_freehand_physics_draw(stage_box: VBoxContainer) -> void:
+	var surface := Panel.new()
+	surface.name = "physics_draw_surface"
+	surface.custom_minimum_size = Vector2(0, 300)
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	surface.mouse_filter = Control.MOUSE_FILTER_STOP
+	surface.gui_input.connect(Callable(self, "_handle_physics_surface_input").bind(surface))
+	stage_box.add_child(surface)
+	_physics_draw_surface = surface
+
+	_freehand_physics_runtime = Node2D.new()
+	_freehand_physics_runtime.name = "freehand_physics_runtime"
+	surface.add_child(_freehand_physics_runtime)
+
+	_create_freehand_goal(surface)
+	_create_freehand_ball(surface)
+
+	_physics_line = Line2D.new()
+	_physics_line.name = "player_drawn_line"
+	_physics_line.width = _freehand_collision_thickness()
+	_physics_line.default_color = COLOR_BLUE
+	_physics_line.joint_mode = Line2D.LINE_JOINT_ROUND
+	_physics_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_physics_line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	_physics_line.z_index = 4
+	surface.add_child(_physics_line)
+
+	_physics_choice_label = _new_label("Stroke: none", 16, COLOR_INK)
+	_physics_choice_label.position = Vector2(18, 16)
+	_physics_choice_label.size = Vector2(304, 26)
+	_physics_choice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(_physics_choice_label)
+
+	_physics_result_label = _new_label("Release result: waiting", 16, COLOR_INK)
+	_physics_result_label.position = Vector2(18, 266)
+	_physics_result_label.size = Vector2(320, 26)
+	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(_physics_result_label)
+
+	var actions := HBoxContainer.new()
+	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_theme_constant_override("separation", 10)
+	stage_box.add_child(actions)
+
+	var release_button := _make_button("Release", COLOR_GREEN)
+	release_button.pressed.connect(Callable(self, "_handle_physics_release"))
+	actions.add_child(release_button)
+
+	var reset_button := _make_button("Reset", COLOR_BLUE)
+	reset_button.pressed.connect(Callable(self, "_handle_freehand_physics_reset"))
+	actions.add_child(reset_button)
+
+	_reset_freehand_physics_attempt(false)
+	_add_feedback(stage_box, "Draw one ramp, then release the ball.")
+
+
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	var surface := PanelContainer.new()
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1412,6 +1507,75 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	_add_feedback(stage_box, "Deterministic choice fallback until this Level gets a direct drawing spec.")
 
 
+func _create_freehand_goal(surface: Control) -> void:
+	var goal_rect := _freehand_goal_rect()
+	var visible_rect := goal_rect.grow(_freehand_goal_forgiveness())
+
+	_freehand_cup_visual = Panel.new()
+	_freehand_cup_visual.name = "freehand_cup"
+	_freehand_cup_visual.position = visible_rect.position
+	_freehand_cup_visual.size = visible_rect.size
+	_freehand_cup_visual.custom_minimum_size = visible_rect.size
+	_freehand_cup_visual.z_index = 2
+	_freehand_cup_visual.set_meta("goal_rect", goal_rect)
+	_freehand_cup_visual.add_theme_stylebox_override("panel", _flat_box(Color(0.30, 0.82, 0.50, 0.42), 8))
+	surface.add_child(_freehand_cup_visual)
+
+	var label := _new_label("CUP", 16, COLOR_INK)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_freehand_cup_visual.add_child(label)
+
+	if _freehand_physics_runtime == null or not is_instance_valid(_freehand_physics_runtime):
+		return
+
+	_freehand_goal_area = Area2D.new()
+	_freehand_goal_area.name = "freehand_goal_area"
+	_freehand_goal_area.position = visible_rect.get_center()
+	_freehand_goal_area.set_meta("goal_rect", goal_rect)
+	_freehand_goal_area.set_meta("forgiveness_px", _freehand_goal_forgiveness())
+	_freehand_physics_runtime.add_child(_freehand_goal_area)
+
+	var shape := RectangleShape2D.new()
+	shape.size = visible_rect.size
+	var collision := CollisionShape2D.new()
+	collision.name = "freehand_goal_collision"
+	collision.shape = shape
+	_freehand_goal_area.add_child(collision)
+
+
+func _create_freehand_ball(surface: Control) -> void:
+	var radius := _freehand_ball_radius()
+	_freehand_ball_start = _freehand_ball_start_from_rules()
+	_freehand_last_ball_position = _freehand_ball_start
+
+	_freehand_ball_visual = Panel.new()
+	_freehand_ball_visual.name = "freehand_ball"
+	_freehand_ball_visual.position = _freehand_ball_start - Vector2(radius, radius)
+	_freehand_ball_visual.size = Vector2(radius * 2.0, radius * 2.0)
+	_freehand_ball_visual.custom_minimum_size = _freehand_ball_visual.size
+	_freehand_ball_visual.z_index = 5
+	_freehand_ball_visual.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, int(radius)))
+	surface.add_child(_freehand_ball_visual)
+
+	if _freehand_physics_runtime == null or not is_instance_valid(_freehand_physics_runtime):
+		return
+
+	_freehand_ball_body = RigidBody2D.new()
+	_freehand_ball_body.name = "freehand_ball_body"
+	_freehand_ball_body.position = _freehand_ball_start
+	_freehand_ball_body.freeze = true
+	_freehand_ball_body.gravity_scale = 1.0
+	_freehand_physics_runtime.add_child(_freehand_ball_body)
+
+	var shape := CircleShape2D.new()
+	shape.radius = radius
+	var collision := CollisionShape2D.new()
+	collision.name = "freehand_ball_collision"
+	collision.shape = shape
+	_freehand_ball_body.add_child(collision)
+
+
 func _uses_direct_tap_scene() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_tap_scene"
 
@@ -1426,6 +1590,10 @@ func _uses_direct_memory_tiles() -> bool:
 
 func _uses_direct_physics_draw() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_draw_line_then_release"
+
+
+func _uses_freehand_physics_draw() -> bool:
+	return str(_rules().get("interaction_model", "")) == "freehand_physics_then_release"
 
 
 func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
@@ -1454,6 +1622,8 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 func _direct_tap_target_font_size(text: String) -> int:
 	if text.length() >= 7:
 		return 20
+	if text.length() >= 4:
+		return 21
 	return 25
 
 
@@ -1465,20 +1635,26 @@ func _layout_direct_tap_targets(surface: Control) -> void:
 	for child in surface.get_children():
 		if child is Control and str(child.name).begins_with("tap_scene_target_"):
 			pads.append(child as Control)
-	if pads.size() != 2:
+	if pads.is_empty():
 		return
 	if surface.size.x <= 0.0:
 		return
 
 	var side_padding := 18.0
 	var gap := 12.0
-	var target_width := clampf((surface.size.x - (side_padding * 2.0) - gap) / 2.0, 120.0, 156.0)
+	var target_width := clampf(
+		(surface.size.x - (side_padding * 2.0) - (gap * float(pads.size() - 1))) / float(pads.size()),
+		84.0,
+		156.0
+	)
+	var total_width := (target_width * float(pads.size())) + (gap * float(pads.size() - 1))
+	var start_x := maxf(side_padding, (surface.size.x - total_width) * 0.5)
 	for index in range(pads.size()):
 		var pad := pads[index]
 		var original_position: Vector2 = pad.get_meta("scene_position", Vector2(0, 92))
 		pad.size = Vector2(target_width, maxf(pad.size.y, 96.0))
 		pad.custom_minimum_size = pad.size
-		var x := side_padding if index == 0 else surface.size.x - side_padding - target_width
+		var x := start_x + (float(index) * (target_width + gap))
 		pad.position = Vector2(x, original_position.y)
 
 
@@ -1727,7 +1903,12 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 		_last_physics_result = "drawing"
 		_physics_draw_start = _event_position_in_control_clamped(event, surface, surface)
 		_physics_draw_end = _physics_draw_start
-		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		if _uses_freehand_physics_draw():
+			_clear_freehand_stroke_collision()
+			_freehand_stroke_points = [_physics_draw_start]
+			_set_physics_line_path(_freehand_stroke_points)
+		else:
+			_set_physics_line_points(_physics_draw_start, _physics_draw_end)
 		_update_physics_choice_label()
 		_feedback_label.text = "Drawing. Aim like gravity is watching."
 		_mark_input_handled()
@@ -1735,12 +1916,18 @@ func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 
 	if _is_pointer_drag(event) and _physics_is_drawing:
 		_physics_draw_end = _event_position_in_control_clamped(event, surface, surface)
-		_set_physics_line_points(_physics_draw_start, _physics_draw_end)
+		if _uses_freehand_physics_draw():
+			_append_freehand_stroke_point(_physics_draw_end)
+			_set_physics_line_path(_freehand_stroke_points)
+		else:
+			_set_physics_line_points(_physics_draw_start, _physics_draw_end)
 		_mark_input_handled()
 		return
 
 	if _is_primary_release(event) and _physics_is_drawing:
 		_physics_draw_end = _event_position_in_control_clamped(event, surface, surface)
+		if _uses_freehand_physics_draw():
+			_append_freehand_stroke_point(_physics_draw_end, true)
 		_record_physics_drawn_line()
 		_mark_input_handled()
 
@@ -1750,6 +1937,13 @@ func _record_physics_drawn_line() -> void:
 	_physics_has_drawn_line = true
 	_tap_count += 1
 	_trigger_feedback("tap")
+	if _uses_freehand_physics_draw():
+		if _freehand_stroke_points.is_empty():
+			_freehand_stroke_points = [_physics_draw_start, _physics_draw_end]
+		_set_physics_line_path(_freehand_stroke_points)
+		_record_freehand_physics_stroke()
+		return
+
 	_set_physics_line_points(_physics_draw_start, _physics_draw_end)
 	_physics_choice = _classify_physics_line(_physics_draw_start, _physics_draw_end)
 	_last_physics_result = "selected"
@@ -1760,6 +1954,8 @@ func _record_physics_drawn_line() -> void:
 func _simulate_physics_draw_line(start: Vector2, end: Vector2) -> void:
 	_physics_draw_start = start
 	_physics_draw_end = end
+	if _uses_freehand_physics_draw():
+		_freehand_stroke_points = [start, end]
 	_record_physics_drawn_line()
 
 
@@ -1767,6 +1963,266 @@ func _set_physics_line_points(start: Vector2, end: Vector2) -> void:
 	if _physics_line == null or not is_instance_valid(_physics_line):
 		return
 	_physics_line.points = PackedVector2Array([start, end])
+
+
+func _set_physics_line_path(points: Array[Vector2]) -> void:
+	if _physics_line == null or not is_instance_valid(_physics_line):
+		return
+	_physics_line.points = PackedVector2Array(points)
+
+
+func _append_freehand_stroke_point(point: Vector2, force: bool = false) -> void:
+	if _freehand_stroke_points.is_empty():
+		_freehand_stroke_points.append(point)
+		return
+
+	var last_point := _freehand_stroke_points[_freehand_stroke_points.size() - 1]
+	if not force and last_point.distance_to(point) < 6.0:
+		return
+
+	var max_points := _freehand_max_sampled_points()
+	if _freehand_stroke_points.size() >= max_points:
+		_freehand_stroke_points[_freehand_stroke_points.size() - 1] = point
+		return
+
+	_freehand_stroke_points.append(point)
+
+
+func _record_freehand_physics_stroke() -> void:
+	_physics_choice = ""
+	_freehand_ball_moved = false
+	_freehand_last_ball_position = _freehand_ball_start_from_rules()
+	var length := _freehand_stroke_length(_freehand_stroke_points)
+	if length < _freehand_min_length():
+		_last_physics_result = "too_short"
+		_clear_freehand_stroke_collision()
+		_set_freehand_status_text("Stroke: too short", "Release result: give the ball more ramp")
+		_feedback_label.text = "Too short. Give the ball something real to roll on."
+		return
+
+	_build_freehand_stroke_collision()
+	_last_physics_result = "ready"
+	_set_freehand_status_text("Stroke: solid ramp", "Release result: ready")
+	_feedback_label.text = "Stroke is solid. Tap Release."
+
+
+func _handle_freehand_physics_release() -> void:
+	_tap_count += 1
+	_trigger_feedback("tap")
+
+	if not _physics_has_drawn_line or _freehand_stroke_points.size() < 2:
+		_fail_freehand_physics("Draw a ramp before Release.", "no_line")
+		return
+
+	var failure_text := _freehand_release_failure_text()
+	if not failure_text.is_empty():
+		_fail_freehand_physics(failure_text, "fail")
+		return
+
+	_move_freehand_ball_to_goal()
+	if _freehand_ball_overlaps_goal():
+		_last_physics_result = "success"
+		_set_freehand_status_text("Stroke: ramp accepted", "Release result: ball reached the cup")
+		_feedback_label.text = "Ball reached the cup."
+		_complete_current_level()
+		return
+
+	_fail_freehand_physics("Missed the cup. Try lifting the end closer to the goal.", "fail")
+
+
+func _handle_freehand_physics_reset() -> void:
+	_reset_freehand_physics_attempt(true)
+
+
+func _reset_freehand_physics_attempt(count_action: bool = true) -> void:
+	if count_action:
+		_tap_count += 1
+		_trigger_feedback("tap")
+
+	_physics_is_drawing = false
+	_physics_has_drawn_line = false
+	_physics_choice = ""
+	_last_physics_result = "reset"
+	_physics_draw_start = Vector2.ZERO
+	_physics_draw_end = Vector2.ZERO
+	_freehand_stroke_points = []
+	_freehand_ball_moved = false
+	_freehand_ball_start = _freehand_ball_start_from_rules()
+	_freehand_last_ball_position = _freehand_ball_start
+	_clear_freehand_stroke_collision()
+
+	if _physics_line != null and is_instance_valid(_physics_line):
+		_physics_line.points = PackedVector2Array()
+	_set_freehand_ball_center(_freehand_ball_start)
+	_set_freehand_status_text("Stroke: none", "Release result: waiting")
+	if _feedback_label != null and is_instance_valid(_feedback_label):
+		_feedback_label.text = "Reset. Draw one ramp, then release the ball."
+
+
+func _fail_freehand_physics(message: String, result: String) -> void:
+	_last_physics_result = result
+	_set_freehand_status_text("Stroke: needs work", "Release result: %s" % message)
+	_feedback_label.text = message
+	_set_judge_state("fail")
+	_trigger_feedback("fail")
+
+
+func _freehand_release_failure_text() -> String:
+	var length := _freehand_stroke_length(_freehand_stroke_points)
+	if length < _freehand_min_length():
+		return "Too short. Give the ball something real to roll on."
+
+	var start := _freehand_stroke_points[0]
+	var end := _freehand_stroke_points[_freehand_stroke_points.size() - 1]
+	var delta := end - start
+	if delta.x < 80.0:
+		return "Missed the cup. Push the ramp toward the goal."
+	if delta.y > -18.0:
+		return "Too flat. Lift the end closer to the cup."
+
+	var ball := _freehand_ball_start_from_rules()
+	var starts_near_ball := start.distance_to(ball) <= 130.0
+	starts_near_ball = starts_near_ball or _distance_point_to_segment(ball, start, end) <= 64.0
+	if not starts_near_ball:
+		return "Draw under the ball. Gravity can handle the paperwork."
+
+	var goal_rect := _freehand_goal_rect()
+	var generous_goal := goal_rect.grow(max(54.0, _freehand_goal_forgiveness() + 34.0))
+	if not generous_goal.has_point(end):
+		return "Missed the cup. Try lifting the end closer to the goal."
+
+	return ""
+
+
+func _build_freehand_stroke_collision() -> void:
+	_clear_freehand_stroke_collision()
+	if _freehand_physics_runtime == null or not is_instance_valid(_freehand_physics_runtime):
+		return
+
+	_freehand_stroke_body = StaticBody2D.new()
+	_freehand_stroke_body.name = "freehand_stroke_body"
+	_freehand_stroke_body.set_meta("collision_thickness_px", _freehand_collision_thickness())
+	_freehand_stroke_body.set_meta("sampled_point_count", _freehand_stroke_points.size())
+	_freehand_physics_runtime.add_child(_freehand_stroke_body)
+
+	var segment_count := 0
+	for index in range(_freehand_stroke_points.size() - 1):
+		var start := _freehand_stroke_points[index]
+		var end := _freehand_stroke_points[index + 1]
+		var delta := end - start
+		var length := delta.length()
+		if length < 2.0:
+			continue
+
+		var shape := RectangleShape2D.new()
+		shape.size = Vector2(length, _freehand_collision_thickness())
+		var collision := CollisionShape2D.new()
+		collision.name = "freehand_stroke_collision_%02d" % segment_count
+		collision.shape = shape
+		collision.position = start + (delta * 0.5)
+		collision.rotation = delta.angle()
+		_freehand_stroke_body.add_child(collision)
+		segment_count += 1
+
+	_freehand_stroke_body.set_meta("collision_shape_count", segment_count)
+
+
+func _clear_freehand_stroke_collision() -> void:
+	if _freehand_stroke_body == null or not is_instance_valid(_freehand_stroke_body):
+		_freehand_stroke_body = null
+		return
+
+	var parent := _freehand_stroke_body.get_parent()
+	if parent != null:
+		parent.remove_child(_freehand_stroke_body)
+	_freehand_stroke_body.queue_free()
+	_freehand_stroke_body = null
+
+
+func _move_freehand_ball_to_goal() -> void:
+	var goal_center := _freehand_goal_rect().get_center()
+	_freehand_ball_moved = _freehand_ball_start_from_rules().distance_to(goal_center) > 1.0
+	_freehand_last_ball_position = goal_center
+	_set_freehand_ball_center(goal_center)
+
+
+func _set_freehand_ball_center(center: Vector2) -> void:
+	var radius := _freehand_ball_radius()
+	if _freehand_ball_visual != null and is_instance_valid(_freehand_ball_visual):
+		_freehand_ball_visual.position = center - Vector2(radius, radius)
+	if _freehand_ball_body != null and is_instance_valid(_freehand_ball_body):
+		_freehand_ball_body.position = center
+
+
+func _freehand_ball_overlaps_goal() -> bool:
+	return _circle_overlaps_rect(_freehand_last_ball_position, _freehand_ball_radius(), _freehand_goal_rect().grow(_freehand_goal_forgiveness()))
+
+
+func _circle_overlaps_rect(center: Vector2, radius: float, rect: Rect2) -> bool:
+	var closest := Vector2(
+		clampf(center.x, rect.position.x, rect.position.x + rect.size.x),
+		clampf(center.y, rect.position.y, rect.position.y + rect.size.y)
+	)
+	return center.distance_to(closest) <= radius
+
+
+func _distance_point_to_segment(point: Vector2, start: Vector2, end: Vector2) -> float:
+	var segment := end - start
+	var length_squared := segment.length_squared()
+	if length_squared <= 0.001:
+		return point.distance_to(start)
+	var t := clampf((point - start).dot(segment) / length_squared, 0.0, 1.0)
+	return point.distance_to(start + (segment * t))
+
+
+func _freehand_stroke_length(points: Array[Vector2]) -> float:
+	var length := 0.0
+	for index in range(points.size() - 1):
+		length += points[index].distance_to(points[index + 1])
+	return length
+
+
+func _set_freehand_status_text(stroke_text: String, result_text: String) -> void:
+	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
+		_physics_choice_label.text = stroke_text
+	if _physics_result_label != null and is_instance_valid(_physics_result_label):
+		_physics_result_label.text = result_text
+
+
+func _freehand_draw_limit() -> Dictionary:
+	return _dictionary_from(_rules().get("draw_limit", {}))
+
+
+func _freehand_min_length() -> float:
+	return float(_freehand_draw_limit().get("min_length_px", 70.0))
+
+
+func _freehand_max_sampled_points() -> int:
+	return max(2, int(_freehand_draw_limit().get("max_sampled_points", 30)))
+
+
+func _freehand_collision_thickness() -> float:
+	return float(_freehand_draw_limit().get("collision_thickness_px", 12.0))
+
+
+func _freehand_ball_start_from_rules() -> Vector2:
+	var moving_object := _dictionary_from(_rules().get("moving_object", {}))
+	return _vector2_from_array(moving_object.get("start", []), Vector2(58, 218))
+
+
+func _freehand_ball_radius() -> float:
+	var moving_object := _dictionary_from(_rules().get("moving_object", {}))
+	return float(moving_object.get("radius", 16.0))
+
+
+func _freehand_goal_rect() -> Rect2:
+	var goal_zone := _dictionary_from(_rules().get("goal_zone", {}))
+	return _rect2_from_array(goal_zone.get("rect", []), Rect2(258, 146, 54, 58))
+
+
+func _freehand_goal_forgiveness() -> float:
+	var goal_zone := _dictionary_from(_rules().get("goal_zone", {}))
+	return float(goal_zone.get("forgiveness_px", 14.0))
 
 
 func _classify_physics_line(start: Vector2, end: Vector2) -> String:
@@ -2109,6 +2565,16 @@ func _vector2_from_array(value: Variant, fallback: Vector2) -> Vector2:
 	return Vector2(float(values[0]), float(values[1]))
 
 
+func _rect2_from_array(value: Variant, fallback: Rect2) -> Rect2:
+	if typeof(value) != TYPE_ARRAY:
+		return fallback
+
+	var values: Array = value
+	if values.size() < 4:
+		return fallback
+	return Rect2(float(values[0]), float(values[1]), float(values[2]), float(values[3]))
+
+
 func _score_component_text(components: Dictionary, key: String, title: String, fallback_label: String) -> String:
 	var component := _dictionary_from(components.get(key, {}))
 	var label := str(component.get("label", fallback_label))
@@ -2131,6 +2597,13 @@ func _physics_draw_label(draw_id: String) -> String:
 
 
 func _update_physics_choice_label() -> void:
+	if _uses_freehand_physics_draw():
+		if _last_physics_result == "drawing":
+			_set_freehand_status_text("Stroke: drawing...", "Release result: line not released yet")
+		elif _last_physics_result == "reset":
+			_set_freehand_status_text("Stroke: none", "Release result: waiting")
+		return
+
 	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
 		if _last_physics_result == "drawing":
 			_physics_choice_label.text = "Selected line: drawing..."

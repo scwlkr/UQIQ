@@ -55,7 +55,8 @@ func _verify_main_flow_text_controls() -> void:
 
 	var level := _level_by_number(1)
 	_main.call("_show_play_screen", level)
-	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
+	_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
+	_main.call("_handle_physics_release")
 	_require(_screen_has_label_text("Score Roastcard"), "Score Roastcard should render for readability sweep.")
 	_assert_text_controls("Score Roastcard")
 

@@ -118,7 +118,8 @@ func _verify_score_roastcard_rows() -> void:
 	_require(_profile.spend_dur_token(level), _profile.last_error)
 	_main.call("_show_play_screen", level)
 	_main.call("_handle_roast_action")
-	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
+	_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
+	_main.call("_handle_physics_release")
 
 	_require(_screen_has_label_text("Score Roastcard"), "Score Roastcard screen should render after completion.")
 	_require(_screen_has_label_text("Total Delta:"), "Score Roastcard should show total score delta.")

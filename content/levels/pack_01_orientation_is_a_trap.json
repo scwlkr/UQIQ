@@ -3,82 +3,84 @@
   "pack_title": "Orientation Is a Trap",
   "levels": [
     {
-      "id": "p01_l01_wrong_button",
+      "id": "p01_l01_first_ramp",
       "pack_id": "pack_01_orientation_is_a_trap",
       "level_number": 1,
-      "title": "The Wrong Button",
-      "template": "Tap Logic",
-      "challenge_type": "logic trap",
-      "completion_mode": "auto_complete_on_correct_tap",
-      "prompt": "Tap the correct button. Try not to make this a whole personality.",
+      "title": "First Ramp",
+      "template": "Physics Draw",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "auto_complete_on_goal_overlap",
+      "prompt": "Draw a ramp so the ball rolls into the cup.",
       "rules": {
-        "tap_targets": [
-          {
-            "id": "correct_button",
-            "label": "CORRECT",
-            "role": "decoy",
-            "scene_position": [
-              28,
-              92
-            ],
-            "scene_size": [
-              138,
-              96
-            ]
-          },
-          {
-            "id": "wrong_button",
-            "label": "WRONG",
-            "role": "correct",
-            "scene_position": [
-              190,
-              92
-            ],
-            "scene_size": [
-              138,
-              96
-            ]
-          }
-        ],
-        "interaction_model": "direct_tap_scene",
-        "scene_prompt": "Tap the object, not an answer list.",
-        "feedback_on_wrong_tap": "Nope. The label was loud, not right."
+        "interaction_model": "freehand_physics_then_release",
+        "scene_prompt": "Draw one ramp, then release the ball.",
+        "moving_object": {
+          "id": "ball",
+          "shape": "circle",
+          "start": [
+            58,
+            218
+          ],
+          "radius": 16
+        },
+        "goal_zone": {
+          "id": "cup",
+          "rect": [
+            258,
+            146,
+            54,
+            58
+          ],
+          "forgiveness_px": 14
+        },
+        "draw_limit": {
+          "strokes": 1,
+          "min_length_px": 70,
+          "max_sampled_points": 30,
+          "collision_thickness_px": 12
+        },
+        "simulation_limit_seconds": 4,
+        "reset_on_failure": true
       },
       "solution": {
-        "target_id": "wrong_button",
-        "explanation": "The prompt asks for the correct button, and the correct button is the one labeled WRONG."
+        "success_condition": "ball overlaps cup goal zone after release",
+        "intended_strategy": "draw a rising ramp from below the ball toward the cup",
+        "not_allowed": "answer-choice draw option",
+        "explanation": "The drawn stroke becomes a physical ramp, and completion comes from the ball overlapping the cup."
       },
       "scoring": {
         "speed_seconds": {
-          "great": 5,
-          "ok": 15
+          "great": 8,
+          "ok": 20
         },
         "action_count": {
-          "great": 1,
-          "ok": 3
+          "great": 2,
+          "ok": 5
         },
         "roast_penalty": 5
       },
       "roasts": {
         "failure": [
-          "You trusted a button label. Historic dingleberry behavior.",
-          "The button said correct and your brain saluted."
+          "The ball respected your line. That was the problem.",
+          "Gravity filed a complaint about that ramp."
         ],
         "delay": [
-          "The answer is waiting. Your courage is still buffering."
+          "Draw under the ball. Gravity can handle the paperwork."
         ],
         "scorecard": [
-          "You beat Level 1. The app is legally required to pretend this is progress."
+          "You made a line become a ramp. That is the whole trick."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "two_tappable_scene_objects",
-          "judge_face_stub"
+          "ball",
+          "cup",
+          "freehand_stroke",
+          "goal_zone"
         ]
       },
-      "uqiq_moment": "The correct answer is the button labeled WRONG."
+      "uqiq_moment": "The player learns that a drawn line becomes physical enough to move the ball."
     },
     {
       "id": "p01_l02_move_the_word",
@@ -482,20 +484,46 @@
         "tap_targets": [
           {
             "id": "arrow_right",
-            "label": "RIGHT ARROW",
-            "role": "decoy"
+            "label": "RIGHT",
+            "role": "decoy",
+            "scene_position": [
+              18,
+              92
+            ],
+            "scene_size": [
+              102,
+              88
+            ]
           },
           {
             "id": "arrow_left",
-            "label": "LEFT ARROW",
-            "role": "correct"
+            "label": "LEFT",
+            "role": "correct",
+            "scene_position": [
+              126,
+              92
+            ],
+            "scene_size": [
+              102,
+              88
+            ]
           },
           {
             "id": "arrow_up",
-            "label": "UP ARROW",
-            "role": "decoy"
+            "label": "UP",
+            "role": "decoy",
+            "scene_position": [
+              234,
+              92
+            ],
+            "scene_size": [
+              102,
+              88
+            ]
           }
         ],
+        "interaction_model": "direct_tap_scene",
+        "scene_prompt": "Tap the arrow object, not an answer list.",
         "feedback_on_wrong_tap": "You followed the crowd arrow. Tiny parade, wrong street."
       },
       "solution": {

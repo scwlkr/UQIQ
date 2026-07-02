@@ -77,7 +77,8 @@ func _capture_play_screen(filename: String, level_number: int) -> void:
 func _capture_score_roastcard() -> void:
 	var level := _level_by_number(1)
 	_main.call("_show_play_screen", level)
-	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
+	_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
+	_main.call("_handle_physics_release")
 	await _save_screenshot("06_score_roastcard.png")
 
 

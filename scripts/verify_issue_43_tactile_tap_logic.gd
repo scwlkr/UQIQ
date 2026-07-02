@@ -27,7 +27,7 @@ func _initialize() -> void:
 	if _failed:
 		return
 
-	print("Issue #43 Tap Logic verification passed: Level 1 renders a tactile direct tap scene, rejects a wrong direct tap, and completes through Score Roastcard from a direct object tap.")
+	print("Issue #43 Tap Logic verification passed: Level 7 renders a tactile direct tap scene, rejects a wrong direct tap, and completes through Score Roastcard from a direct object tap.")
 	_cleanup()
 	quit(0)
 
@@ -42,35 +42,35 @@ func _boot_main_scene() -> void:
 
 
 func _verify_tactile_tap_logic() -> void:
-	var level := _level_by_number(1)
+	var level := _level_by_number(7)
 	var level_id := str(level.get("id", ""))
 
 	_main.call("_show_play_screen", level)
 	var surface := _node_named(_main, "tap_scene_surface") as Control
-	var decoy_pad := _node_named(_main, "tap_scene_target_correct_button") as Control
-	var correct_pad := _node_named(_main, "tap_scene_target_wrong_button") as Control
+	var decoy_pad := _node_named(_main, "tap_scene_target_arrow_right") as Control
+	var correct_pad := _node_named(_main, "tap_scene_target_arrow_left") as Control
 	_require(surface != null, "Tap Logic should render a named direct tap surface.")
-	_require(decoy_pad != null, "Tap Logic should render CORRECT as a direct scene target.")
-	_require(correct_pad != null, "Tap Logic should render WRONG as a direct scene target.")
+	_require(decoy_pad != null, "Tap Logic should render RIGHT as a direct scene target.")
+	_require(correct_pad != null, "Tap Logic should render LEFT as a direct scene target.")
 	_require(not (decoy_pad is Button), "Direct Tap Logic targets should not be Button answer choices.")
 	_require(not (correct_pad is Button), "Direct Tap Logic targets should not be Button answer choices.")
-	_require(not _has_button_text(_main, "CORRECT"), "Direct Tap Logic should not expose CORRECT as an answer-choice button.")
-	_require(not _has_button_text(_main, "WRONG"), "Direct Tap Logic should not expose WRONG as an answer-choice button.")
+	_require(not _has_button_text(_main, "RIGHT"), "Direct Tap Logic should not expose RIGHT as an answer-choice button.")
+	_require(not _has_button_text(_main, "LEFT"), "Direct Tap Logic should not expose LEFT as an answer-choice button.")
 
-	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true), "correct_button", decoy_pad)
-	_require(not _profile.is_level_completed(level_id), "Wrong direct tap should not complete Level 1.")
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true), "arrow_right", decoy_pad)
+	_require(not _profile.is_level_completed(level_id), "Wrong direct tap should not complete Level 7.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct tap should count as one action.")
-	_require(str(_main.get("_last_direct_tap_target_id")) == "correct_button", "Direct tap handler should record the touched decoy target.")
+	_require(str(_main.get("_last_direct_tap_target_id")) == "arrow_right", "Direct tap handler should record the touched decoy target.")
 
 	_main.call("_show_play_screen", level)
-	correct_pad = _node_named(_main, "tap_scene_target_wrong_button") as Control
-	_require(correct_pad != null, "Tap Logic should render WRONG scene target after replay.")
+	correct_pad = _node_named(_main, "tap_scene_target_arrow_left") as Control
+	_require(correct_pad != null, "Tap Logic should render LEFT scene target after replay.")
 	if _failed:
 		return
 
-	_main.call("_handle_direct_tap_scene_input", _mouse_button_event(Vector2(16, 16), true), "wrong_button", correct_pad)
-	_require(_profile.is_level_completed(level_id), "Correct direct tap should complete Level 1.")
-	_require(str(_main.get("_last_direct_tap_target_id")) == "wrong_button", "Direct tap handler should record the touched winning target.")
+	_main.call("_handle_direct_tap_scene_input", _mouse_button_event(Vector2(16, 16), true), "arrow_left", correct_pad)
+	_require(_profile.is_level_completed(level_id), "Correct direct tap should complete Level 7.")
+	_require(str(_main.get("_last_direct_tap_target_id")) == "arrow_left", "Direct tap handler should record the touched winning target.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct tap should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct tap should persist as one direct action.")
