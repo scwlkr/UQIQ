@@ -192,46 +192,83 @@
       "uqiq_moment": "The obvious ramp or bridge answer is wrong; the correct draw is a stopper that makes the ball drop into the cup."
     },
     {
-      "id": "p01_l03_type_nothing",
+      "id": "p01_l03_goalposts_are_portable",
       "pack_id": "pack_01_orientation_is_a_trap",
       "level_number": 3,
-      "title": "Type Nothing",
-      "template": "Text Trap",
-      "challenge_type": "word puzzle",
-      "completion_mode": "auto_complete_on_correct_token",
-      "prompt": "Type the word nothing.",
+      "title": "Goalposts Are Portable",
+      "template": "Rearrange Level",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "auto_complete_on_goal_overlap",
+      "prompt": "Move the cup where the ball is actually going.",
       "rules": {
-        "placeholder": "hint: the answer is not empty",
-        "accepted_inputs": [
-          "nothing"
-        ],
-        "case_sensitive": false,
-        "interaction_model": "direct_word_tiles",
-        "scene_prompt": "Fill the answer slot with the literal word the prompt asks for.",
-        "word_tiles": [
+        "interaction_model": "physics_linked_rearrange_then_release",
+        "rearrange_mode": "move_goal_marker",
+        "scene_prompt": "Move the cup where the ball is actually going.",
+        "moving_object": {
+          "id": "ball",
+          "shape": "circle",
+          "start": [
+            72,
+            88
+          ],
+          "radius": 16,
+          "initial_state": "resting_on_starter_chute"
+        },
+        "built_in_geometry": [
           {
-            "id": "blank",
-            "label": "(blank)",
-            "answer": "",
-            "role": "decoy"
-          },
-          {
-            "id": "nothing",
-            "label": "nothing",
-            "answer": "nothing",
-            "role": "correct"
-          },
-          {
-            "id": "empty",
-            "label": "empty",
-            "answer": "empty",
-            "role": "decoy"
+            "id": "starter_chute",
+            "type": "static_segment",
+            "points": [
+              [
+                44,
+                108
+              ],
+              [
+                166,
+                144
+              ]
+            ],
+            "collision_thickness_px": 12
           }
-        ]
+        ],
+        "draggable_objects": [
+          {
+            "id": "cup",
+            "label": "CUP",
+            "role": "goal_zone",
+            "start_rect": [
+              260,
+              214,
+              58,
+              52
+            ],
+            "allowed_drag_rect": [
+              36,
+              156,
+              268,
+              112
+            ]
+          }
+        ],
+        "target_placement": {
+          "id": "catch_zone_hint",
+          "rect": [
+            188,
+            214,
+            74,
+            58
+          ],
+          "forgiveness_px": 18
+        },
+        "simulation_limit_seconds": 4,
+        "reset_on_failure": true
       },
       "solution": {
-        "answer": "nothing",
-        "explanation": "The prompt asks for the word nothing, not a blank answer."
+        "success_condition": "ball overlaps the moved cup goal zone after release",
+        "intended_strategy": "drag the cup into the ball's natural landing path before release",
+        "common_wrong_strategy": "try to drag the ball, draw a path, or leave the cup in its starting position",
+        "not_allowed": "static drag/drop answer validation",
+        "explanation": "The target is movable; put the cup where the ball will land."
       },
       "scoring": {
         "speed_seconds": {
@@ -239,32 +276,33 @@
           "ok": 20
         },
         "action_count": {
-          "great": 1,
-          "ok": 3
+          "great": 2,
+          "ok": 5
         },
         "roast_penalty": 5
       },
       "roasts": {
         "failure": [
-          "You gave the void a keyboard and still missed.",
-          "Blank confidence. Premium nonsense."
+          "The ball went exactly where physics said. Your cup filed a complaint elsewhere.",
+          "Move the cup under the fall, not near your hopes."
         ],
         "delay": [
-          "The prompt contains the answer. Terrifying development."
+          "The cup is the movable part. Shocking governance failure."
         ],
         "scorecard": [
-          "You typed nothing. Literally. Somehow this counts as literacy."
+          "You moved the finish line and called it intelligence."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "word_tiles",
-          "answer_slot",
-          "judge_face_stub"
+          "ball",
+          "starter_chute",
+          "draggable_cup",
+          "catch_zone_hint"
         ]
       },
-      "uqiq_moment": "The correct answer is the literal word nothing."
+      "uqiq_moment": "The player realizes the target is movable and solves by relocating the cup into the physical path."
     },
     {
       "id": "p01_l04_one_square_panicked",

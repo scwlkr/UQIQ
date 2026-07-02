@@ -20,6 +20,7 @@ const SUPPORTED_TEMPLATES := [
 	"Pattern Grid",
 	"Memory Flash",
 	"Physics Draw",
+	"Rearrange Level",
 ]
 
 var _main: Control
@@ -417,6 +418,10 @@ func _complete_level_by_template(level: Dictionary) -> void:
 				return
 			text_input.text = answer
 			_main.call("_handle_text_submit")
+		"Rearrange Level":
+			_main.call("_set_rearrange_cup_center", Vector2(225, 243))
+			_main.call("_finish_rearrange_drag")
+			_main.call("_handle_rearrange_release")
 		"Pattern Grid":
 			_main.call("_handle_pattern_cell", str(_solution(level).get("cell_id", "")))
 			_main.call("_handle_pattern_submit")

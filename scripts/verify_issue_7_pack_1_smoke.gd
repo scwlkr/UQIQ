@@ -12,6 +12,7 @@ const SUPPORTED_TEMPLATES := [
 	"Pattern Grid",
 	"Memory Flash",
 	"Physics Draw",
+	"Rearrange Level",
 ]
 
 var _main: Control
@@ -328,6 +329,10 @@ func _complete_level_by_template(level: Dictionary) -> void:
 				return
 			text_input.text = answer
 			_main.call("_handle_text_submit")
+		"Rearrange Level":
+			_main.call("_set_rearrange_cup_center", Vector2(225, 243))
+			_main.call("_finish_rearrange_drag")
+			_main.call("_handle_rearrange_release")
 		"Pattern Grid":
 			_main.call("_handle_pattern_cell", str(_solution(level).get("cell_id", "")))
 			_main.call("_handle_pattern_submit")
@@ -436,6 +441,15 @@ func _level_has_template_solution(level: Dictionary) -> bool:
 		"Text Trap":
 			return _has_array(rules, "accepted_inputs") \
 				and _has_nonempty_string(solution, "answer")
+		"Rearrange Level":
+			var moving_object := _dictionary_from(rules.get("moving_object", {}))
+			var target_placement := _dictionary_from(rules.get("target_placement", {}))
+			return str(rules.get("interaction_model", "")) == "physics_linked_rearrange_then_release" \
+				and _has_array(moving_object, "start") \
+				and _has_array(rules, "built_in_geometry") \
+				and _has_array(rules, "draggable_objects") \
+				and _has_array(target_placement, "rect") \
+				and _has_nonempty_string(solution, "success_condition")
 		"Pattern Grid":
 			return _has_array(rules, "cells") \
 				and _has_nonempty_string(solution, "cell_id") \

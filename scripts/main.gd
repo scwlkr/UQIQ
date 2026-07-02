@@ -29,6 +29,7 @@ const SUPPORTED_LEVEL_TEMPLATES := [
 	"Pattern Grid",
 	"Memory Flash",
 	"Physics Draw",
+	"Rearrange Level",
 ]
 
 var _loader := LevelLoaderScript.new()
@@ -98,6 +99,25 @@ var _freehand_stroke_points: Array[Vector2] = []
 var _freehand_ball_start := Vector2.ZERO
 var _freehand_last_ball_position := Vector2.ZERO
 var _freehand_ball_moved := false
+var _rearrange_physics_runtime: Node2D = null
+var _rearrange_built_in_body: StaticBody2D = null
+var _rearrange_ball_body: RigidBody2D = null
+var _rearrange_goal_area: Area2D = null
+var _rearrange_ball_visual: Control = null
+var _rearrange_cup: Control = null
+var _rearrange_target_hint: Control = null
+var _rearrange_cup_start_rect := Rect2()
+var _rearrange_cup_rect := Rect2()
+var _rearrange_allowed_rect := Rect2()
+var _rearrange_target_rect := Rect2()
+var _rearrange_ball_start := Vector2.ZERO
+var _rearrange_last_ball_position := Vector2.ZERO
+var _rearrange_cup_moved := false
+var _rearrange_released := false
+var _rearrange_ball_moved := false
+var _rearrange_dragging_object_id := ""
+var _rearrange_dragging_tile: Control = null
+var _rearrange_drag_offset := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -444,6 +464,25 @@ func _show_play_screen(level: Dictionary) -> void:
 	_freehand_ball_start = Vector2.ZERO
 	_freehand_last_ball_position = Vector2.ZERO
 	_freehand_ball_moved = false
+	_rearrange_physics_runtime = null
+	_rearrange_built_in_body = null
+	_rearrange_ball_body = null
+	_rearrange_goal_area = null
+	_rearrange_ball_visual = null
+	_rearrange_cup = null
+	_rearrange_target_hint = null
+	_rearrange_cup_start_rect = Rect2()
+	_rearrange_cup_rect = Rect2()
+	_rearrange_allowed_rect = Rect2()
+	_rearrange_target_rect = Rect2()
+	_rearrange_ball_start = Vector2.ZERO
+	_rearrange_last_ball_position = Vector2.ZERO
+	_rearrange_cup_moved = false
+	_rearrange_released = false
+	_rearrange_ball_moved = false
+	_rearrange_dragging_object_id = ""
+	_rearrange_dragging_tile = null
+	_rearrange_drag_offset = Vector2.ZERO
 
 	var root := _make_screen(COLOR_PANEL, "play_screen", true)
 
@@ -1004,6 +1043,8 @@ func _render_level_stage(stage_box: VBoxContainer, level: Dictionary) -> void:
 			_render_memory_flash(stage_box)
 		"Physics Draw":
 			_render_physics_draw(stage_box)
+		"Rearrange Level":
+			_render_rearrange_level(stage_box)
 		_:
 			_add_label(stage_box, "Future template. Your brilliance has been postponed.", 18, COLOR_INK)
 			_add_feedback(stage_box, "Return later when this Level stops being imaginary.")
@@ -1097,6 +1138,403 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 			_drag_drop_zones[str(target.get("id", ""))] = zone
 
 	_add_feedback(stage_box, "Drag the wrong thing into the right place.")
+
+
+func _render_rearrange_level(stage_box: VBoxContainer) -> void:
+	if not _uses_physics_linked_rearrange():
+		_add_label(stage_box, "Future rearrange physics. Your cup is waiting on paperwork.", 18, COLOR_INK)
+		_add_feedback(stage_box, "Return when this Level has a physics-linked rearrange spec.")
+		return
+
+	_add_label(stage_box, str(_rules().get("scene_prompt", _current_level.get("prompt", "Move the cup before release."))), 17, COLOR_INK)
+
+	var playfield := Panel.new()
+	playfield.name = "rearrange_playfield"
+	playfield.custom_minimum_size = Vector2(0, 300)
+	playfield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	playfield.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	playfield.mouse_filter = Control.MOUSE_FILTER_STOP
+	stage_box.add_child(playfield)
+
+	_rearrange_physics_runtime = Node2D.new()
+	_rearrange_physics_runtime.name = "rearrange_physics_runtime"
+	playfield.add_child(_rearrange_physics_runtime)
+
+	_rearrange_allowed_rect = _rearrange_allowed_drag_rect()
+	_rearrange_target_rect = _rearrange_target_placement_rect()
+	_rearrange_cup_start_rect = _rearrange_cup_start_rect_from_rules()
+	_rearrange_cup_rect = _rearrange_cup_start_rect
+
+	_create_rearrange_built_in_geometry(playfield)
+	_create_rearrange_target_hint(playfield)
+	_create_rearrange_goal(playfield)
+	_create_rearrange_ball(playfield)
+
+	_physics_choice_label = _new_label("Cup: start", 16, COLOR_INK)
+	_physics_choice_label.position = Vector2(18, 16)
+	_physics_choice_label.size = Vector2(304, 26)
+	_physics_choice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	playfield.add_child(_physics_choice_label)
+
+	_physics_result_label = _new_label("Release result: waiting", 16, COLOR_INK)
+	_physics_result_label.position = Vector2(18, 266)
+	_physics_result_label.size = Vector2(320, 26)
+	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	playfield.add_child(_physics_result_label)
+
+	var actions := HBoxContainer.new()
+	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_theme_constant_override("separation", 10)
+	stage_box.add_child(actions)
+
+	var release_button := _make_button("Release", COLOR_GREEN)
+	release_button.pressed.connect(Callable(self, "_handle_rearrange_release"))
+	actions.add_child(release_button)
+
+	var reset_button := _make_button("Reset", COLOR_BLUE)
+	reset_button.pressed.connect(Callable(self, "_handle_rearrange_reset"))
+	actions.add_child(reset_button)
+
+	_reset_rearrange_attempt(false)
+	_add_feedback(stage_box, "Move the cup, then release the ball.")
+
+
+func _create_rearrange_built_in_geometry(surface: Control) -> void:
+	var geometries = _rules().get("built_in_geometry", [])
+	if typeof(geometries) != TYPE_ARRAY or geometries.is_empty():
+		return
+	if _rearrange_physics_runtime == null or not is_instance_valid(_rearrange_physics_runtime):
+		return
+
+	_rearrange_built_in_body = StaticBody2D.new()
+	_rearrange_built_in_body.name = "rearrange_built_in_body"
+	_rearrange_physics_runtime.add_child(_rearrange_built_in_body)
+
+	var collision_index := 0
+	for geometry in geometries:
+		if typeof(geometry) != TYPE_DICTIONARY:
+			continue
+		var geometry_id := str(geometry.get("id", "geometry"))
+		var points := _vector2_points_from_pairs(geometry.get("points", []))
+		if points.size() < 2:
+			continue
+		var thickness := float(geometry.get("collision_thickness_px", 12.0))
+
+		var line := Line2D.new()
+		line.name = "rearrange_built_in_geometry_%s" % geometry_id
+		line.points = PackedVector2Array(points)
+		line.width = thickness
+		line.default_color = Color(0.12, 0.13, 0.16, 0.46)
+		line.joint_mode = Line2D.LINE_JOINT_ROUND
+		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		line.end_cap_mode = Line2D.LINE_CAP_ROUND
+		line.z_index = 1
+		surface.add_child(line)
+
+		for index in range(points.size() - 1):
+			collision_index = _add_segment_collision_shape(
+				_rearrange_built_in_body,
+				"rearrange_built_in_collision",
+				points[index],
+				points[index + 1],
+				thickness,
+				collision_index
+			)
+
+	_rearrange_built_in_body.set_meta("collision_shape_count", collision_index)
+
+
+func _create_rearrange_target_hint(surface: Control) -> void:
+	_rearrange_target_hint = Panel.new()
+	_rearrange_target_hint.name = "rearrange_catch_zone_hint"
+	_rearrange_target_hint.position = _rearrange_target_rect.position
+	_rearrange_target_hint.size = _rearrange_target_rect.size
+	_rearrange_target_hint.custom_minimum_size = _rearrange_target_rect.size
+	_rearrange_target_hint.z_index = 0
+	_rearrange_target_hint.add_theme_stylebox_override("panel", _flat_box(Color(0.12, 0.58, 0.92, 0.18), 8))
+	surface.add_child(_rearrange_target_hint)
+
+	var label := _new_label("landing", 13, COLOR_INK)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rearrange_target_hint.add_child(label)
+
+
+func _create_rearrange_goal(surface: Control) -> void:
+	_rearrange_cup = Panel.new()
+	_rearrange_cup.name = "rearrange_cup"
+	_rearrange_cup.custom_minimum_size = _rearrange_cup_rect.size
+	_rearrange_cup.mouse_filter = Control.MOUSE_FILTER_STOP
+	_rearrange_cup.z_index = 4
+	_rearrange_cup.set_meta("object_id", "cup")
+	_rearrange_cup.add_theme_stylebox_override("panel", _flat_box(COLOR_GREEN, 8))
+	_rearrange_cup.gui_input.connect(Callable(self, "_handle_rearrange_object_input").bind("cup", _rearrange_cup))
+	surface.add_child(_rearrange_cup)
+
+	var label := _new_label("CUP", 16, COLOR_INK)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rearrange_cup.add_child(label)
+
+	if _rearrange_physics_runtime != null and is_instance_valid(_rearrange_physics_runtime):
+		_rearrange_goal_area = Area2D.new()
+		_rearrange_goal_area.name = "rearrange_goal_area"
+		_rearrange_physics_runtime.add_child(_rearrange_goal_area)
+
+		var collision := CollisionShape2D.new()
+		collision.name = "rearrange_goal_collision"
+		collision.shape = RectangleShape2D.new()
+		_rearrange_goal_area.add_child(collision)
+
+	_set_rearrange_cup_rect(_rearrange_cup_rect)
+
+
+func _create_rearrange_ball(surface: Control) -> void:
+	var radius := _rearrange_ball_radius()
+	_rearrange_ball_start = _rearrange_ball_start_from_rules()
+	_rearrange_last_ball_position = _rearrange_ball_start
+
+	_rearrange_ball_visual = Panel.new()
+	_rearrange_ball_visual.name = "rearrange_ball"
+	_rearrange_ball_visual.position = _rearrange_ball_start - Vector2(radius, radius)
+	_rearrange_ball_visual.size = Vector2(radius * 2.0, radius * 2.0)
+	_rearrange_ball_visual.custom_minimum_size = _rearrange_ball_visual.size
+	_rearrange_ball_visual.z_index = 5
+	_rearrange_ball_visual.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, int(radius)))
+	surface.add_child(_rearrange_ball_visual)
+
+	if _rearrange_physics_runtime == null or not is_instance_valid(_rearrange_physics_runtime):
+		return
+
+	_rearrange_ball_body = RigidBody2D.new()
+	_rearrange_ball_body.name = "rearrange_ball_body"
+	_rearrange_ball_body.position = _rearrange_ball_start
+	_rearrange_ball_body.freeze = true
+	_rearrange_ball_body.gravity_scale = 1.0
+	_rearrange_physics_runtime.add_child(_rearrange_ball_body)
+
+	var shape := CircleShape2D.new()
+	shape.radius = radius
+	var collision := CollisionShape2D.new()
+	collision.name = "rearrange_ball_collision"
+	collision.shape = shape
+	_rearrange_ball_body.add_child(collision)
+
+
+func _handle_rearrange_object_input(event: InputEvent, object_id: String, tile: Control) -> void:
+	if _rearrange_released:
+		return
+
+	if _is_primary_press(event):
+		_rearrange_dragging_object_id = object_id
+		_rearrange_dragging_tile = tile
+		_rearrange_drag_offset = _event_position_in_control(event, tile, tile)
+		tile.move_to_front()
+		_set_rearrange_status_text("Cup: dragging", "Release result: waiting")
+		_feedback_label.text = "Dragging the cup. Put it where the ball is actually going."
+		_mark_input_handled()
+		return
+
+	if _is_pointer_drag(event) and _rearrange_dragging_tile == tile:
+		_move_rearrange_tile(event, tile)
+		_mark_input_handled()
+		return
+
+	if _is_primary_release(event) and _rearrange_dragging_tile == tile:
+		_move_rearrange_tile(event, tile)
+		_finish_rearrange_drag()
+		_mark_input_handled()
+
+
+func _move_rearrange_tile(event: InputEvent, tile: Control) -> void:
+	var playfield := tile.get_parent() as Control
+	if playfield == null:
+		return
+
+	var pointer_position := _event_position_in_control(event, playfield, tile)
+	var next_position := pointer_position - _rearrange_drag_offset
+	var next_rect := Rect2(
+		next_position,
+		tile.size
+	)
+	_set_rearrange_cup_rect(_clamped_rearrange_cup_rect(next_rect))
+
+
+func _finish_rearrange_drag() -> void:
+	if _rearrange_cup_rect.intersects(_rearrange_target_rect.grow(_rearrange_goal_forgiveness()), true):
+		_set_rearrange_cup_center(_rearrange_target_rect.get_center())
+
+	_rearrange_cup_moved = _rearrange_cup_rect.position.distance_to(_rearrange_cup_start_rect.position) > 1.0
+	_rearrange_dragging_object_id = ""
+	_rearrange_dragging_tile = null
+	_rearrange_drag_offset = Vector2.ZERO
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_set_rearrange_status_text("Cup: moved", "Release result: ready")
+	_feedback_label.text = "Cup moved. Release the ball."
+
+
+func _handle_rearrange_release() -> void:
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_rearrange_released = true
+	_move_rearrange_ball_to(_rearrange_target_rect.get_center())
+
+	if not _rearrange_cup_moved:
+		_fail_rearrange("Move the cup under the fall, not near your hopes.")
+		return
+	if not _rearrange_cup_in_target():
+		_fail_rearrange("Missed. The cup was decorative over there.")
+		return
+
+	_move_rearrange_ball_to(_rearrange_cup_rect.get_center())
+	if _rearrange_ball_overlaps_goal():
+		_last_physics_result = "success"
+		_set_rearrange_status_text("Cup: caught", "Release result: ball reached the cup")
+		_feedback_label.text = "Ball reached the moved cup."
+		_complete_current_level()
+		return
+
+	_fail_rearrange("Missed. The cup was decorative over there.")
+
+
+func _handle_rearrange_reset() -> void:
+	_reset_rearrange_attempt(true)
+
+
+func _reset_rearrange_attempt(count_action: bool = true) -> void:
+	if count_action:
+		_tap_count += 1
+		_trigger_feedback("tap")
+
+	_last_physics_result = "reset"
+	_rearrange_released = false
+	_rearrange_cup_moved = false
+	_rearrange_ball_moved = false
+	_rearrange_dragging_object_id = ""
+	_rearrange_dragging_tile = null
+	_rearrange_drag_offset = Vector2.ZERO
+	_rearrange_ball_start = _rearrange_ball_start_from_rules()
+	_rearrange_last_ball_position = _rearrange_ball_start
+	_set_rearrange_cup_rect(_rearrange_cup_start_rect)
+	_set_rearrange_ball_center(_rearrange_ball_start)
+	_set_rearrange_status_text("Cup: start", "Release result: waiting")
+	if _feedback_label != null and is_instance_valid(_feedback_label):
+		_feedback_label.text = "Reset. Move the cup, then release the ball."
+
+
+func _fail_rearrange(message: String) -> void:
+	_last_physics_result = "fail"
+	_set_rearrange_status_text("Cup: needs work", "Release result: %s" % message)
+	_feedback_label.text = message
+	_set_judge_state("fail")
+	_trigger_feedback("fail")
+
+
+func _set_rearrange_cup_center(center: Vector2) -> void:
+	var next_rect := Rect2(center - (_rearrange_cup_rect.size * 0.5), _rearrange_cup_rect.size)
+	_set_rearrange_cup_rect(_clamped_rearrange_cup_rect(next_rect))
+
+
+func _clamped_rearrange_cup_rect(rect: Rect2) -> Rect2:
+	var max_x := _rearrange_allowed_rect.position.x + maxf(_rearrange_allowed_rect.size.x - rect.size.x, 0.0)
+	var max_y := _rearrange_allowed_rect.position.y + maxf(_rearrange_allowed_rect.size.y - rect.size.y, 0.0)
+	return Rect2(
+		Vector2(
+			clampf(rect.position.x, _rearrange_allowed_rect.position.x, max_x),
+			clampf(rect.position.y, _rearrange_allowed_rect.position.y, max_y)
+		),
+		rect.size
+	)
+
+
+func _set_rearrange_cup_rect(rect: Rect2) -> void:
+	_rearrange_cup_rect = rect
+	if _rearrange_cup != null and is_instance_valid(_rearrange_cup):
+		_rearrange_cup.position = rect.position
+		_rearrange_cup.size = rect.size
+		_rearrange_cup.custom_minimum_size = rect.size
+		_rearrange_cup.set_meta("cup_rect", rect)
+
+	if _rearrange_goal_area != null and is_instance_valid(_rearrange_goal_area):
+		var visible_rect := rect.grow(_rearrange_goal_forgiveness())
+		_rearrange_goal_area.position = visible_rect.get_center()
+		_rearrange_goal_area.set_meta("goal_rect", rect)
+		_rearrange_goal_area.set_meta("forgiveness_px", _rearrange_goal_forgiveness())
+		var collision := _rearrange_goal_area.get_node_or_null("rearrange_goal_collision") as CollisionShape2D
+		if collision != null and collision.shape is RectangleShape2D:
+			(collision.shape as RectangleShape2D).size = visible_rect.size
+
+
+func _move_rearrange_ball_to(center: Vector2) -> void:
+	_rearrange_ball_moved = _rearrange_ball_start_from_rules().distance_to(center) > 1.0
+	_rearrange_last_ball_position = center
+	_set_rearrange_ball_center(center)
+
+
+func _set_rearrange_ball_center(center: Vector2) -> void:
+	var radius := _rearrange_ball_radius()
+	if _rearrange_ball_visual != null and is_instance_valid(_rearrange_ball_visual):
+		_rearrange_ball_visual.position = center - Vector2(radius, radius)
+	if _rearrange_ball_body != null and is_instance_valid(_rearrange_ball_body):
+		_rearrange_ball_body.position = center
+
+
+func _rearrange_ball_overlaps_goal() -> bool:
+	return _circle_overlaps_rect(_rearrange_last_ball_position, _rearrange_ball_radius(), _rearrange_cup_rect.grow(_rearrange_goal_forgiveness()))
+
+
+func _rearrange_cup_in_target() -> bool:
+	return _rearrange_cup_rect.intersects(_rearrange_target_rect.grow(_rearrange_goal_forgiveness()), true)
+
+
+func _set_rearrange_status_text(cup_text: String, result_text: String) -> void:
+	if _physics_choice_label != null and is_instance_valid(_physics_choice_label):
+		_physics_choice_label.text = cup_text
+	if _physics_result_label != null and is_instance_valid(_physics_result_label):
+		_physics_result_label.text = result_text
+
+
+func _rearrange_draggable_object() -> Dictionary:
+	var objects = _rules().get("draggable_objects", [])
+	if typeof(objects) == TYPE_ARRAY:
+		for object in objects:
+			if typeof(object) == TYPE_DICTIONARY and str(object.get("id", "")) == "cup":
+				return object
+		for object in objects:
+			if typeof(object) == TYPE_DICTIONARY:
+				return object
+	return {}
+
+
+func _rearrange_cup_start_rect_from_rules() -> Rect2:
+	var object := _rearrange_draggable_object()
+	return _rect2_from_array(object.get("start_rect", []), Rect2(260, 214, 58, 52))
+
+
+func _rearrange_allowed_drag_rect() -> Rect2:
+	var object := _rearrange_draggable_object()
+	return _rect2_from_array(object.get("allowed_drag_rect", []), Rect2(36, 156, 268, 112))
+
+
+func _rearrange_target_placement_rect() -> Rect2:
+	var target := _dictionary_from(_rules().get("target_placement", {}))
+	return _rect2_from_array(target.get("rect", []), Rect2(188, 214, 74, 58))
+
+
+func _rearrange_goal_forgiveness() -> float:
+	var target := _dictionary_from(_rules().get("target_placement", {}))
+	return float(target.get("forgiveness_px", 18.0))
+
+
+func _rearrange_ball_start_from_rules() -> Vector2:
+	var moving_object := _dictionary_from(_rules().get("moving_object", {}))
+	return _vector2_from_array(moving_object.get("start", []), Vector2(72, 88))
+
+
+func _rearrange_ball_radius() -> float:
+	var moving_object := _dictionary_from(_rules().get("moving_object", {}))
+	return float(moving_object.get("radius", 16.0))
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
@@ -1645,6 +2083,10 @@ func _uses_direct_physics_draw() -> bool:
 
 func _uses_freehand_physics_draw() -> bool:
 	return str(_rules().get("interaction_model", "")) == "freehand_physics_then_release"
+
+
+func _uses_physics_linked_rearrange() -> bool:
+	return str(_rules().get("interaction_model", "")) == "physics_linked_rearrange_then_release"
 
 
 func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:

@@ -22,12 +22,13 @@ func _initialize() -> void:
 	_boot_main_scene()
 	if _failed:
 		return
+	await process_frame
 
-	_verify_tactile_text_trap()
+	await _verify_tactile_text_trap()
 	if _failed:
 		return
 
-	print("Issue #47 Text Trap verification passed: Level 3 renders direct word tiles, rejects a wrong tile, and completes through Score Roastcard from a direct tile tap.")
+	print("Issue #47 Text Trap verification passed: Level 9 keeps touch-focused text input, rejects a wrong answer, and completes through Score Roastcard.")
 	_cleanup()
 	quit(0)
 
@@ -42,51 +43,41 @@ func _boot_main_scene() -> void:
 
 
 func _verify_tactile_text_trap() -> void:
-	var level := _level_by_number(3)
+	var level := _level_by_number(9)
 	var level_id := str(level.get("id", ""))
 	var rules: Dictionary = level.get("rules", {})
-	_require(str(rules.get("interaction_model", "")) == "direct_word_tiles", "Level 3 should declare direct_word_tiles.")
+	_require(str(level.get("title", "")) == "No Rotate", "Level 9 should remain the Pack 1 Text Trap regression.")
+	_require(str(level.get("template", "")) == "Text Trap", "Level 9 should render as Text Trap.")
+	_require(_array_contains_string(rules.get("accepted_inputs", []), "portrait"), "Level 9 should accept portrait.")
 
 	_main.call("_show_play_screen", level)
-	var surface := _node_named(_main, "text_tile_surface") as Control
-	var slot := _node_named(_main, "text_answer_slot") as Control
-	var blank_tile := _node_named(_main, "text_tile_blank") as Control
-	var nothing_tile := _node_named(_main, "text_tile_nothing") as Control
-	var empty_tile := _node_named(_main, "text_tile_empty") as Control
-	_require(surface != null, "Text Trap should render a direct tile surface.")
-	_require(slot != null, "Text Trap should render an answer slot.")
-	_require(blank_tile != null, "Text Trap should render a blank decoy tile.")
-	_require(nothing_tile != null, "Text Trap should render the NOTHING solution tile.")
-	_require(empty_tile != null, "Text Trap should render an empty decoy tile.")
-	_require(not _has_line_edit(_main), "Direct Text Trap should not render a LineEdit.")
-	_require(not _has_button_text(_main, "Submit"), "Direct Text Trap should not expose a Submit button.")
-	_require(not (nothing_tile is Button), "Direct Text Trap word tiles should not be Button answer choices.")
+	await process_frame
+	var text_input := _main.get("_text_input") as LineEdit
+	_require(text_input != null, "Text Trap should render a text input.")
+	_require(text_input != null and text_input.virtual_keyboard_enabled, "Text Trap input should keep virtual keyboard support.")
+	_require(_has_button_text(_main, "Submit"), "Text Trap should expose Submit.")
 
-	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true), "blank", "", blank_tile)
-	_require(not _profile.is_level_completed(level_id), "Wrong direct Text Trap tile should not complete Level 3.")
-	_require(int(_main.get("_tap_count")) == 1, "Wrong direct Text Trap tile should count as one action.")
-	_require(str(_main.get("_last_direct_text_tile_id")) == "blank", "Direct Text Trap handler should record the wrong tile.")
+	_main.call("_handle_text_input_focus_event", _screen_touch_event(true))
+	text_input.text = "landscape"
+	_main.call("_handle_text_submit")
+	_require(not _profile.is_level_completed(level_id), "Wrong Text Trap answer should not complete Level 9.")
+	_require(int(_main.get("_tap_count")) == 1, "Wrong Text Trap submit should count as one action.")
+	_require(bool(_main.get("_last_text_focus_event_was_touch")), "Text Trap should record touch focus before typing.")
 
 	_main.call("_show_play_screen", level)
-	nothing_tile = _node_named(_main, "text_tile_nothing") as Control
-	_require(nothing_tile != null, "Text Trap should render solution tile after replay.")
+	await process_frame
+	text_input = _main.get("_text_input") as LineEdit
+	_require(text_input != null, "Text Trap should render input after retry.")
 	if _failed:
 		return
 
-	_main.call("_handle_direct_text_tile_input", _mouse_button_event(Vector2(16, 16), true), "nothing", "nothing", nothing_tile)
-	_require(_profile.is_level_completed(level_id), "Correct direct Text Trap tile should complete Level 3.")
-	_require(str(_main.get("_last_direct_text_tile_id")) == "nothing", "Direct Text Trap handler should record the winning tile.")
-	_require(_screen_has_label_text("Score Roastcard"), "Correct direct Text Trap tile should route to Score Roastcard.")
+	_main.call("_handle_text_input_focus_event", _screen_touch_event(true))
+	text_input.text = "portrait"
+	_main.call("_handle_text_submit")
+	_require(_profile.is_level_completed(level_id), "Correct Text Trap answer should complete Level 9.")
+	_require(_screen_has_label_text("Score Roastcard"), "Correct Text Trap answer should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
-	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct Text Trap tile should persist as one direct action.")
-
-
-func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:
-	var event := InputEventMouseButton.new()
-	event.button_index = MOUSE_BUTTON_LEFT
-	event.pressed = pressed
-	event.position = position
-	return event
+	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct Text Trap submit should persist as one action.")
 
 
 func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
@@ -96,29 +87,19 @@ func _screen_touch_event(pressed: bool) -> InputEventScreenTouch:
 	return event
 
 
+func _array_contains_string(values: Variant, expected: String) -> bool:
+	if typeof(values) != TYPE_ARRAY:
+		return false
+	for value in values:
+		if str(value) == expected:
+			return true
+	return false
+
+
 func _level_by_number(level_number: int) -> Dictionary:
 	var level := _loader.find_level_by_number(_pack_set, level_number)
 	_require(not level.is_empty(), "Level %d should exist in default packs." % level_number)
 	return level
-
-
-func _node_named(node: Node, node_name: String) -> Node:
-	if node.name == node_name:
-		return node
-	for child in node.get_children():
-		var match := _node_named(child, node_name)
-		if match != null:
-			return match
-	return null
-
-
-func _has_line_edit(node: Node) -> bool:
-	if node is LineEdit:
-		return true
-	for child in node.get_children():
-		if _has_line_edit(child):
-			return true
-	return false
 
 
 func _has_button_text(node: Node, text: String) -> bool:

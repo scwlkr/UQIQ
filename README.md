@@ -159,6 +159,7 @@ godot --headless --path . --script res://scripts/verify_issue_54_neutral_targets
 godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitboxes.gd
 godot --headless --path . --script res://scripts/verify_issue_64_first_ramp_freehand_physics.gd
 godot --headless --path . --script res://scripts/verify_issue_65_brake_check_freehand_stopper.gd
+godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearrange.gd
 ```
 
 `verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6 match the current playable Pack 1 prototype templates, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
@@ -211,7 +212,7 @@ godot --headless --path . --script res://scripts/verify_issue_65_brake_check_fre
 
 `verify_issue_46_playtest_level_jump.gd` is the debug playtest access check. It verifies normal launch stays on the Level List while debug env `UQIQ_PLAYTEST_LEVEL=5` opens Level 5 directly without changing Local Profile unlock progression.
 
-`verify_issue_47_tactile_text_trap.gd` is the tactile Text Trap check. It verifies Level 3 renders direct word tiles and an answer slot instead of a `LineEdit` / `Submit` flow, rejects a wrong tile, and completes through Score Roastcard from a direct tile tap.
+`verify_issue_47_tactile_text_trap.gd` is the tactile Text Trap check. It verifies Level 9 keeps touch-focused text input, rejects a wrong answer, and completes through Score Roastcard.
 
 `verify_issue_48_debug_playtest_all.gd` is the debug all-level phone playtest check. It verifies normal launch keeps later Levels locked, debug env `UQIQ_PLAYTEST_UNLOCK_ALL=1` makes supported Levels playable from the Level List without mutating Local Profile progression, and `UQIQ_PLAYTEST_LEVEL` still opens a target Level directly.
 
@@ -226,6 +227,8 @@ godot --headless --path . --script res://scripts/verify_issue_65_brake_check_fre
 `verify_issue_64_first_ramp_freehand_physics.gd` is the Level 1 First Ramp freehand physics check. It verifies no answer-choice draw UI, touch-created thick stroke geometry, StaticBody2D collision, Release motion, success by ball/cup overlap, too-short and flat failures, and Reset cleanup.
 
 `verify_issue_65_brake_check_freehand_stopper.gd` is the Level 2 Brake Check freehand stopper check. It verifies the built-in starter chute, touch-created stopper collision, ramp/short/misplaced failures, Reset cleanup, and valid stopper completion by ball/cup overlap.
+
+`verify_issue_66_goalposts_rearrange.gd` is the Level 3 Goalposts Are Portable rearrange check. It verifies the fixed starter chute/ball, draggable cup, catch hint, touch drag bounds, Release-gated ball motion, wrong/no-move failures, Reset cleanup, and valid cup placement completion by ball/cup overlap.
 
 ## Desktop Smoke
 
@@ -271,7 +274,8 @@ Useful overrides:
 ```sh
 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_43_tactile_tap_logic.gd scripts/deploy_phone.sh
 UQIQ_PLAYTEST_LEVEL=5 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_45_tactile_memory_flash.gd scripts/deploy_phone.sh
-UQIQ_PLAYTEST_LEVEL=3 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_47_tactile_text_trap.gd scripts/deploy_phone.sh
+UQIQ_PLAYTEST_LEVEL=3 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_66_goalposts_rearrange.gd scripts/deploy_phone.sh
+UQIQ_PLAYTEST_LEVEL=9 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_47_tactile_text_trap.gd scripts/deploy_phone.sh
 UQIQ_PLAYTEST_UNLOCK_ALL=1 UQIQ_VERIFY_SCRIPT=res://scripts/verify_issue_48_debug_playtest_all.gd scripts/deploy_phone.sh
 UQIQ_DEVICE_ID=9820C039-3903-5542-9D4A-388ED65AEFDE scripts/deploy_phone.sh
 UQIQ_XCODE_DEVICE_ID=00008150-001435EA1480401C scripts/deploy_phone.sh

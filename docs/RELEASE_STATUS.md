@@ -10,7 +10,7 @@ Release prep is paused. The active priority is implementing the Polished Six-Lev
 
 ## Active Next Step
 
-- GitHub issue: [Implement Level 1 First Ramp freehand physics runner](https://github.com/scwlkr/UQIQ/issues/64)
+- GitHub issue: [Implement Level 4 Gravity Has Handles physics-linked rearrange runner](https://github.com/scwlkr/UQIQ/issues/67)
 - PRD: [`docs/prd/0005-polished-six-level-core.md`](prd/0005-polished-six-level-core.md)
 - Branch: none assigned yet.
 
@@ -41,21 +41,24 @@ Design source: [Wayfinder map: UQIQ tactile six-level core](https://github.com/s
 
 - Debug phone playtest supports direct level jump and all-level Level List access.
 - Existing Pack 1 direct-touch prototypes are playable on phone.
-- Existing Physics Draw proves touch drawing and gesture classification, but not yet realish physical collision.
+- Level 1 and Level 2 prove realish freehand physics drawing with collision-backed ramp/stopper solves.
+- Level 3 proves physics-linked rearrange: touch drag moves the cup, `Release` moves the ball, and completion comes from ball/cup overlap.
 - Physical iPhone proof exists for the old direct-touch build: UQIQ `0.1.1 (20260702073553)` installed/launched on `17 Hoe Max`.
 
 ## Latest Verification
 
-- Wayfinder planning artifacts are committed and pushed through `6eaa100`.
-- `git diff --check` passed for the six-Level planning artifacts.
+- Level 3 focused verifier passed: `godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearrange.gd`.
+- README/local verification floor passed through `verify_issue_66_goalposts_rearrange.gd`.
+- `git diff --check` passed for the Level 3 implementation.
 - Previous phone proof for the old direct-touch build passed with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702073553.png`.
+- Level 3 iPhone smoke was attempted, but no connected physical iPhone was available.
 
 ## Known Blockers
 
 - No current owner decision blocker for the prototype path.
-- Physical iPhone proof is required again after the new realish physics implementation exists.
+- Physical iPhone proof is required again; current blocker is no connected physical iPhone.
 - App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until the six-Level core is stronger and scwlkr approves.
 
 ## Next Gate
 
-Implement Level 1 `First Ramp` with realish freehand physics: drawn stroke becomes collision geometry, `Release` starts ball motion, and the ball reaches the cup by physical overlap.
+Implement Level 4 `Gravity Has Handles`: dragging `GRAVITY` changes the physics direction, `Release` starts the ball, wrong slots fail visibly, and the right-wall slot completes by ball/cup overlap.

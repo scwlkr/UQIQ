@@ -6,7 +6,7 @@ const TEST_SAVE_PATH := "user://issue_4_profile_verify.json"
 const REQUIRED_TEMPLATES := [
 	"Physics Draw",
 	"Physics Draw",
-	"Text Trap",
+	"Rearrange Level",
 	"Pattern Grid",
 	"Memory Flash",
 	"Physics Draw",
@@ -130,6 +130,15 @@ func _level_has_template_solution(level: Dictionary) -> bool:
 				and not str(solution.get("drop_target_id", "")).is_empty()
 		"Text Trap":
 			return _has_array(rules, "accepted_inputs") and not str(solution.get("answer", "")).is_empty()
+		"Rearrange Level":
+			var moving_object := _dictionary_from(rules.get("moving_object", {}))
+			var target_placement := _dictionary_from(rules.get("target_placement", {}))
+			return str(rules.get("interaction_model", "")) == "physics_linked_rearrange_then_release" \
+				and _has_array(moving_object, "start") \
+				and _has_array(rules, "built_in_geometry") \
+				and _has_array(rules, "draggable_objects") \
+				and _has_array(target_placement, "rect") \
+				and not str(solution.get("success_condition", "")).is_empty()
 		"Pattern Grid":
 			return _has_array(rules, "cells") and not str(solution.get("cell_id", "")).is_empty()
 		"Memory Flash":

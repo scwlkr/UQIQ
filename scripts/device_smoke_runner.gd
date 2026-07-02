@@ -102,7 +102,7 @@ func _run_smoke_path() -> bool:
 		return false
 	if not _start_level(_levels[2]):
 		return false
-	if not _complete_with_scorecard(_levels[2], Callable(self, "_text_trap_win").bind(_levels[2]), true):
+	if not _complete_with_scorecard(_levels[2], Callable(self, "_rearrange_win").bind(_levels[2]), true):
 		return false
 	if not _require(not _profile.is_level_durd(str(_levels[2].get("id", ""))), "Completing DUR'D Level 03 should clear DUR state."):
 		return false
@@ -212,6 +212,12 @@ func _text_trap_win(level: Dictionary) -> void:
 	if text_input != null:
 		text_input.text = answer
 	_main.call("_handle_text_submit")
+
+
+func _rearrange_win(_level: Dictionary) -> void:
+	_main.call("_set_rearrange_cup_center", Vector2(225, 243))
+	_main.call("_finish_rearrange_drag")
+	_main.call("_handle_rearrange_release")
 
 
 func _assert_save_load_state(context: String) -> bool:

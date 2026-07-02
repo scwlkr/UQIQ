@@ -86,8 +86,8 @@ func _run_clean_six_level_flow() -> void:
 	_spend_dur_on_level(_levels[2])
 	_start_level(_levels[2])
 	_use_roast()
-	_text_trap_wrong(_levels[2])
-	_complete_with_scorecard(_levels[2], Callable(self, "_text_trap_win").bind(_levels[2]))
+	_rearrange_wrong(_levels[2])
+	_complete_with_scorecard(_levels[2], Callable(self, "_rearrange_win").bind(_levels[2]))
 	_require(not _profile.is_level_durd(str(_levels[2].get("id", ""))), "Completing Level 3 should clear DUR'D state.")
 	_require(_profile.dur_tokens() == LocalProfileScript.MAX_DUR_TOKENS, "Completing DUR'D Level 3 should recover the spent Dur Token.")
 	_dur_recovery_count += 1
@@ -177,6 +177,8 @@ func _complete_level_by_template(level: Dictionary, replay: bool = false) -> voi
 			_complete_with_scorecard(level, Callable(self, "_drag_logic_win").bind(level), replay)
 		"Text Trap":
 			_complete_with_scorecard(level, Callable(self, "_text_trap_win").bind(level), replay)
+		"Rearrange Level":
+			_complete_with_scorecard(level, Callable(self, "_rearrange_win").bind(level), replay)
 		"Pattern Grid":
 			_complete_with_scorecard(level, Callable(self, "_pattern_grid_win").bind(level), replay)
 		"Memory Flash":
@@ -237,6 +239,18 @@ func _text_trap_wrong(level: Dictionary) -> void:
 	_require(text_input != null, "Text Trap should create a LineEdit.")
 	text_input.text = ""
 	_main.call("_handle_text_submit")
+
+
+func _rearrange_win(_level: Dictionary) -> void:
+	_main.call("_set_rearrange_cup_center", Vector2(225, 243))
+	_main.call("_finish_rearrange_drag")
+	_main.call("_handle_rearrange_release")
+
+
+func _rearrange_wrong(_level: Dictionary) -> void:
+	_main.call("_handle_rearrange_release")
+	_require(str(_main.get("_last_physics_result")) == "fail", "Wrong Rearrange release should fail before retry.")
+	_main.call("_handle_rearrange_reset")
 
 
 func _pattern_grid_win(level: Dictionary) -> void:
