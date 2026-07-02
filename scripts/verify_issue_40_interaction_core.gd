@@ -101,10 +101,12 @@ func _drag_tile_to_zone(object_id: String, target_id: String) -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.position = tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	_main.call("_handle_drag_tile_input", motion, object_id, tile)
+	_require(str(_main.get("_drag_hover_target_id")) == target_id, "Dragging over a drop zone should mark it as the current hover target.")
 	target_center = zone.get_global_rect().get_center()
 	var release_position := tile.get_global_transform_with_canvas().affine_inverse() * target_center
 	var release := _mouse_button_event(release_position, false)
 	_main.call("_handle_drag_tile_input", release, object_id, tile)
+	_require(str(_main.get("_drag_hover_target_id")).is_empty(), "Releasing a drag should clear drop-zone hover state.")
 
 
 func _release_overlapping_tile_with_bad_pointer(object_id: String, target_id: String) -> void:

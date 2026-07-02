@@ -63,6 +63,7 @@ var _dragging_tile: Control = null
 var _drag_offset := Vector2.ZERO
 var _drag_origin := Vector2.ZERO
 var _drag_drop_zones := {}
+var _drag_hover_target_id := ""
 var _last_drag_drop_target_id := ""
 var _selected_pattern_cell := ""
 var _pattern_marked_cells: Array[String] = []
@@ -388,6 +389,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_drag_offset = Vector2.ZERO
 	_drag_origin = Vector2.ZERO
 	_drag_drop_zones = {}
+	_drag_hover_target_id = ""
 	_last_drag_drop_target_id = ""
 	_selected_pattern_cell = ""
 	_pattern_marked_cells = []
@@ -1430,12 +1432,14 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_drag_origin = tile.position
 		_animate_control_scale(tile, Vector2(1.04, 1.04), 0.05)
 		tile.move_to_front()
+		_set_drag_hover_target(_drop_target_for_released_tile(_event_canvas_position(event, tile), tile))
 		_feedback_label.text = "Dragging %s. Drop it where truth will tolerate it." % object_id
 		_mark_input_handled()
 		return
 
 	if _is_pointer_drag(event) and _dragging_tile == tile:
 		_move_drag_tile(event, tile)
+		_set_drag_hover_target(_drop_target_for_released_tile(_event_canvas_position(event, tile), tile))
 		_mark_input_handled()
 		return
 
@@ -1446,9 +1450,11 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_dragging_tile = null
 		_drag_offset = Vector2.ZERO
 		_animate_control_scale(tile, Vector2.ONE, 0.06)
+		_set_drag_hover_target("")
 		if drop_target_id.is_empty():
 			_handle_direct_drag_miss(object_id, tile)
 		else:
+			_snap_drag_tile_to_zone(tile, drop_target_id)
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
 
@@ -1528,6 +1534,38 @@ func _move_drag_tile(event: InputEvent, tile: Control) -> void:
 		clamp(next_position.x, 0.0, max_x),
 		clamp(next_position.y, 42.0, max_y)
 	)
+
+
+func _set_drag_hover_target(target_id: String) -> void:
+	if target_id == _drag_hover_target_id:
+		return
+	_drag_hover_target_id = target_id
+	_refresh_drag_drop_zone_styles()
+
+
+func _refresh_drag_drop_zone_styles() -> void:
+	for target_id in _drag_drop_zones.keys():
+		var zone = _drag_drop_zones[target_id] as PanelContainer
+		if zone == null or not is_instance_valid(zone):
+			continue
+
+		var color := COLOR_YELLOW.darkened(0.16) if str(target_id) == _drag_hover_target_id else COLOR_PANEL_ALT
+		zone.add_theme_stylebox_override("panel", _flat_box(color, 8))
+
+
+func _snap_drag_tile_to_zone(tile: Control, target_id: String) -> void:
+	if tile == null or not is_instance_valid(tile):
+		return
+	var zone = _drag_drop_zones.get(target_id) as Control
+	if zone == null or not is_instance_valid(zone):
+		return
+	var playfield := tile.get_parent() as Control
+	if playfield == null:
+		return
+
+	var zone_center := zone.get_global_rect().get_center()
+	var target_position: Vector2 = zone_center - playfield.get_global_rect().position - (tile.size * 0.5)
+	_animate_control_position(tile, target_position)
 
 
 func _drop_target_at_canvas_position(canvas_position: Vector2) -> String:
