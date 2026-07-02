@@ -90,7 +90,8 @@ func _verify_tactile_memory_flash() -> void:
 	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
 	_require(int(_main.get("_tap_count")) == 3, "Wrong direct memory row should count one action per tile.")
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "MOON", "Direct memory handler should record the last touched tile.")
-	_require(not _memory_tiles_have_selected_border(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should return touched tiles to their base frames.")
+	_require(not _memory_tiles_have_selected_border(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should leave selected contact feedback.")
+	_require(_memory_tiles_have_border(["DUR", "SUN", "MOON"], Color(0.95, 0.22, 0.24)), "Wrong full Memory Flash row should frame touched tiles as a fail state.")
 	var memory_after_wrong: Array = _main.get("_memory_input")
 	_require(memory_after_wrong.is_empty(), "Wrong full Memory Flash row should clear recall input for a clean retry.")
 	var first_slot_label := _node_named(_main, "memory_recall_slot_label_0") as Label
@@ -173,6 +174,13 @@ func _memory_tile_has_border(item_id: String, expected_color: Color) -> bool:
 	if tile == null:
 		return false
 	return _panel_border_color(tile).is_equal_approx(expected_color)
+
+
+func _memory_tiles_have_border(item_ids: Array[String], expected_color: Color) -> bool:
+	for item_id in item_ids:
+		if not _memory_tile_has_border(item_id, expected_color):
+			return false
+	return true
 
 
 func _panel_border_color(control: Control) -> Color:

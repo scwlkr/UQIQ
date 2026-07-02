@@ -1782,6 +1782,8 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 
 func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: Control) -> void:
 	if _is_primary_press(event):
+		if _memory_input.is_empty():
+			_reset_direct_memory_tile_styles()
 		_pressed_direct_memory_tile_id = item_id
 		if tile != null and is_instance_valid(tile):
 			_pulse_control(tile)
@@ -1804,9 +1806,13 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 		_update_memory_recall_slots()
 		_pulse_memory_recall_slot(_memory_input.size() - 1)
 		var will_reset_wrong_row := _direct_memory_row_is_full_and_wrong()
+		var failed_input: Array[String] = []
+		if will_reset_wrong_row:
+			for memory_item in _memory_input:
+				failed_input.append(memory_item)
 		_resolve_direct_memory_if_full()
 		if will_reset_wrong_row:
-			_reset_direct_memory_tile_styles()
+			_apply_direct_memory_tile_result_styles(failed_input, false)
 		_mark_input_handled()
 
 
@@ -2509,6 +2515,24 @@ func _reset_direct_memory_tile_styles() -> void:
 			_apply_direct_base_panel_style(control, COLOR_ORANGE)
 		else:
 			_apply_direct_base_panel_style(control)
+
+
+func _apply_direct_memory_tile_result_styles(item_ids: Array[String], success: bool) -> void:
+	var color := COLOR_GREEN.darkened(0.16) if success else COLOR_RED.darkened(0.18)
+	var border_color := COLOR_GREEN if success else COLOR_RED
+	for item_id in item_ids:
+		var control := _direct_memory_tile_control(item_id)
+		if control != null and is_instance_valid(control):
+			control.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+
+
+func _direct_memory_tile_control(item_id: String) -> Control:
+	if _direct_memory_flash_label == null or not is_instance_valid(_direct_memory_flash_label):
+		return null
+	var surface := _direct_memory_flash_label.get_parent() as Control
+	if surface == null or not is_instance_valid(surface):
+		return null
+	return surface.get_node_or_null("memory_tile_%s" % item_id.to_lower()) as Control
 
 
 func _memory_tile_size(tile_count: int, height: float) -> Vector2:
