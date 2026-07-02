@@ -39,6 +39,7 @@ var _last_completed_attempt := {}
 var _last_score_result := {}
 var _level_list_notice := ""
 var _level_started_at_msec := 0
+var _last_direct_tap_target_id := ""
 var _feedback_counts := {}
 var _last_feedback_kind := ""
 var _feedback_player: AudioStreamPlayer
@@ -340,6 +341,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_last_score_result = {}
 	_level_list_notice = ""
 	_text_input = null
+	_last_direct_tap_target_id = ""
 	_selected_drag_id = ""
 	_dragging_object_id = ""
 	_dragging_tile = null
@@ -842,6 +844,10 @@ func _render_level_stage(stage_box: VBoxContainer, level: Dictionary) -> void:
 
 
 func _render_tap_logic(stage_box: VBoxContainer) -> void:
+	if _uses_direct_tap_scene():
+		_render_direct_tap_scene(stage_box)
+		return
+
 	var targets = _rules().get("tap_targets", [])
 	if typeof(targets) == TYPE_ARRAY:
 		for target in targets:
@@ -853,6 +859,34 @@ func _render_tap_logic(stage_box: VBoxContainer) -> void:
 			stage_box.add_child(target_button)
 
 	_add_feedback(stage_box, "Choose carefully.")
+
+
+func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap the right object in the scene.")), 17, COLOR_INK)
+
+	var surface := Panel.new()
+	surface.name = "tap_scene_surface"
+	surface.custom_minimum_size = Vector2(0, 280)
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	stage_box.add_child(surface)
+
+	var hint := _new_label("labels are evidence, not instructions", 16, COLOR_INK)
+	hint.position = Vector2(18, 18)
+	hint.size = Vector2(300, 28)
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(hint)
+
+	var targets = _rules().get("tap_targets", [])
+	if typeof(targets) == TYPE_ARRAY:
+		for index in range(targets.size()):
+			var target = targets[index]
+			if typeof(target) != TYPE_DICTIONARY:
+				continue
+
+			surface.add_child(_make_direct_tap_target(target, index))
+
+	_add_feedback(stage_box, "Tap an object on the surface. The list is gone.")
 
 
 func _render_drag_logic(stage_box: VBoxContainer) -> void:
@@ -1097,8 +1131,31 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	_add_feedback(stage_box, "Deterministic choice fallback until this Level gets a direct drawing spec.")
 
 
+func _uses_direct_tap_scene() -> bool:
+	return str(_rules().get("interaction_model", "")) == "direct_tap_scene"
+
+
 func _uses_direct_physics_draw() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_draw_line_then_release"
+
+
+func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
+	var target_id := str(target.get("id", "target"))
+	var pad := PanelContainer.new()
+	pad.name = "tap_scene_target_%s" % target_id
+	pad.custom_minimum_size = _vector2_from_array(target.get("scene_size", []), Vector2(138, 96))
+	pad.size = pad.custom_minimum_size
+	pad.position = _vector2_from_array(target.get("scene_position", []), Vector2(28 + (index * 162), 92))
+	pad.mouse_filter = Control.MOUSE_FILTER_STOP
+	pad.set_meta("target_id", target_id)
+	pad.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
+	pad.gui_input.connect(Callable(self, "_handle_direct_tap_scene_input").bind(target_id, pad))
+
+	var label := _new_label(str(target.get("label", "Tap")), 25, COLOR_TEXT)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pad.add_child(label)
+	return pad
 
 
 func _make_drag_tile(object: Dictionary) -> PanelContainer:
@@ -1158,6 +1215,17 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		else:
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
+
+
+func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: Control) -> void:
+	if not _is_primary_press(event):
+		return
+
+	_last_direct_tap_target_id = target_id
+	if pad != null and is_instance_valid(pad):
+		pad.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+	_handle_tap_target(target_id)
+	_mark_input_handled()
 
 
 func _move_drag_tile(event: InputEvent, tile: Control) -> void:
@@ -1522,6 +1590,16 @@ func _dictionary_from(value: Variant) -> Dictionary:
 	if typeof(value) == TYPE_DICTIONARY:
 		return value
 	return {}
+
+
+func _vector2_from_array(value: Variant, fallback: Vector2) -> Vector2:
+	if typeof(value) != TYPE_ARRAY:
+		return fallback
+
+	var values: Array = value
+	if values.size() < 2:
+		return fallback
+	return Vector2(float(values[0]), float(values[1]))
 
 
 func _score_component_text(components: Dictionary, key: String, title: String, fallback_label: String) -> String:

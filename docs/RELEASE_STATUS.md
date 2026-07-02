@@ -4,43 +4,31 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Release prep is paused. UQIQ has a tested app shell and internal TestFlight proof, but the gameplay core does not yet match the intended interactive problem-solving direction.
+Release prep is paused. The current priority is making the gameplay core feel like interactive problem solving instead of answer-choice UI.
 
 ## Active Next Step
 
 - GitHub issue: [#43 Build tactile Tap Logic prototype](https://github.com/scwlkr/UQIQ/issues/43)
 - Branch: `codex/issue-43-tactile-tap-logic`
 
-## Product Direction From scwlkr
+## Current Gameplay Proof
 
-- scwlkr is here to define game direction, not act as a QA tester.
-- Current build feels too much like multiple-choice buttons.
-- Real drag/drop and real physics drawing need to exist before more App Store release work.
+- Level 2 Drag Logic has direct drag/drop.
+- Level 4 Pattern Grid has direct row marking.
+- Level 6 and Pack 6 Physics Draw have direct line drawing.
+- Level 1 Tap Logic now has a direct tap scene instead of `CORRECT` / `WRONG` answer-choice buttons.
 
-## Latest Proof
+## Latest Verification
 
-- Internal TestFlight install/launch proof passed for UQIQ `0.1.0 (1)` on physical iPhone `17 Hoe Max`.
-- Full local verification floor has passed through `verify_issue_38_long_screen_fit.gd`.
-- Current content includes 60 JSON Level Specs, Local Profile, scoring, Dur Tokens, roasts, replay, and Score Roastcards.
-- Issue #40 adds a direct drag/drop playfield for Level 2 and a direct drawing surface for Level 6.
-- `verify_issue_40_interaction_core.gd` proves the rendered UI no longer exposes `Move:` / `Drop on:` / `Draw:` choice buttons for those prototypes.
-- Full documented verification floor passed after the interaction-core slice.
-- Issue #40 closed with proof in commit `9047e91`.
-- Issue #41 adds direct drawing gestures for all eight Pack 6 Physics Draw levels.
-- `verify_issue_41_pack_6_direct_drawing.gd` proves Pack 6 Physics Draw levels reject a bad line and complete through direct drawing.
-- Full documented verification floor passed after the Pack 6 drawing slice.
-- Issue #41 closed with proof in commit `c41c67f`.
-- Issue #42 adds direct row-marking interaction for Level 4 Pattern Grid.
-- `verify_issue_42_pattern_grid_interaction.gd` proves Level 4 rejects a wrong row and completes from marked grid state without `Submit Pattern`.
-- Full documented verification floor passed after the Pattern Grid slice.
-- Issue #42 closed with proof in commit `5a09e83`.
-- Issue #39 was superseded by product-direction feedback and the new interaction-core issue.
+- `verify_issue_43_tactile_tap_logic.gd` passed.
+- Affected checks passed: `verify_issue_40_interaction_core.gd`, `verify_issue_42_pattern_grid_interaction.gd`, `verify_issue_4.gd`, `verify_issue_5_desktop_smoke.gd`, `verify_issue_7_pack_1_smoke.gd`.
+- Full README verification floor passed through `verify_issue_43_tactile_tap_logic.gd`.
 
 ## Known Blockers
 
-- No external/human testing blocker for the current slice.
+- No blocker for the current gameplay slice.
 - App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until gameplay core is stronger and scwlkr approves.
 
 ## Next Gate
 
-Build one tactile Tap Logic prototype so the first levels are not only answer-choice buttons.
+Close #43 with proof, then route the next `next-step` issue to the fastest phone-feel iteration path.
