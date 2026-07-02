@@ -62,6 +62,8 @@ var _selected_pattern_cell := ""
 var _pattern_marked_cells: Array[String] = []
 var _pattern_cell_buttons := {}
 var _memory_input: Array[String] = []
+var _memory_slot_labels := {}
+var _last_direct_memory_tile_id := ""
 var _physics_choice := ""
 var _last_physics_result := ""
 var _physics_choice_label: Label
@@ -352,6 +354,8 @@ func _show_play_screen(level: Dictionary) -> void:
 	_pattern_marked_cells = []
 	_pattern_cell_buttons = {}
 	_memory_input = []
+	_memory_slot_labels = {}
+	_last_direct_memory_tile_id = ""
 	_physics_choice = ""
 	_last_physics_result = ""
 	_physics_choice_label = null
@@ -1005,6 +1009,10 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 
 
 func _render_memory_flash(stage_box: VBoxContainer) -> void:
+	if _uses_direct_memory_tiles():
+		_render_direct_memory_tiles(stage_box)
+		return
+
 	var flash_row := HBoxContainer.new()
 	flash_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	flash_row.add_theme_constant_override("separation", 8)
@@ -1039,6 +1047,81 @@ func _render_memory_flash(stage_box: VBoxContainer) -> void:
 	actions.add_child(submit_button)
 
 	_add_feedback(stage_box, "Flash it, hide it, then rebuild the sequence.")
+
+
+func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap tiles into the recall slots.")), 17, COLOR_INK)
+
+	var surface := Panel.new()
+	surface.name = "memory_tile_surface"
+	surface.custom_minimum_size = Vector2(0, 312)
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	stage_box.add_child(surface)
+
+	var flash_label := _new_label("flash order: %s" % "  ".join(_string_array(_rules().get("flash_items", []))), 16, COLOR_INK)
+	flash_label.name = "memory_flash_order"
+	flash_label.position = Vector2(18, 18)
+	flash_label.size = Vector2(320, 30)
+	flash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(flash_label)
+
+	_render_memory_recall_slots(surface)
+	_render_memory_tile_bank(surface)
+	_add_feedback(stage_box, "Tap tiles into slots. It judges the moment the row is full.")
+
+
+func _render_memory_recall_slots(surface: Control) -> void:
+	var sequence := _memory_solution_sequence()
+	for index in range(sequence.size()):
+		var slot := PanelContainer.new()
+		slot.name = "memory_recall_slot_%d" % index
+		slot.position = Vector2(20 + (index * 104), 70)
+		slot.size = Vector2(88, 70)
+		slot.custom_minimum_size = slot.size
+		slot.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+		surface.add_child(slot)
+
+		var label := _new_label("_", 22, COLOR_TEXT)
+		label.name = "memory_recall_slot_label_%d" % index
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_child(label)
+		_memory_slot_labels[index] = label
+
+
+func _render_memory_tile_bank(surface: Control) -> void:
+	var choices = _rules().get("choices", [])
+	if typeof(choices) == TYPE_ARRAY:
+		for index in range(choices.size()):
+			var item_id := str(choices[index])
+			var tile := _make_memory_tile(item_id, index)
+			surface.add_child(tile)
+
+	var clear_tile := _make_memory_tile("CLEAR", 0, true)
+	clear_tile.name = "memory_tile_clear"
+	clear_tile.position = Vector2(20, 242)
+	surface.add_child(clear_tile)
+
+
+func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> PanelContainer:
+	var tile := PanelContainer.new()
+	tile.name = "memory_tile_%s" % item_id.to_lower()
+	tile.position = Vector2(20 + (index * 104), 164)
+	tile.size = Vector2(88, 62)
+	tile.custom_minimum_size = tile.size
+	tile.mouse_filter = Control.MOUSE_FILTER_STOP
+	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_ORANGE if is_clear else COLOR_BLUE, 8))
+	if is_clear:
+		tile.gui_input.connect(Callable(self, "_handle_direct_memory_clear_input").bind(tile))
+	else:
+		tile.gui_input.connect(Callable(self, "_handle_direct_memory_tile_input").bind(item_id, tile))
+
+	var label := _new_label(item_id, 19, COLOR_TEXT)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(label)
+	return tile
 
 
 func _render_physics_draw(stage_box: VBoxContainer) -> void:
@@ -1135,6 +1218,10 @@ func _uses_direct_tap_scene() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_tap_scene"
 
 
+func _uses_direct_memory_tiles() -> bool:
+	return str(_rules().get("interaction_model", "")) == "direct_memory_tiles"
+
+
 func _uses_direct_physics_draw() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_draw_line_then_release"
 
@@ -1225,6 +1312,31 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 	if pad != null and is_instance_valid(pad):
 		pad.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	_handle_tap_target(target_id)
+	_mark_input_handled()
+
+
+func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: Control) -> void:
+	if not _is_primary_press(event):
+		return
+
+	_last_direct_memory_tile_id = item_id
+	if tile != null and is_instance_valid(tile):
+		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+	_handle_memory_choice(item_id)
+	_update_memory_recall_slots()
+	_resolve_direct_memory_if_full()
+	_mark_input_handled()
+
+
+func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void:
+	if not _is_primary_press(event):
+		return
+
+	_last_direct_memory_tile_id = "CLEAR"
+	if tile != null and is_instance_valid(tile):
+		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+	_handle_memory_clear()
+	_update_memory_recall_slots()
 	_mark_input_handled()
 
 
@@ -1533,6 +1645,38 @@ func _pattern_solution_cells() -> Array[String]:
 	if not cell_id.is_empty():
 		return [cell_id]
 	return []
+
+
+func _memory_solution_sequence() -> Array[String]:
+	var sequence = _solution().get("sequence", [])
+	if typeof(sequence) == TYPE_ARRAY:
+		return _string_array(sequence)
+	return []
+
+
+func _update_memory_recall_slots() -> void:
+	for index in _memory_slot_labels.keys():
+		var label = _memory_slot_labels[index] as Label
+		if label == null or not is_instance_valid(label):
+			continue
+		if int(index) < _memory_input.size():
+			label.text = _memory_input[int(index)]
+		else:
+			label.text = "_"
+
+
+func _resolve_direct_memory_if_full() -> void:
+	var sequence := _memory_solution_sequence()
+	if sequence.is_empty() or _memory_input.size() < sequence.size():
+		return
+
+	if _memory_input == sequence:
+		_complete_current_level()
+		return
+
+	_feedback_label.text = _first_roast("failure", "Memory failed. The pixels had one job and so did you.")
+	_set_judge_state("fail")
+	_trigger_feedback("fail")
 
 
 func _apply_pattern_mark_style(cell_id: String, button: Button) -> void:
