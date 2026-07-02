@@ -17,6 +17,7 @@ XCODE_DEVICE_ID="${UQIQ_XCODE_DEVICE_ID:-}"
 LAUNCH_ENV_JSON="${UQIQ_LAUNCH_ENV_JSON:-}"
 PLAYTEST_LEVEL="${UQIQ_PLAYTEST_LEVEL:-}"
 SCREENSHOT_PATH="${UQIQ_SCREENSHOT_PATH:-$EXPORT_DIR/uqiq-phone-$BUILD_NUMBER.png}"
+SCREENSHOT_DELAY="${UQIQ_SCREENSHOT_DELAY:-4}"
 
 
 log() {
@@ -174,6 +175,11 @@ install_launch_capture() {
 	fi
 
 	xcrun devicectl device orientation set --device "$DEVICE_ID" portrait >/dev/null 2>&1 || log "Could not force portrait orientation; continuing."
+
+	if [[ "$SCREENSHOT_DELAY" != "0" ]]; then
+		log "Waiting ${SCREENSHOT_DELAY}s before screenshot"
+		sleep "$SCREENSHOT_DELAY"
+	fi
 
 	log "Capturing screenshot proof to $SCREENSHOT_PATH"
 	xcrun devicectl device capture screenshot --device "$DEVICE_ID" --destination "$SCREENSHOT_PATH" 2>&1 | tee "$EXPORT_DIR/screenshot.log"

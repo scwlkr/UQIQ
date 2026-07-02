@@ -625,10 +625,14 @@ func _complete_level_by_template(level: Dictionary) -> void:
 			_main.call("_handle_drag_select", str(_solution(level).get("object_id", "")))
 			_main.call("_handle_drag_drop", str(_solution(level).get("drop_target_id", "")))
 		"Text Trap":
+			var answer := str(_solution(level).get("answer", ""))
+			if bool(_main.call("_uses_direct_text_tiles")):
+				_main.call("_handle_direct_text_tile_choice", answer, answer, null)
+				return
 			var text_input := _main.get("_text_input") as LineEdit
 			if not _require(text_input != null, "Text Trap should have an input before submit."):
 				return
-			text_input.text = str(_solution(level).get("answer", ""))
+			text_input.text = answer
 			_main.call("_handle_text_submit")
 		"Pattern Grid":
 			_main.call("_handle_pattern_cell", str(_solution(level).get("cell_id", "")))

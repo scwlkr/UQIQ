@@ -161,14 +161,36 @@
       "title": "Type Nothing",
       "template": "Text Trap",
       "challenge_type": "word puzzle",
-      "completion_mode": "submit",
+      "completion_mode": "auto_complete_on_correct_token",
       "prompt": "Type the word nothing.",
       "rules": {
         "placeholder": "hint: the answer is not empty",
         "accepted_inputs": [
           "nothing"
         ],
-        "case_sensitive": false
+        "case_sensitive": false,
+        "interaction_model": "direct_word_tiles",
+        "scene_prompt": "Fill the answer slot with the literal word the prompt asks for.",
+        "word_tiles": [
+          {
+            "id": "blank",
+            "label": "(blank)",
+            "answer": "",
+            "role": "decoy"
+          },
+          {
+            "id": "nothing",
+            "label": "nothing",
+            "answer": "nothing",
+            "role": "correct"
+          },
+          {
+            "id": "empty",
+            "label": "empty",
+            "answer": "empty",
+            "role": "decoy"
+          }
+        ]
       },
       "solution": {
         "answer": "nothing",
@@ -200,8 +222,8 @@
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "single_line_input",
-          "submit_button",
+          "word_tiles",
+          "answer_slot",
           "judge_face_stub"
         ]
       },

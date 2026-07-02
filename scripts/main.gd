@@ -53,6 +53,8 @@ var _transition_counts := {}
 var _last_transition_name := ""
 var _feedback_label: Label
 var _text_input: LineEdit
+var _direct_text_answer_label: Label
+var _last_direct_text_tile_id := ""
 var _selected_drag_id := ""
 var _dragging_object_id := ""
 var _dragging_tile: Control = null
@@ -370,6 +372,8 @@ func _show_play_screen(level: Dictionary) -> void:
 	_last_score_result = {}
 	_level_list_notice = ""
 	_text_input = null
+	_direct_text_answer_label = null
+	_last_direct_text_tile_id = ""
 	_last_direct_tap_target_id = ""
 	_selected_drag_id = ""
 	_dragging_object_id = ""
@@ -522,6 +526,11 @@ func _handle_text_submit() -> void:
 	if _text_input != null:
 		answer = _normalize_answer(_text_input.text)
 
+	_resolve_text_answer(answer)
+
+
+func _resolve_text_answer(raw_answer: String) -> void:
+	var answer := _normalize_answer(raw_answer)
 	var rules := _rules()
 	var accepted = rules.get("accepted_inputs", [])
 	if typeof(accepted) == TYPE_ARRAY:
@@ -963,6 +972,10 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
+	if _uses_direct_text_tiles():
+		_render_direct_text_tiles(stage_box)
+		return
+
 	_text_input = LineEdit.new()
 	_text_input.placeholder_text = str(_rules().get("placeholder", "type answer"))
 	_text_input.custom_minimum_size = Vector2(0, 56)
@@ -977,6 +990,45 @@ func _render_text_trap(stage_box: VBoxContainer) -> void:
 	stage_box.add_child(submit_button)
 
 	_add_feedback(stage_box, "Type the answer the prompt deserves, not the one it asked for.")
+
+
+func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, str(_rules().get("scene_prompt", "Tap the literal word into the answer slot.")), 17, COLOR_INK)
+
+	var surface := Panel.new()
+	surface.name = "text_tile_surface"
+	surface.custom_minimum_size = Vector2(0, 260)
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.add_theme_stylebox_override("panel", _flat_box(Color(0.91, 0.88, 0.76), 8))
+	stage_box.add_child(surface)
+
+	var prompt_label := _new_label("answer slot", 15, COLOR_INK)
+	prompt_label.position = Vector2(18, 16)
+	prompt_label.size = Vector2(280, 28)
+	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	surface.add_child(prompt_label)
+
+	var answer_slot := PanelContainer.new()
+	answer_slot.name = "text_answer_slot"
+	answer_slot.position = Vector2(18, 50)
+	answer_slot.size = Vector2(300, 70)
+	answer_slot.custom_minimum_size = answer_slot.size
+	answer_slot.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	surface.add_child(answer_slot)
+
+	_direct_text_answer_label = _new_label("_", 24, COLOR_TEXT)
+	_direct_text_answer_label.name = "text_answer_slot_label"
+	_direct_text_answer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	answer_slot.add_child(_direct_text_answer_label)
+
+	var tiles = _rules().get("word_tiles", [])
+	if typeof(tiles) == TYPE_ARRAY:
+		for index in range(tiles.size()):
+			var tile_data = tiles[index]
+			if typeof(tile_data) == TYPE_DICTIONARY:
+				surface.add_child(_make_text_tile(tile_data, index))
+
+	_add_feedback(stage_box, "Tap a word tile. The slot judges it immediately.")
 
 
 func _render_pattern_grid(stage_box: VBoxContainer) -> void:
@@ -1247,6 +1299,10 @@ func _uses_direct_tap_scene() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_tap_scene"
 
 
+func _uses_direct_text_tiles() -> bool:
+	return str(_rules().get("interaction_model", "")) == "direct_word_tiles"
+
+
 func _uses_direct_memory_tiles() -> bool:
 	return str(_rules().get("interaction_model", "")) == "direct_memory_tiles"
 
@@ -1272,6 +1328,31 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pad.add_child(label)
 	return pad
+
+
+func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
+	var tile_id := str(tile_data.get("id", "tile_%d" % index))
+	var tile := PanelContainer.new()
+	tile.name = "text_tile_%s" % tile_id
+	tile.position = _vector2_from_array(tile_data.get("scene_position", []), Vector2(18 + ((index % 3) * 102), 148 + (int(index / 3) * 74)))
+	tile.size = _vector2_from_array(tile_data.get("scene_size", []), Vector2(96, 62))
+	tile.custom_minimum_size = tile.size
+	tile.mouse_filter = Control.MOUSE_FILTER_STOP
+	tile.set_meta("token_id", tile_id)
+	tile.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
+	tile.gui_input.connect(Callable(self, "_handle_direct_text_tile_input").bind(
+		tile_id,
+		str(tile_data.get("answer", tile_data.get("label", ""))),
+		tile
+	))
+
+	var label := _new_label(str(tile_data.get("label", tile_id)), 18, COLOR_TEXT)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(label)
+	return tile
 
 
 func _make_drag_tile(object: Dictionary) -> PanelContainer:
@@ -1342,6 +1423,26 @@ func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: C
 		pad.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
 	_handle_tap_target(target_id)
 	_mark_input_handled()
+
+
+func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: String, tile: Control) -> void:
+	if not _is_primary_press(event):
+		return
+
+	_handle_direct_text_tile_choice(tile_id, answer, tile)
+	_mark_input_handled()
+
+
+func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Control = null) -> void:
+	_last_direct_text_tile_id = tile_id
+	if tile != null and is_instance_valid(tile):
+		tile.add_theme_stylebox_override("panel", _flat_box(COLOR_YELLOW, 8))
+	if _direct_text_answer_label != null:
+		_direct_text_answer_label.text = answer if not answer.is_empty() else "(blank)"
+
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_resolve_text_answer(answer)
 
 
 func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: Control) -> void:
