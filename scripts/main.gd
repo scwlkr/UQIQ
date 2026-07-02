@@ -1250,7 +1250,7 @@ func _render_memory_recall_slots(surface: Control) -> void:
 		slot.position = Vector2(18 + (index * slot_step), 70)
 		slot.size = slot_size
 		slot.custom_minimum_size = slot.size
-		slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
+		slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
 		surface.add_child(slot)
 
 		var box := VBoxContainer.new()
@@ -1259,13 +1259,13 @@ func _render_memory_recall_slots(surface: Control) -> void:
 		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slot.add_child(box)
 
-		var action_label := _new_label("SLOT", 9, COLOR_MUTED)
+		var action_label := _new_label("SLOT", 9, COLOR_PANEL_ALT)
 		action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 		action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		box.add_child(action_label)
 
-		var label := _new_label("_", 20 if slot_size.x < 84.0 else 22, COLOR_TEXT)
+		var label := _new_label("_", 20 if slot_size.x < 84.0 else 22, COLOR_INK)
 		label.name = "memory_recall_slot_label_%d" % index
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -83,6 +83,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Thirty-fifth local polish loop made Drag Logic drop zones read as recessed slots instead of movable tiles and removed the ASCII arrow hint; Drag Logic screenshot refreshed and full verification floor passed again.
 - Thirty-sixth local polish loop strengthened Physics Draw guide-line and lift/draw cue contrast so the drawing gesture reads naturally on the playfield; Physics Draw screenshot refreshed and full verification floor passed again.
 - Thirty-seventh local polish loop compacted Score Roastcard spacing so Replay and Level List controls are fully visible in the first portrait viewport; Score Roastcard screenshot refreshed and full verification floor passed again.
+- Thirty-eighth local polish loop made Memory Flash recall slots read as recessed targets distinct from tappable tiles; Memory Flash screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
