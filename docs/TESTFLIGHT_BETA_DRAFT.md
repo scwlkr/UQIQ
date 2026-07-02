@@ -1,6 +1,6 @@
 # TestFlight Beta Draft
 
-Status: Draft for scwlkr review. No external testers invited. No Beta App Review started.
+Status: External beta deferred by scwlkr. No external testers invited. No Beta App Review started.
 
 ## Apple Source Notes
 
@@ -20,11 +20,14 @@ References:
 
 ## UQIQ Beta Recommendation
 
-Use email invites only for the first beta. Do not create a public link yet.
+Keep testing internal-only for now. scwlkr is the only tester for the foreseeable future.
+
+When the app is more advanced and scwlkr explicitly resumes external testing, use email invites only for the first beta. Do not create a public link yet.
 
 Target:
 
-- 3-10 testers.
+- 0 external testers now.
+- Future target after approval: 1-10 external testers.
 - iPhone only.
 - 15-30 minute test window per tester.
 - Focus on release blockers, not feature requests.
@@ -52,7 +55,7 @@ UQIQ is a short offline puzzle game with 60 tiny trick Levels, local progress, D
 Feedback Email:
 
 ```text
-[support email]
+dev@wlkrlabs.com
 ```
 
 What to Test:
@@ -79,7 +82,7 @@ UQIQ does not intentionally use encryption beyond standard Apple platform behavi
 
 ## Tester List Fields
 
-Collect this from scwlkr before any invite:
+Collect this from scwlkr before any future external invite:
 
 ```text
 name,email,device_model,ios_version,notes
@@ -129,10 +132,15 @@ Screenshot or TestFlight feedback attached? yes/no:
 
 scwlkr must approve or provide:
 
-- Public support/feedback email.
+- Public support/feedback email: `dev@wlkrlabs.com`.
 - External tester list.
 - Approval to upload a non-internal TestFlight build for external testing.
 - Approval to submit that build to TestFlight App Review.
 - Approval to notify testers after approval.
 
-No public link should be created for the first beta unless scwlkr explicitly asks for it.
+Current decision:
+
+- No external testers for now.
+- No non-internal TestFlight build for external beta yet.
+- No TestFlight App Review yet.
+- No public link unless scwlkr explicitly asks for it later.

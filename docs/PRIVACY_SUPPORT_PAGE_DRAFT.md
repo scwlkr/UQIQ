@@ -18,7 +18,7 @@ Plan:
 
 Blocked before submission:
 
-- Confirm the public support email or contact method.
+- Confirmed public support email: `dev@wlkrlabs.com`.
 - Publish the URLs.
 - Verify both URLs load over HTTPS from a non-logged-in browser.
 
@@ -59,7 +59,7 @@ Support
 
 For support, bugs, privacy questions, or App Store review contact, email:
 
-[support email]
+dev@wlkrlabs.com
 
 Please include your device model, iOS version, UQIQ app version, and a short description of the issue. Do not send passwords, payment details, or sensitive personal information.
 
@@ -85,10 +85,9 @@ https://uqiq.wlkrlabs.com/support
 Support/contact placeholder:
 
 ```text
-[support email]
+dev@wlkrlabs.com
 ```
 
 Owner decision needed:
 
-- Confirm whether to use `support@wlkrlabs.com` or another public support contact.
 - Confirm whether `/support` is a separate page or redirects to `/privacy#support`.

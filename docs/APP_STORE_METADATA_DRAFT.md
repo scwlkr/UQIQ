@@ -171,7 +171,7 @@ Still needed before submission:
 
 - Live support URL.
 - Live privacy policy URL.
-- scwlkr-approved public support contact.
+- Public support contact: `dev@wlkrlabs.com`.
 - Final App Store screenshot set.
 - scwlkr approval of subtitle, description, keywords, category, privacy answer, age-rating answer, and support contact.
 - App Store Connect entry/submission after approval.
