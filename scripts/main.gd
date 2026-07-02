@@ -79,6 +79,7 @@ var _pattern_marked_cells: Array[String] = []
 var _pattern_cell_buttons := {}
 var _memory_input: Array[String] = []
 var _memory_slot_labels := {}
+var _memory_slot_panels := {}
 var _last_direct_memory_tile_id := ""
 var _pressed_direct_memory_tile_id := ""
 var _direct_memory_flash_label: Label
@@ -452,6 +453,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_pattern_cell_buttons = {}
 	_memory_input = []
 	_memory_slot_labels = {}
+	_memory_slot_panels = {}
 	_last_direct_memory_tile_id = ""
 	_pressed_direct_memory_tile_id = ""
 	_direct_memory_flash_label = null
@@ -737,11 +739,13 @@ func _handle_memory_choice(item_id: String) -> void:
 func _handle_memory_clear() -> void:
 	if _memory_input.is_empty():
 		_feedback_label.text = "Recall row ready."
+		_reset_memory_recall_slot_styles()
 		return
 
 	_tap_count += 1
 	_trigger_feedback("tap")
 	_memory_input = []
+	_reset_memory_recall_slot_styles()
 	_feedback_label.text = "Cleared. That was probably wise."
 
 
@@ -1422,7 +1426,7 @@ func _render_memory_recall_slots(surface: Control) -> void:
 		slot.position = Vector2(18 + (index * slot_step), 70)
 		slot.size = slot_size
 		slot.custom_minimum_size = slot.size
-		slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
+		_apply_memory_recall_slot_style(slot, COLOR_BLUE)
 		surface.add_child(slot)
 
 		var box := VBoxContainer.new()
@@ -1437,6 +1441,7 @@ func _render_memory_recall_slots(surface: Control) -> void:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		box.add_child(label)
 		_memory_slot_labels[index] = label
+		_memory_slot_panels[index] = slot
 
 
 func _render_memory_tile_bank(surface: Control) -> void:
@@ -1865,6 +1870,7 @@ func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: 
 	if _is_primary_press(event):
 		if _memory_input.is_empty():
 			_reset_direct_memory_tile_styles()
+			_reset_memory_recall_slot_styles()
 		_pressed_direct_memory_tile_id = item_id
 		if tile != null and is_instance_valid(tile):
 			_pulse_control(tile)
@@ -2670,6 +2676,28 @@ func _pulse_memory_recall_slot(index: int) -> void:
 	_pulse_control(slot_box.get_parent() as Control, 0.985, 0.04)
 
 
+func _apply_memory_recall_slot_style(slot: Control, border_color: Color) -> void:
+	if slot == null or not is_instance_valid(slot):
+		return
+	var fill := COLOR_RED.darkened(0.18) if border_color.is_equal_approx(COLOR_RED) else COLOR_PLAYFIELD.darkened(0.05)
+	slot.add_theme_stylebox_override("panel", _framed_box(fill, border_color, 8))
+
+
+func _reset_memory_recall_slot_styles() -> void:
+	for index in _memory_slot_panels.keys():
+		var slot = _memory_slot_panels[index] as Control
+		_apply_memory_recall_slot_style(slot, COLOR_BLUE)
+
+
+func _apply_memory_recall_slot_failure_feedback() -> void:
+	for index in _memory_slot_panels.keys():
+		var slot = _memory_slot_panels[index] as Control
+		if slot == null or not is_instance_valid(slot):
+			continue
+		_apply_memory_recall_slot_style(slot, COLOR_RED)
+		_failure_pulse_control(slot, 0.985, 0.04)
+
+
 func _resolve_direct_memory_if_full() -> void:
 	var sequence := _memory_solution_sequence()
 	if sequence.is_empty() or _memory_input.size() < sequence.size():
@@ -2680,6 +2708,7 @@ func _resolve_direct_memory_if_full() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Memory failed. The pixels had one job and so did you.")
+	_apply_memory_recall_slot_failure_feedback()
 	_memory_input = []
 	_update_memory_recall_slots()
 	_set_judge_state("fail")

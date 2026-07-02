@@ -93,6 +93,8 @@ func _verify_tactile_memory_flash() -> void:
 	_require(not _memory_tiles_have_selected_border(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should leave selected contact feedback.")
 	_require(_memory_tiles_have_border(["DUR", "SUN", "MOON"], Color(0.95, 0.22, 0.24)), "Wrong full Memory Flash row should frame touched tiles as a fail state.")
 	_require(_memory_tiles_shook(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should shake touched tiles.")
+	_require(_memory_recall_slots_have_border(3, Color(0.95, 0.22, 0.24)), "Wrong full Memory Flash row should frame recall slots as a fail state.")
+	_require(_memory_recall_slots_pulsed(3), "Wrong full Memory Flash row should pulse recall slots.")
 	var memory_after_wrong: Array = _main.get("_memory_input")
 	_require(memory_after_wrong.is_empty(), "Wrong full Memory Flash row should clear recall input for a clean retry.")
 	var first_slot_label := _node_named(_main, "memory_recall_slot_label_0") as Label
@@ -191,6 +193,28 @@ func _memory_tiles_shook(item_ids: Array[String]) -> bool:
 		if tile == null:
 			return false
 		if int(tile.get_meta("failure_shake_count", 0)) <= 0:
+			return false
+	return true
+
+
+func _memory_recall_slots_have_border(slot_count: int, expected_color: Color) -> bool:
+	for index in range(slot_count):
+		var slot := _node_named(_main, "memory_recall_slot_%d" % index) as Control
+		_require(slot != null, "Expected direct memory recall slot %d." % index)
+		if slot == null:
+			return false
+		if not _panel_border_color(slot).is_equal_approx(expected_color):
+			return false
+	return true
+
+
+func _memory_recall_slots_pulsed(slot_count: int) -> bool:
+	for index in range(slot_count):
+		var slot := _node_named(_main, "memory_recall_slot_%d" % index) as Control
+		_require(slot != null, "Expected direct memory recall slot %d." % index)
+		if slot == null:
+			return false
+		if int(slot.get_meta("failure_pulse_count", 0)) <= 0:
 			return false
 	return true
 
