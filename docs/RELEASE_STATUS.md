@@ -97,6 +97,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Forty-ninth local polish loop changed the play header Dur chip to show full token capacity (`Dur 3/3`) and added readability verifier coverage for both header metric chips; screenshots refreshed and full verification floor passed again.
 - Fiftieth local polish loop removed repeated `TAP` scaffolding from direct Pattern Grid cells so the board reads as the puzzle values first; Pattern Grid screenshot refreshed and full verification floor passed again.
 - Fifty-first local polish loop removed duplicate Pattern Grid helper copy, changed marked-cell feedback from raw grid ids to visible cell values, and skipped feedback-audio setup during screenshot capture; Pattern Grid screenshot refreshed and full verification floor passed again.
+- Fifty-second local polish loop removed repeated all-caps affordance tags from direct tap/text/memory/drag/drop surfaces so object labels carry the tactile interaction; screenshots refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

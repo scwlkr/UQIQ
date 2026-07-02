@@ -1297,13 +1297,7 @@ func _render_memory_recall_slots(surface: Control) -> void:
 		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slot.add_child(box)
 
-		var action_label := _new_label("SLOT", 9, COLOR_PANEL_ALT)
-		action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-		action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		box.add_child(action_label)
-
-		var label := _new_label("_", 20 if slot_size.x < 84.0 else 22, COLOR_INK)
+		var label := _new_label("_", 24 if slot_size.x < 84.0 else 26, COLOR_INK)
 		label.name = "memory_recall_slot_label_%d" % index
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1349,13 +1343,7 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false, tile
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tile.add_child(box)
 
-	var action_label := _new_label("RESET" if is_clear else "TAP", 9 if tile_size.x < 84.0 else 10, COLOR_MUTED)
-	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(action_label)
-
-	var label := _new_label(item_id, 13 if tile_size.x < 84.0 else (18 if is_clear else 17), COLOR_TEXT)
+	var label := _new_label(item_id, 15 if tile_size.x < 84.0 else 20, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -1515,13 +1503,7 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pad.add_child(box)
 
-	var action_label := _new_label("TAP", 11, COLOR_MUTED)
-	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(action_label)
-
-	var label := _new_label(str(target.get("label", "Tap")), 20, COLOR_TEXT)
+	var label := _new_label(str(target.get("label", "Tap")), 24, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -1552,12 +1534,6 @@ func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tile.add_child(box)
 
-	var action_label := _new_label("TAP", 10, COLOR_MUTED)
-	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(action_label)
-
 	var label := _new_label(str(tile_data.get("label", tile_id)), 18, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -1583,13 +1559,7 @@ func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tile.add_child(box)
 
-	var action_label := _new_label("DRAG", 10, COLOR_MUTED)
-	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(action_label)
-
-	var label := _new_label(str(object.get("label", "Object")), 21, COLOR_TEXT)
+	var label := _new_label(str(object.get("label", "Object")), 23, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -1624,13 +1594,7 @@ func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	zone.add_child(box)
 
-	var action_label := _new_label("DROP", 10, COLOR_PANEL_ALT)
-	action_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	action_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(action_label)
-
-	var label := _new_label(str(target.get("label", "Target")), 15, COLOR_INK)
+	var label := _new_label(str(target.get("label", "Target")), 16, COLOR_INK)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(label)
