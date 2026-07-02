@@ -69,6 +69,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Twenty-first local polish loop restyled playable Level List and active DUR controls as framed buttons to match the direct-play surfaces; Level List screenshot refreshed and full verification floor passed again.
 - Twenty-second local polish loop shortened playable Level List row labels so the active level title fits without low-value status truncation; Level List screenshot refreshed and full verification floor passed again.
 - Twenty-third local polish loop removed redundant locked-state suffixes from disabled Level List rows so titles fit more naturally; Level List screenshot refreshed and full verification floor passed again.
+- Twenty-fourth local polish loop removed inactive DUR buttons from locked Level List rows while preserving row alignment; Level List screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

@@ -365,13 +365,18 @@ func _add_level_row(parent: Node, level: Dictionary) -> void:
 	button.pressed.connect(Callable(self, "_show_play_screen").bind(level))
 	row.add_child(button)
 
-	var dur_button := _make_button("DUR", COLOR_PANEL_ALT, Vector2(76, 58))
-	dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-	dur_button.disabled = not _is_supported_playable_level_spec(level) or not _profile.can_spend_dur_token(level)
-	if not dur_button.disabled:
+	var can_spend_dur := _is_supported_playable_level_spec(level) and _profile.can_spend_dur_token(level)
+	if can_spend_dur:
+		var dur_button := _make_button("DUR", COLOR_PANEL_ALT, Vector2(76, 58))
+		dur_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 		_apply_button_frame(dur_button, COLOR_ORANGE)
-	dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
-	row.add_child(dur_button)
+		dur_button.pressed.connect(Callable(self, "_handle_dur_level").bind(level))
+		row.add_child(dur_button)
+	else:
+		var dur_spacer := Control.new()
+		dur_spacer.custom_minimum_size = Vector2(76, 58)
+		dur_spacer.size_flags_horizontal = Control.SIZE_SHRINK_END
+		row.add_child(dur_spacer)
 
 
 func _show_play_screen(level: Dictionary) -> void:
