@@ -861,10 +861,43 @@ func _show_score_roastcard() -> void:
 	replay_button.pressed.connect(Callable(self, "_show_play_screen").bind(_current_level))
 	actions.add_child(replay_button)
 
+	var next_level := _next_playable_level()
+	if not next_level.is_empty():
+		var next_button := _make_button("Next", COLOR_GREEN)
+		_apply_button_frame(next_button, COLOR_GREEN)
+		next_button.pressed.connect(Callable(self, "_show_next_level"))
+		actions.add_child(next_button)
+
 	var list_button := _make_button("Level List", COLOR_GREEN)
 	_apply_button_frame(list_button, COLOR_GREEN)
 	list_button.pressed.connect(Callable(self, "_show_level_list"))
 	actions.add_child(list_button)
+
+
+func _show_next_level() -> void:
+	var next_level := _next_playable_level()
+	if next_level.is_empty():
+		_show_level_list()
+		return
+	_show_play_screen(next_level)
+
+
+func _next_playable_level() -> Dictionary:
+	var next_level_number := int(_current_level.get("level_number", 0)) + 1
+	if next_level_number <= 1:
+		return {}
+	var pack_set := _pack
+	if pack_set.is_empty():
+		pack_set = _load_level_pack_set()
+		_pack = pack_set
+	var next_level := _loader.find_level_by_number(pack_set, next_level_number)
+	if next_level.is_empty():
+		return {}
+	if not _debug_playtest_unlock_all() and not _profile.is_level_unlocked(next_level_number):
+		return {}
+	if not _is_supported_playable_level_spec(next_level):
+		return {}
+	return next_level
 
 
 func _make_screen(background_color: Color, transition_name: String = "", use_scroll: bool = false) -> VBoxContainer:

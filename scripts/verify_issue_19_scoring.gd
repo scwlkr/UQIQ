@@ -128,12 +128,19 @@ func _verify_score_roastcard_rows() -> void:
 	_require(_screen_has_label_text("DUR:"), "Score Roastcard should show DUR context row after a DUR'D completion.")
 	_require(_screen_has_label_text("Dignity tax"), "Score Roastcard should show absurd Roast flavor label.")
 	_require(_screen_has_label_text("DUR parole"), "Score Roastcard should show absurd DUR flavor label.")
+	var next_button := _button_with_text(_main, "Next")
+	_require(next_button != null, "Score Roastcard should expose a Next Level action when the next level is unlocked.")
 
 	var score_result := _dictionary_from(_main.get("_last_score_result"))
 	_require(not score_result.is_empty(), "Main scene should keep the issue #19 score result.")
 	var components := _dictionary_from(score_result.get("score_components", {}))
 	for key in ["speed", "actions", "roasts", "dur"]:
 		_require(components.has(key), "Score result should include %s component." % key)
+
+	if next_button != null:
+		next_button.emit_signal("pressed")
+		_require(_screen_has_label_text("Level 02"), "Next Level action should open the next playable level.")
+		_require(_screen_has_label_text("Move the Word"), "Next Level action should navigate to Level 2 content.")
 
 
 func _assert_score_result(level: Dictionary, score_result: Dictionary, score_before: int, action_count: int, roast_count: int, elapsed_seconds: float, was_durd: bool, tokens_restored: int) -> void:
@@ -226,6 +233,16 @@ func _dictionary_from(value: Variant) -> Dictionary:
 
 func _screen_has_label_text(text: String) -> bool:
 	return _node_has_label_text(_main, text)
+
+
+func _button_with_text(node: Node, text: String) -> Button:
+	if node is Button and str(node.text) == text:
+		return node as Button
+	for child in node.get_children():
+		var button := _button_with_text(child, text)
+		if button != null:
+			return button
+	return null
 
 
 func _node_has_label_text(node: Node, text: String) -> bool:

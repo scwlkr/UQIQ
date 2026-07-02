@@ -108,6 +108,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Sixtieth local polish loop changed Physics Draw so tiny accidental strokes reset with `Line too short` without spending an action or failing the level; focused physics checks and the full verification floor passed again.
 - Sixty-first local polish loop changed Pattern Grid wrong full-set feedback to clear marked cells automatically, so retrying starts clean without extra cleanup taps; focused pattern checks and the full verification floor passed again.
 - Sixty-second local polish loop changed direct Memory Flash wrong full rows to clear recall input and slot labels automatically, so retrying starts clean without tapping CLEAR; focused memory checks and the full verification floor passed again.
+- Sixty-third local polish loop added a Score Roastcard `Next` action when the next playable level is unlocked, with verifier coverage for navigation and scroll reachability; focused score checks and the full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

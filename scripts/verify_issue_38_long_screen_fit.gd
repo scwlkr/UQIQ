@@ -55,6 +55,7 @@ func _verify_score_roastcard_scroll() -> void:
 	_main.call("_show_play_screen", level)
 	_main.call("_handle_tap_target", str(_solution(level).get("target_id", "")))
 	_require(_scroll_has_label_text(_main, "The correct answer is the button labeled WRONG."), "Score Roastcard should expose lower UQIQ Moment content inside a scroll container.")
+	_require(_scroll_has_button_text(_main, "Next"), "Score Roastcard should expose Next action inside a scroll container.")
 	_require(_scroll_has_button_text(_main, "Level List"), "Score Roastcard should expose Level List action inside a scroll container.")
 
 
