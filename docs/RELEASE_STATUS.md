@@ -75,6 +75,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Twenty-seventh local polish loop framed Drag Logic drop zones to match draggable tiles and sharpen hover target feedback; Drag Logic screenshot refreshed and full verification floor passed again.
 - Twenty-eighth local polish loop wrapped direct Pattern Grid cells in the shared playfield surface so every direct interaction mode uses the same target stage language; Pattern Grid screenshot refreshed and full verification floor passed again.
 - Twenty-ninth local polish loop framed Text Trap answer slots and Memory Flash recall slots so target areas match the tactile tile language; Text Trap and Memory Flash screenshots refreshed and full verification floor passed again.
+- Thirtieth local polish loop framed Score Roastcard Replay and Level List controls so completion navigation matches the rest of the app's tactile control language; Score Roastcard screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

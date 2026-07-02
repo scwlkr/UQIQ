@@ -806,10 +806,12 @@ func _show_score_roastcard() -> void:
 	root.add_child(actions)
 
 	var replay_button := _make_button("Replay", COLOR_BLUE)
+	_apply_button_frame(replay_button, COLOR_BLUE)
 	replay_button.pressed.connect(Callable(self, "_show_play_screen").bind(_current_level))
 	actions.add_child(replay_button)
 
 	var list_button := _make_button("Level List", COLOR_GREEN)
+	_apply_button_frame(list_button, COLOR_GREEN)
 	list_button.pressed.connect(Callable(self, "_show_level_list"))
 	actions.add_child(list_button)
 
