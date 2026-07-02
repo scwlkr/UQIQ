@@ -58,6 +58,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Tenth local polish loop restyled direct Tap Logic targets as framed evidence tiles instead of bright answer-button blocks; Level 1 screenshot refreshed and full verification floor passed again.
 - Eleventh local polish loop compacted Score Roastcard completion/best/unlock status into one clean row; Score Roastcard screenshot refreshed and full verification floor passed again.
 - Twelfth local polish loop added Drag Logic to the draft screenshot set and tightened drag/drop columns so drop zones stay inside the playfield; screenshots refreshed and full verification floor passed again.
+- Thirteenth local polish loop added Text Trap to the draft screenshot set; visual check confirmed the direct answer-slot/tile layout is clean, screenshots refreshed, and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
