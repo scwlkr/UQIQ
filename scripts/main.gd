@@ -1384,12 +1384,22 @@ func _make_direct_tap_target(target: Dictionary, index: int) -> PanelContainer:
 	pad.add_theme_stylebox_override("panel", _flat_box(COLOR_BLUE, 8))
 	pad.gui_input.connect(Callable(self, "_handle_direct_tap_scene_input").bind(target_id, pad))
 
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pad.add_child(box)
+
+	var action_label := _new_label("TAP", 11, COLOR_MUTED)
+	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(action_label)
+
 	var label := _new_label(str(target.get("label", "Tap")), 20, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pad.add_child(label)
+	box.add_child(label)
 	return pad
 
 
@@ -1409,12 +1419,22 @@ func _make_text_tile(tile_data: Dictionary, index: int) -> PanelContainer:
 		tile
 	))
 
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(box)
+
+	var action_label := _new_label("TAP", 10, COLOR_MUTED)
+	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(action_label)
+
 	var label := _new_label(str(tile_data.get("label", tile_id)), 18, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tile.add_child(label)
+	box.add_child(label)
 	return tile
 
 
@@ -1428,10 +1448,20 @@ func _make_drag_tile(object: Dictionary) -> PanelContainer:
 	tile.set_meta("object_id", str(object.get("id", "")))
 	tile.gui_input.connect(Callable(self, "_handle_drag_tile_input").bind(str(object.get("id", "")), tile))
 
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(box)
+
+	var action_label := _new_label("DRAG", 10, COLOR_MUTED)
+	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(action_label)
+
 	var label := _new_label(str(object.get("label", "Object")), 21, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tile.add_child(label)
+	box.add_child(label)
 	return tile
 
 
@@ -1444,9 +1474,20 @@ func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	zone.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
 	zone.set_meta("target_id", str(target.get("id", "")))
 
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	zone.add_child(box)
+
+	var action_label := _new_label("DROP", 10, COLOR_MUTED)
+	action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(action_label)
+
 	var label := _new_label(str(target.get("label", "Target")), 17, COLOR_TEXT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	zone.add_child(label)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(label)
 	return zone
 
 

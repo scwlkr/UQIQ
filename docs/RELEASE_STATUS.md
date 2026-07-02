@@ -52,6 +52,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Fourth local polish loop added Judge Face reaction pulse on visible state changes; focused transition/feedback checks and the full verification floor passed again.
 - Fifth local polish loop rebuilt Score Roastcard into a score hero, two-column stat chips, and cleaner Roast/UQIQ Moment section; screenshots refreshed and full verification floor passed again.
 - Sixth local polish loop replaced the Level List debug-style profile line with UQIQ/Dur/Unlocked metric chips; screenshots refreshed and full verification floor passed again.
+- Seventh local polish loop added non-spoiling TAP/DRAG/DROP affordance tags to direct Tap Logic, Text Trap, Drag Logic tiles, and drop zones; screenshots refreshed and full verification floor passed again.
 - Physical phone deploy attempted for this pass, but `scripts/deploy_phone.sh` stopped before build/install because `17 Hoe Max` was paired but `devicectl` reported `tunnelState=disconnected`.
 
 ## Known Blockers
