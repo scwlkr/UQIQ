@@ -197,9 +197,14 @@ func _drag_logic_win(level: Dictionary) -> void:
 
 func _text_trap_win(level: Dictionary) -> void:
 	var solution := _dictionary_from(level.get("solution", {}))
+	var answer := str(solution.get("answer", ""))
+	if bool(_main.call("_uses_direct_text_tiles")):
+		_main.call("_handle_direct_text_tile_choice", answer, answer, null)
+		return
+
 	var text_input := _main.get("_text_input") as LineEdit
 	if text_input != null:
-		text_input.text = str(solution.get("answer", ""))
+		text_input.text = answer
 	_main.call("_handle_text_submit")
 
 

@@ -86,10 +86,7 @@ func _run_clean_six_level_flow() -> void:
 	_spend_dur_on_level(_levels[2])
 	_start_level(_levels[2])
 	_use_roast()
-	var text_input := _main.get("_text_input") as LineEdit
-	_require(text_input != null, "Text Trap should create a LineEdit.")
-	text_input.text = ""
-	_main.call("_handle_text_submit")
+	_text_trap_wrong(_levels[2])
 	_complete_with_scorecard(_levels[2], Callable(self, "_text_trap_win").bind(_levels[2]))
 	_require(not _profile.is_level_durd(str(_levels[2].get("id", ""))), "Completing Level 3 should clear DUR'D state.")
 	_require(_profile.dur_tokens() == LocalProfileScript.MAX_DUR_TOKENS, "Completing DUR'D Level 3 should recover the spent Dur Token.")
@@ -219,9 +216,25 @@ func _drag_logic_win(level: Dictionary) -> void:
 
 
 func _text_trap_win(level: Dictionary) -> void:
+	var answer := str(_solution(level).get("answer", ""))
+	if bool(_main.call("_uses_direct_text_tiles")):
+		_main.call("_handle_direct_text_tile_choice", answer, answer, null)
+		return
+
 	var text_input := _main.get("_text_input") as LineEdit
 	_require(text_input != null, "Text Trap should have an input before submit.")
-	text_input.text = str(_solution(level).get("answer", ""))
+	text_input.text = answer
+	_main.call("_handle_text_submit")
+
+
+func _text_trap_wrong(level: Dictionary) -> void:
+	if bool(_main.call("_uses_direct_text_tiles")):
+		_main.call("_handle_direct_text_tile_choice", "blank", "", null)
+		return
+
+	var text_input := _main.get("_text_input") as LineEdit
+	_require(text_input != null, "Text Trap should create a LineEdit.")
+	text_input.text = ""
 	_main.call("_handle_text_submit")
 
 
