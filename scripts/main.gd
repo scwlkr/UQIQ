@@ -316,12 +316,42 @@ func _loaded_level_count(packs: Array) -> int:
 
 
 func _add_pack_heading(parent: Node, pack: Dictionary) -> void:
-	var heading := _new_label(_pack_heading_text(pack), 20, COLOR_TEXT)
+	var heading_box := VBoxContainer.new()
+	heading_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading_box.add_theme_constant_override("separation", 0)
+	parent.add_child(heading_box)
+
+	var heading := _new_label(_pack_heading_title(pack), 20, COLOR_TEXT)
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	parent.add_child(heading)
+	heading_box.add_child(heading)
+
+	var range_text := _pack_level_range_text(pack)
+	if not range_text.is_empty():
+		var range_label := _new_label(range_text, 15, COLOR_MUTED)
+		range_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		heading_box.add_child(range_label)
 
 
-func _pack_heading_text(pack: Dictionary) -> String:
+func _pack_heading_title(pack: Dictionary) -> String:
+	var bounds := _pack_level_bounds(pack)
+	var first_level_number := int(bounds.get("first", 0))
+	var pack_number := 1
+	if first_level_number > 0:
+		pack_number = int((first_level_number - 1) / 10) + 1
+
+	return "Pack %d: %s" % [pack_number, str(pack.get("pack_title", "Untitled Pack"))]
+
+
+func _pack_level_range_text(pack: Dictionary) -> String:
+	var bounds := _pack_level_bounds(pack)
+	var first_level_number := int(bounds.get("first", 0))
+	var last_level_number := int(bounds.get("last", 0))
+	if first_level_number > 0 and last_level_number >= first_level_number:
+		return "Levels %02d-%02d" % [first_level_number, last_level_number]
+	return ""
+
+
+func _pack_level_bounds(pack: Dictionary) -> Dictionary:
 	var levels = pack.get("levels", [])
 	var first_level_number := 0
 	var last_level_number := 0
@@ -339,14 +369,10 @@ func _pack_heading_text(pack: Dictionary) -> String:
 			if level_number > last_level_number:
 				last_level_number = level_number
 
-	var pack_number := 1
-	if first_level_number > 0:
-		pack_number = int((first_level_number - 1) / 10) + 1
-
-	var title := str(pack.get("pack_title", "Untitled Pack"))
-	if first_level_number > 0 and last_level_number >= first_level_number:
-		return "Pack %d: %s | Levels %02d-%02d" % [pack_number, title, first_level_number, last_level_number]
-	return "Pack %d: %s" % [pack_number, title]
+	return {
+		"first": first_level_number,
+		"last": last_level_number,
+	}
 
 
 func _add_level_row(parent: Node, level: Dictionary) -> void:

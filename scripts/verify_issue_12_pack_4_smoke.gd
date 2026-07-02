@@ -233,7 +233,9 @@ func _assert_level_list_exposes_all_levels() -> void:
 	for pack_number in range(1, 5):
 		var first_level_number := ((pack_number - 1) * 10) + 1
 		var last_level_number := first_level_number + 9
-		if not _require(_screen_has_label_with("Pack %d:" % pack_number, "Levels %02d-%02d" % [first_level_number, last_level_number]), "Level List should render a Pack %d heading for Levels %02d-%02d." % [pack_number, first_level_number, last_level_number]):
+		if not _require(_screen_has_label_with("Pack %d:" % pack_number, "Pack %d:" % pack_number), "Level List should render a Pack %d heading." % pack_number):
+			return
+		if not _require(_screen_has_label_text("Levels %02d-%02d" % [first_level_number, last_level_number]), "Level List should render Levels %02d-%02d below Pack %d." % [first_level_number, last_level_number, pack_number]):
 			return
 
 	if not _require(_screen_has_label_with("Pack 4:", "Pattern Crimes"), "Level List should render Pack 4 as Pattern Crimes."):

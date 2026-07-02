@@ -85,6 +85,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Thirty-seventh local polish loop compacted Score Roastcard spacing so Replay and Level List controls are fully visible in the first portrait viewport; Score Roastcard screenshot refreshed and full verification floor passed again.
 - Thirty-eighth local polish loop made Memory Flash recall slots read as recessed targets distinct from tappable tiles; Memory Flash screenshot refreshed and full verification floor passed again.
 - Thirty-ninth local polish loop made Text Trap's answer slot read as a recessed target distinct from tappable word tiles; Text Trap screenshot refreshed and full verification floor passed again.
+- Fortieth local polish loop split Level List pack headings from level ranges so long pack names no longer wrap with a dangling separator; Level List screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers
