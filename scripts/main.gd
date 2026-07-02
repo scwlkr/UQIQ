@@ -2092,7 +2092,7 @@ func _level_row_button_text(level: Dictionary) -> String:
 	var level_number := int(level.get("level_number", 0))
 	var title := str(level.get("title", "Untitled"))
 	var state := _level_state_text(level)
-	if state == "playable":
+	if state == "playable" or state == "locked":
 		return "%02d  %s" % [level_number, title]
 	if state.begins_with("completed - replay"):
 		return "%02d  %s  |  replay" % [level_number, title]
