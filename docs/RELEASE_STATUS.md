@@ -92,6 +92,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Forty-fourth local polish loop removed raw template-name headers from play stages and rewrote the leftover Tap Logic startup helper so Level screens read less like a test harness; screenshots refreshed and full verification floor passed again.
 - Forty-fifth local polish loop rewrote Physics Draw state copy from debug-style `Line/Test` labels into player-facing `Path` and `Lift/Release` prompts; Physics Draw screenshot refreshed and full verification floor passed again.
 - Forty-sixth local polish loop rewrote Score Roastcard summary copy to remove shorthand like `Best 1A/0R`, `Total Delta`, and `Attempt raw`; Score Roastcard screenshot refreshed and full verification floor passed again.
+- Forty-seventh local polish loop shortened direct play-screen helper lines for Drag Logic, Text Trap, Pattern Grid, Memory Flash, and Physics Draw so the screens feel less like QA instructions; screenshots refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

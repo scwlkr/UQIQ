@@ -1073,7 +1073,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 			playfield.add_child(zone)
 			_drag_drop_zones[str(target.get("id", ""))] = zone
 
-	_add_feedback(stage_box, "Drag the wrong thing into the right place.")
+	_add_feedback(stage_box, "Drop the lie where it belongs.")
 
 
 func _render_text_trap(stage_box: VBoxContainer) -> void:
@@ -1133,7 +1133,7 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 			if typeof(tile_data) == TYPE_DICTIONARY:
 				surface.add_child(_make_text_tile(tile_data, index))
 
-	_add_feedback(stage_box, "Tap a word tile. The slot judges it immediately.")
+	_add_feedback(stage_box, "Tap a word. The slot decides.")
 
 
 func _render_pattern_grid(stage_box: VBoxContainer) -> void:
@@ -1204,7 +1204,7 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 			grid.add_child(cell_button)
 			_pattern_cell_buttons[cell_id] = cell_button
 
-	_add_feedback(stage_box, "Tap evidence on the grid. It judges as soon as you commit enough cells.")
+	_add_feedback(stage_box, "Tap the cell that does not belong.")
 
 
 func _render_memory_flash(stage_box: VBoxContainer) -> void:
@@ -1269,7 +1269,7 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 
 	_render_memory_recall_slots(surface)
 	_render_memory_tile_bank(surface)
-	_add_feedback(stage_box, "Tap tiles into slots. It judges the moment the row is full.")
+	_add_feedback(stage_box, "Fill the row from memory.")
 
 
 func _render_memory_recall_slots(surface: Control) -> void:
@@ -1429,7 +1429,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_physics_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	surface.add_child(_physics_result_label)
 
-	_add_feedback(stage_box, "Draw the ramp, then lift your finger to test it.")
+	_add_feedback(stage_box, "Draw, then lift to test.")
 
 
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
