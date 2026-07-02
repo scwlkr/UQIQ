@@ -442,19 +442,8 @@ func _show_play_screen(level: Dictionary) -> void:
 	level_label.add_theme_color_override("font_color", COLOR_TEXT)
 	top_bar.add_child(level_label)
 
-	var score_label := Label.new()
-	score_label.text = "UQIQ %d" % _profile.current_uqiq_score()
-	score_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	score_label.add_theme_font_size_override("font_size", 16)
-	score_label.add_theme_color_override("font_color", COLOR_YELLOW)
-	top_bar.add_child(score_label)
-
-	var token_label := Label.new()
-	token_label.text = "Dur %d" % _profile.dur_tokens()
-	token_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	token_label.add_theme_font_size_override("font_size", 16)
-	token_label.add_theme_color_override("font_color", COLOR_ORANGE)
-	top_bar.add_child(token_label)
+	_add_play_header_chip(top_bar, "UQIQ %d" % _profile.current_uqiq_score(), COLOR_YELLOW, 82)
+	_add_play_header_chip(top_bar, "Dur %d" % _profile.dur_tokens(), COLOR_ORANGE, 76)
 
 	_add_label(root, str(level.get("title", "Untitled")), 30, COLOR_TEXT)
 	_add_label(root, str(level.get("prompt", "")), 19, COLOR_MUTED)
@@ -2071,6 +2060,20 @@ func _add_metric_chip(parent: Node, title: String, value: String, accent: Color)
 
 	_add_label(box, title, 13, COLOR_MUTED)
 	_add_label(box, value, 18, accent)
+
+
+func _add_play_header_chip(parent: Node, text: String, accent: Color, width: int) -> void:
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size = Vector2(width, 48)
+	chip.size_flags_horizontal = Control.SIZE_SHRINK_END
+	chip.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL, accent, 8))
+	parent.add_child(chip)
+
+	var label := _new_label(text, 14, accent)
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	chip.add_child(label)
 
 
 func _is_level_playable(level: Dictionary) -> bool:
