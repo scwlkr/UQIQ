@@ -2003,7 +2003,7 @@ func _add_level_list_summary(parent: Node, packs: Array) -> void:
 		_add_status(parent, _profile.last_error, COLOR_RED)
 		return
 
-	_add_status(parent, "Loaded %d Level Specs from %d Packs" % [_loaded_level_count(packs), packs.size()], COLOR_GREEN)
+	_add_status(parent, "%d levels ready across %d packs" % [_loaded_level_count(packs), packs.size()], COLOR_GREEN)
 
 	var metrics := HBoxContainer.new()
 	metrics.size_flags_horizontal = Control.SIZE_EXPAND_FILL
