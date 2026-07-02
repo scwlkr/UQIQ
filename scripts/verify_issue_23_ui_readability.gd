@@ -48,9 +48,11 @@ func _verify_main_flow_text_controls() -> void:
 	_assert_text_controls("Level List")
 
 	_main.call("_show_play_screen", _level_by_number(41))
+	_assert_play_header_score_visible("Memory Flash Play Screen")
 	_assert_text_controls("Memory Flash Play Screen")
 
 	_main.call("_show_play_screen", _level_by_number(51))
+	_assert_play_header_score_visible("Physics Draw Play Screen")
 	_assert_text_controls("Physics Draw Play Screen")
 
 	var level := _level_by_number(1)
@@ -62,6 +64,16 @@ func _verify_main_flow_text_controls() -> void:
 
 func _assert_text_controls(context: String) -> void:
 	_collect_text_controls(_main, context)
+
+
+func _assert_play_header_score_visible(context: String) -> void:
+	var label := _label_with_text(_main, "UQIQ 100")
+	_require(label != null, "%s play header should show the full starting UQIQ score." % context)
+	if label == null:
+		return
+
+	var chip := label.get_parent() as Control
+	_require(chip != null and chip.custom_minimum_size.x >= 100.0, "%s UQIQ chip should be wide enough for the full score." % context)
 
 
 func _collect_text_controls(node: Node, context: String) -> void:
@@ -95,6 +107,16 @@ func _node_has_label_text(node: Node, text: String) -> bool:
 		if _node_has_label_text(child, text):
 			return true
 	return false
+
+
+func _label_with_text(node: Node, text: String) -> Label:
+	if node is Label and str(node.text).contains(text):
+		return node as Label
+	for child in node.get_children():
+		var label := _label_with_text(child, text)
+		if label != null:
+			return label
+	return null
 
 
 func _level_by_number(level_number: int) -> Dictionary:

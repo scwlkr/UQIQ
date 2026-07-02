@@ -470,7 +470,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	level_label.add_theme_color_override("font_color", COLOR_TEXT)
 	top_bar.add_child(level_label)
 
-	_add_play_header_chip(top_bar, "UQIQ %d" % _profile.current_uqiq_score(), COLOR_YELLOW, 82)
+	_add_play_header_chip(top_bar, "UQIQ %d" % _profile.current_uqiq_score(), COLOR_YELLOW, 100)
 	_add_play_header_chip(top_bar, "Dur %d" % _profile.dur_tokens(), COLOR_ORANGE, 76)
 
 	_add_label(root, str(level.get("title", "Untitled")), 30, COLOR_TEXT)
