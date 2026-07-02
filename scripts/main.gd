@@ -1680,6 +1680,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		_animate_control_scale(tile, Vector2(1.04, 1.04), 0.05)
 		_apply_drag_tile_style(tile, true)
 		tile.move_to_front()
+		_refresh_drag_drop_zone_styles()
 		_set_drag_hover_target(_drop_target_for_released_tile(_event_canvas_position(event, tile), tile))
 		_feedback_label.text = "Dragging %s. Find its box." % _drag_object_label(object_id)
 		_mark_input_handled()
@@ -1705,9 +1706,11 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 		else:
 			if _is_drag_drop_solution(object_id, drop_target_id):
 				_snap_drag_tile_to_zone(tile, drop_target_id)
+				_apply_drag_drop_zone_result_style(drop_target_id, true)
 			else:
 				_last_failed_drag_return_id = object_id
 				_animate_control_position(tile, _drag_origin)
+				_apply_drag_drop_zone_result_style(drop_target_id, false)
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
 
@@ -1874,6 +1877,16 @@ func _refresh_drag_drop_zone_styles() -> void:
 		var color := COLOR_YELLOW.darkened(0.16) if is_hovered else COLOR_PLAYFIELD.darkened(0.05)
 		var border_color := COLOR_YELLOW if is_hovered else COLOR_BLUE
 		zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+
+
+func _apply_drag_drop_zone_result_style(target_id: String, success: bool) -> void:
+	var zone = _drag_drop_zones.get(target_id) as PanelContainer
+	if zone == null or not is_instance_valid(zone):
+		return
+
+	var color := COLOR_GREEN.darkened(0.16) if success else COLOR_RED.darkened(0.18)
+	var border_color := COLOR_GREEN if success else COLOR_RED
+	zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
 
 
 func _snap_drag_tile_to_zone(tile: Control, target_id: String) -> void:

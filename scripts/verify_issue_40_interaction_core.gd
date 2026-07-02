@@ -77,6 +77,7 @@ func _verify_direct_drag_drop() -> void:
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct drag/drop should count as one direct action.")
 	_require(str(_main.get("_selected_drag_id")).is_empty(), "Wrong direct drag/drop should clear the held-tile state after release.")
 	_require(str(_main.get("_last_failed_drag_return_id")) == "word_right", "Wrong direct drag/drop should schedule the dragged tile to return to origin.")
+	_require(_drop_zone_border_color("confidence_box").is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct drag/drop should frame the rejected target as a fail state.")
 	_require(_screen_has_label_text("RIGHT does not belong in Confidence Box."), "Wrong direct drag/drop feedback should use visible tile and box labels.")
 	_require(not _screen_has_label_text("word_right"), "Wrong direct drag/drop feedback should not leak internal object ids.")
 
@@ -193,6 +194,18 @@ func _release_tile_into_empty_space(object_id: String) -> void:
 	_main.call("_handle_drag_tile_input", press, object_id, tile)
 	var release := _mouse_button_event(Vector2(-500, -500), false)
 	_main.call("_handle_drag_tile_input", release, object_id, tile)
+
+
+func _drop_zone_border_color(target_id: String) -> Color:
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as PanelContainer
+	_require(zone != null, "Expected drop zone %s." % target_id)
+	if zone == null:
+		return Color.TRANSPARENT
+	var style := zone.get_theme_stylebox("panel") as StyleBoxFlat
+	_require(style != null, "Expected framed drop zone %s." % target_id)
+	if style == null:
+		return Color.TRANSPARENT
+	return style.border_color
 
 
 func _draw_line_on_surface(start: Vector2, end: Vector2) -> void:
