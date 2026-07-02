@@ -389,9 +389,7 @@ func _pack_level_bounds(pack: Dictionary) -> Dictionary:
 
 func _add_level_row(parent: Node, level: Dictionary) -> void:
 	var level_number := int(level.get("level_number", 0))
-	var title := str(level.get("title", "Untitled"))
 	var is_playable := _is_level_playable(level)
-	var button_text := _level_row_button_text(level)
 	var row := HBoxContainer.new()
 	row.name = "level_row_%02d" % level_number
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -400,7 +398,7 @@ func _add_level_row(parent: Node, level: Dictionary) -> void:
 	parent.add_child(row)
 	_apply_board_entry_motion(row)
 
-	var button := _make_button(button_text, _level_button_color(level))
+	var button := _make_level_row_button(level)
 	button.disabled = not is_playable
 	if is_playable:
 		_apply_button_frame(button, _level_button_color(level))
@@ -1088,6 +1086,28 @@ func _make_button(text: String, color: Color, min_size: Vector2 = Vector2(0, 58)
 	button.button_up.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	button.mouse_exited.connect(Callable(self, "_animate_control_scale").bind(button, Vector2.ONE, 0.07))
 	return button
+
+
+func _make_level_row_button(level: Dictionary) -> Button:
+	var button := _make_button(_level_row_button_text(level), _level_button_color(level), Vector2(0, 54))
+	button.set_meta("level_row_button", true)
+	button.set_meta("level_number", int(level.get("level_number", 0)))
+	button.tooltip_text = _level_row_tooltip_text(level)
+	button.add_theme_font_size_override("font_size", _level_row_font_size(str(button.text)))
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		var stylebox := button.get_theme_stylebox(state) as StyleBoxFlat
+		if stylebox != null:
+			stylebox.content_margin_left = 12
+			stylebox.content_margin_right = 12
+	return button
+
+
+func _level_row_font_size(text: String) -> int:
+	if text.length() > 30:
+		return 15
+	if text.length() > 24:
+		return 16
+	return 17
 
 
 func _handle_button_down_feedback(button: Button) -> void:
@@ -2649,12 +2669,15 @@ func _level_state_text(level: Dictionary) -> String:
 func _level_row_button_text(level: Dictionary) -> String:
 	var level_number := int(level.get("level_number", 0))
 	var title := str(level.get("title", "Untitled"))
+	return "%02d  %s" % [level_number, title]
+
+
+func _level_row_tooltip_text(level: Dictionary) -> String:
+	var text := _level_row_button_text(level)
 	var state := _level_state_text(level)
 	if state == "playable" or state == "locked":
-		return "%02d  %s" % [level_number, title]
-	if state.begins_with("completed - replay"):
-		return "%02d  %s  |  replay" % [level_number, title]
-	return "%02d  %s  |  %s" % [level_number, title, state]
+		return text
+	return "%s | %s" % [text, state]
 
 
 func _level_button_color(level: Dictionary) -> Color:
