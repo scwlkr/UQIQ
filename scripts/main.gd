@@ -482,7 +482,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_add_label(root, str(level.get("prompt", "")), 19, COLOR_MUTED)
 	if _profile.is_level_durd(str(level.get("id", ""))):
 		_add_status(root, "DUR'D: finish this Level to recover 1 Dur Token.", COLOR_YELLOW)
-	_add_judge_face(root, _judge_state)
+	_add_judge_face(root, _judge_state, true)
 
 	var stage := PanelContainer.new()
 	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -910,23 +910,29 @@ func _add_status(parent: Node, text: String, color: Color) -> Label:
 	return label
 
 
-func _add_judge_face(parent: Node, state: String) -> PanelContainer:
+func _add_judge_face(parent: Node, state: String, compact: bool = false) -> PanelContainer:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(0, 68)
+	panel.custom_minimum_size = Vector2(0, 44 if compact else 68)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	var panel_box := _flat_box(COLOR_PANEL_ALT, 8)
+	if compact:
+		panel_box.content_margin_left = 12
+		panel_box.content_margin_right = 12
+		panel_box.content_margin_top = 5
+		panel_box.content_margin_bottom = 5
+	panel.add_theme_stylebox_override("panel", panel_box)
 	parent.add_child(panel)
 
 	var box := HBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", 12)
+	box.add_theme_constant_override("separation", 10 if compact else 12)
 	panel.add_child(box)
 
-	_judge_face_label = _new_label(_judge_face_text(state), 24, COLOR_YELLOW)
-	_judge_face_label.custom_minimum_size = Vector2(96, 36)
+	_judge_face_label = _new_label(_judge_face_text(state), 18 if compact else 24, COLOR_YELLOW)
+	_judge_face_label.custom_minimum_size = Vector2(72 if compact else 96, 28 if compact else 36)
 	_judge_face_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	box.add_child(_judge_face_label)
-	_judge_caption_label = _new_label(_judge_caption_text(state), 14, COLOR_MUTED)
+	_judge_caption_label = _new_label(_judge_caption_text(state), 13 if compact else 14, COLOR_MUTED)
 	_judge_caption_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	box.add_child(_judge_caption_label)
 	return panel
