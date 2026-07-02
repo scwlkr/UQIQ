@@ -1715,7 +1715,7 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 				_apply_drag_drop_zone_result_style(drop_target_id, true)
 			else:
 				_last_failed_drag_return_id = object_id
-				_animate_control_position(tile, _drag_origin)
+				_animate_failed_drag_return(tile)
 				_apply_drag_drop_zone_result_style(drop_target_id, false)
 			_handle_direct_drag_drop(object_id, drop_target_id)
 		_mark_input_handled()
@@ -1915,7 +1915,7 @@ func _snap_drag_tile_to_zone(tile: Control, target_id: String) -> void:
 
 	var zone_center := zone.get_global_rect().get_center()
 	var target_position: Vector2 = zone_center - playfield.get_global_rect().position - (tile.size * 0.5)
-	_animate_control_position(tile, target_position)
+	_animate_control_position(tile, target_position, 0.10, Tween.TRANS_CUBIC, Tween.EASE_OUT)
 
 
 func _drop_target_at_canvas_position(canvas_position: Vector2) -> String:
@@ -1974,7 +1974,7 @@ func _handle_direct_drag_miss(object_id: String, tile: Control = null) -> void:
 	_trigger_feedback("tap")
 	_last_drag_drop_target_id = ""
 	if tile != null and is_instance_valid(tile):
-		_animate_control_position(tile, _drag_origin)
+		_animate_failed_drag_return(tile)
 	_feedback_label.text = "%s missed every box." % _drag_object_label(object_id)
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -2272,12 +2272,24 @@ func _target_color(target: Dictionary) -> Color:
 	return COLOR_PANEL_ALT
 
 
-func _animate_control_position(control: Control, target_position: Vector2) -> void:
+func _animate_failed_drag_return(tile: Control) -> void:
+	_animate_control_position(tile, _drag_origin, 0.16, Tween.TRANS_BACK, Tween.EASE_OUT)
+
+
+func _animate_control_position(
+	control: Control,
+	target_position: Vector2,
+	duration: float = 0.08,
+	transition: Tween.TransitionType = Tween.TRANS_QUAD,
+	ease_type: Tween.EaseType = Tween.EASE_OUT
+) -> void:
 	if control == null or not is_instance_valid(control):
 		return
 	if is_inside_tree():
 		var tween := create_tween()
-		tween.tween_property(control, "position", target_position, 0.08)
+		tween.set_trans(transition)
+		tween.set_ease(ease_type)
+		tween.tween_property(control, "position", target_position, duration)
 	else:
 		control.position = target_position
 
