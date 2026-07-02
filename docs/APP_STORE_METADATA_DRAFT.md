@@ -85,9 +85,10 @@ https://uqiq.wlkrlabs.com/privacy
 
 Owner-review notes:
 
+- See `docs/PRIVACY_SUPPORT_PAGE_DRAFT.md` for the page copy and hosting plan.
 - The support URL must be live and include actual contact information before submission.
 - The privacy URL must be live before submission.
-- If scwlkr wants one combined page, `https://uqiq.wlkrlabs.com/privacy` must also include support contact details.
+- If scwlkr wants one combined page, `https://uqiq.wlkrlabs.com/support` can redirect to `https://uqiq.wlkrlabs.com/privacy#support` after that path is verified.
 
 ## Privacy Draft
 
@@ -156,6 +157,7 @@ Still needed before submission:
 
 - Live support URL.
 - Live privacy policy URL.
+- scwlkr-approved public support contact.
 - Final App Store screenshot set.
 - scwlkr approval of subtitle, description, keywords, category, privacy answer, age-rating answer, and support contact.
 - App Store Connect entry/submission after approval.
