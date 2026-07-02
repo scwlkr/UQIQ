@@ -4,12 +4,12 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; long-screen fit is the active slice.
+Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; internal playtest notes from scwlkr are the active blocker.
 
 ## Active Next Step
 
-- GitHub issue: [#38 Score Roastcard and long-screen fit](https://github.com/scwlkr/UQIQ/issues/38)
-- Branch: `codex/issue-38-long-screen-fit`
+- GitHub issue: [#39 scwlkr internal playtest notes](https://github.com/scwlkr/UQIQ/issues/39)
+- Branch: `codex/issue-39-internal-playtest-blocker`
 
 ## Latest Proof
 
@@ -34,6 +34,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; long-sc
 - Physical iPhone orientation was set/read as `portrait`; TestFlight portrait screenshot proof: `/tmp/uqiq-issue-36-portrait-proof.png` at 1320x2868.
 - Internal playtest notes template added: `docs/INTERNAL_PLAYTEST_NOTES_TEMPLATE.md`.
 - Long-screen fit fixed with portrait scroll containers for content-heavy Play Screens and Score Roastcard; `verify_issue_38_long_screen_fit.gd` passed.
+- Human maturity feedback now needs scwlkr to play the internal TestFlight build and provide notes.
 - Physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
 - `com.wlkrlabs.uqiq` device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png`.
 - Device smoke covered 60-spec load, isolated Local Profile, Level List, Play -> Score Roastcard, save/load, Dur spend/recovery, and no launch crash.
@@ -44,13 +45,14 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; long-sc
 - Issue #19 scoring/Roastcard slice closed with proof: `90c2cec`.
 - Polish Pass PRD added for next slices: `69f0cdf`.
 - Latest full floor passed through `verify_issue_23_ui_readability.gd`.
-- GitHub `next-step` label points to issue #38.
+- GitHub `next-step` label points to blocked issue #39.
 
 ## Known Blockers
 
+- scwlkr internal playtest notes are needed to choose the next app-maturity slice.
 - External/public beta remains paused by product decision.
 - App Store submission/release remains gated on future scwlkr approval.
 
 ## Next Gate Needing scwlkr
 
-Finish long-screen fit proof, then continue internal-only maturity work before any external tester path.
+Play UQIQ `0.1.0 (1)` from TestFlight and send short notes using `docs/INTERNAL_PLAYTEST_NOTES_TEMPLATE.md`.
