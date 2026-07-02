@@ -627,6 +627,8 @@ func _resolve_text_answer(raw_answer: String) -> void:
 		_complete_current_level()
 		return
 
+	if _text_input != null and is_instance_valid(_text_input):
+		_shake_control(_text_input)
 	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
@@ -1191,12 +1193,21 @@ func _render_text_trap(stage_box: VBoxContainer) -> void:
 	_text_input.add_theme_font_size_override("font_size", 22)
 	_text_input.text_submitted.connect(Callable(self, "_handle_text_submitted"))
 	stage_box.add_child(_text_input)
+	call_deferred("_focus_text_input_if_current")
 
 	var submit_button := _make_button("Submit", COLOR_GREEN)
 	submit_button.pressed.connect(Callable(self, "_handle_text_submit"))
 	stage_box.add_child(submit_button)
 
 	_add_feedback(stage_box, "Type the answer the prompt deserves, not the one it asked for.")
+
+
+func _focus_text_input_if_current() -> void:
+	if _text_input == null or not is_instance_valid(_text_input):
+		return
+	if not _text_input.is_inside_tree():
+		return
+	_text_input.grab_focus()
 
 
 func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:

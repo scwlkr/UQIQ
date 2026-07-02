@@ -27,6 +27,10 @@ func _initialize() -> void:
 	if _failed:
 		return
 
+	_verify_typed_text_trap_focus_and_fail_motion()
+	if _failed:
+		return
+
 	print("Issue #47 Text Trap verification passed: Level 3 renders direct word tiles, rejects a wrong tile, and completes through Score Roastcard from a direct tile tap.")
 	_cleanup()
 	quit(0)
@@ -101,6 +105,27 @@ func _verify_tactile_text_trap() -> void:
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct Text Trap tile should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 1, "Correct direct Text Trap tile should persist as one direct action.")
+
+
+func _verify_typed_text_trap_focus_and_fail_motion() -> void:
+	var level := _level_by_number(9)
+	var level_id := str(level.get("id", ""))
+
+	_main.call("_show_play_screen", level)
+	var input = _main.get("_text_input") as LineEdit
+	_require(input != null, "Typed Text Trap should still render a text field when no word tiles are declared.")
+	if input == null:
+		return
+	_main.call("_focus_text_input_if_current")
+
+	input.text = "landscape"
+	_main.call("_handle_text_submit")
+	_require(not _profile.is_level_completed(level_id), "Wrong typed Text Trap submit should not complete Level 9.")
+	_require(_failure_shake_count(input) > 0, "Wrong typed Text Trap submit should shake the text field.")
+
+	input.text = "portrait"
+	_main.call("_handle_text_submit")
+	_require(_profile.is_level_completed(level_id), "Correct typed Text Trap submit should complete Level 9.")
 
 
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:
