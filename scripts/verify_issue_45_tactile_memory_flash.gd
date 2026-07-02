@@ -84,20 +84,23 @@ func _verify_tactile_memory_flash() -> void:
 
 func _press_tiles_with_touch(item_ids: Array[String]) -> void:
 	for item_id in item_ids:
-		_press_tile(item_id, _screen_touch_event(true))
+		_press_tile(item_id, _screen_touch_event(true), _screen_touch_event(false))
 
 
 func _press_tiles_with_mouse(item_ids: Array[String]) -> void:
 	for item_id in item_ids:
-		_press_tile(item_id, _mouse_button_event(Vector2(16, 16), true))
+		_press_tile(item_id, _mouse_button_event(Vector2(16, 16), true), _mouse_button_event(Vector2(16, 16), false))
 
 
-func _press_tile(item_id: String, event: InputEvent) -> void:
+func _press_tile(item_id: String, press_event: InputEvent, release_event: InputEvent) -> void:
 	var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
 	_require(tile != null, "Expected direct memory tile %s." % item_id)
 	if _failed:
 		return
-	_main.call("_handle_direct_memory_tile_input", event, item_id, tile)
+	var tap_count_before_press := int(_main.get("_tap_count"))
+	_main.call("_handle_direct_memory_tile_input", press_event, item_id, tile)
+	_require(int(_main.get("_tap_count")) == tap_count_before_press, "Direct Memory Flash press should preview without spending an action.")
+	_main.call("_handle_direct_memory_tile_input", release_event, item_id, tile)
 
 
 func _require_tile_label_fits(item_id: String) -> void:

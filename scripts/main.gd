@@ -61,8 +61,10 @@ var _transition_counts := {}
 var _last_transition_name := ""
 var _feedback_label: Label
 var _text_input: LineEdit
+var _pressed_direct_tap_target_id := ""
 var _direct_text_answer_label: Label
 var _last_direct_text_tile_id := ""
+var _pressed_direct_text_tile_id := ""
 var _selected_drag_id := ""
 var _dragging_object_id := ""
 var _dragging_tile: Control = null
@@ -78,6 +80,7 @@ var _pattern_cell_buttons := {}
 var _memory_input: Array[String] = []
 var _memory_slot_labels := {}
 var _last_direct_memory_tile_id := ""
+var _pressed_direct_memory_tile_id := ""
 var _direct_memory_flash_label: Label
 var _direct_memory_flash_generation := 0
 var _physics_choice := ""
@@ -424,8 +427,10 @@ func _show_play_screen(level: Dictionary) -> void:
 	_last_score_result = {}
 	_level_list_notice = ""
 	_text_input = null
+	_pressed_direct_tap_target_id = ""
 	_direct_text_answer_label = null
 	_last_direct_text_tile_id = ""
+	_pressed_direct_text_tile_id = ""
 	_last_direct_tap_target_id = ""
 	_selected_drag_id = ""
 	_dragging_object_id = ""
@@ -442,6 +447,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_memory_input = []
 	_memory_slot_labels = {}
 	_last_direct_memory_tile_id = ""
+	_pressed_direct_memory_tile_id = ""
 	_direct_memory_flash_label = null
 	_direct_memory_flash_generation += 1
 	_physics_choice = ""
@@ -1702,23 +1708,34 @@ func _handle_drag_tile_input(event: InputEvent, object_id: String, tile: Control
 
 
 func _handle_direct_tap_scene_input(event: InputEvent, target_id: String, pad: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		_pressed_direct_tap_target_id = target_id
+		if pad != null and is_instance_valid(pad):
+			_pulse_control(pad)
+			_apply_direct_selected_panel_style(pad)
+		_mark_input_handled()
 		return
 
-	_last_direct_tap_target_id = target_id
-	if pad != null and is_instance_valid(pad):
-		_pulse_control(pad)
-		_apply_direct_selected_panel_style(pad)
-	_handle_tap_target(target_id)
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_tap_target_id == target_id:
+		_pressed_direct_tap_target_id = ""
+		_last_direct_tap_target_id = target_id
+		_handle_tap_target(target_id)
+		_mark_input_handled()
 
 
 func _handle_direct_text_tile_input(event: InputEvent, tile_id: String, answer: String, tile: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		_pressed_direct_text_tile_id = tile_id
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_mark_input_handled()
 		return
 
-	_handle_direct_text_tile_choice(tile_id, answer, tile)
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_text_tile_id == tile_id:
+		_pressed_direct_text_tile_id = ""
+		_handle_direct_text_tile_choice(tile_id, answer, tile)
+		_mark_input_handled()
 
 
 func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Control = null) -> void:
@@ -1736,33 +1753,47 @@ func _handle_direct_text_tile_choice(tile_id: String, answer: String, tile: Cont
 
 
 func _handle_direct_memory_tile_input(event: InputEvent, item_id: String, tile: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		_pressed_direct_memory_tile_id = item_id
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_mark_input_handled()
 		return
 
-	_hide_direct_memory_flash(_direct_memory_flash_generation)
-	_last_direct_memory_tile_id = item_id
-	if tile != null and is_instance_valid(tile):
-		_pulse_control(tile)
-		_apply_direct_selected_panel_style(tile)
-	_handle_memory_choice(item_id)
-	_update_memory_recall_slots()
-	_pulse_memory_recall_slot(_memory_input.size() - 1)
-	_resolve_direct_memory_if_full()
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_memory_tile_id == item_id:
+		_pressed_direct_memory_tile_id = ""
+		_hide_direct_memory_flash(_direct_memory_flash_generation)
+		_last_direct_memory_tile_id = item_id
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_handle_memory_choice(item_id)
+		_update_memory_recall_slots()
+		_pulse_memory_recall_slot(_memory_input.size() - 1)
+		_resolve_direct_memory_if_full()
+		_mark_input_handled()
 
 
 func _handle_direct_memory_clear_input(event: InputEvent, tile: Control) -> void:
-	if not _is_primary_press(event):
+	if _is_primary_press(event):
+		_pressed_direct_memory_tile_id = "CLEAR"
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_mark_input_handled()
 		return
 
-	_hide_direct_memory_flash(_direct_memory_flash_generation)
-	_last_direct_memory_tile_id = "CLEAR"
-	if tile != null and is_instance_valid(tile):
-		_pulse_control(tile)
-		_apply_direct_selected_panel_style(tile)
-	_handle_memory_clear()
-	_update_memory_recall_slots()
-	_mark_input_handled()
+	if _is_primary_release(event) and _pressed_direct_memory_tile_id == "CLEAR":
+		_pressed_direct_memory_tile_id = ""
+		_hide_direct_memory_flash(_direct_memory_flash_generation)
+		_last_direct_memory_tile_id = "CLEAR"
+		if tile != null and is_instance_valid(tile):
+			_pulse_control(tile)
+			_apply_direct_selected_panel_style(tile)
+		_handle_memory_clear()
+		_update_memory_recall_slots()
+		_mark_input_handled()
 
 
 func _move_drag_tile(event: InputEvent, tile: Control) -> void:

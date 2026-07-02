@@ -65,6 +65,8 @@ func _verify_tactile_text_trap() -> void:
 	_require(not (nothing_tile is Button), "Direct Text Trap word tiles should not be Button answer choices.")
 
 	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true), "blank", "", blank_tile)
+	_require(int(_main.get("_tap_count")) == 0, "Direct Text Trap press should preview without spending an action.")
+	_main.call("_handle_direct_text_tile_input", _screen_touch_event(false), "blank", "", blank_tile)
 	_require(not _profile.is_level_completed(level_id), "Wrong direct Text Trap tile should not complete Level 3.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct Text Trap tile should count as one action.")
 	_require(str(_main.get("_last_direct_text_tile_id")) == "blank", "Direct Text Trap handler should record the wrong tile.")
@@ -76,6 +78,8 @@ func _verify_tactile_text_trap() -> void:
 		return
 
 	_main.call("_handle_direct_text_tile_input", _mouse_button_event(Vector2(16, 16), true), "nothing", "nothing", nothing_tile)
+	_require(not _profile.is_level_completed(level_id), "Correct direct Text Trap press should not complete until release.")
+	_main.call("_handle_direct_text_tile_input", _mouse_button_event(Vector2(16, 16), false), "nothing", "nothing", nothing_tile)
 	_require(_profile.is_level_completed(level_id), "Correct direct Text Trap tile should complete Level 3.")
 	_require(str(_main.get("_last_direct_text_tile_id")) == "nothing", "Direct Text Trap handler should record the winning tile.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct Text Trap tile should route to Score Roastcard.")

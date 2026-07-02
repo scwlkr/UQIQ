@@ -62,6 +62,8 @@ func _verify_tactile_tap_logic() -> void:
 	_require(not _has_button_text(_main, "WRONG"), "Direct Tap Logic should not expose WRONG as an answer-choice button.")
 
 	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true), "correct_button", decoy_pad)
+	_require(int(_main.get("_tap_count")) == 0, "Direct tap press should preview without spending an action.")
+	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(false), "correct_button", decoy_pad)
 	_require(not _profile.is_level_completed(level_id), "Wrong direct tap should not complete Level 1.")
 	_require(int(_main.get("_tap_count")) == 1, "Wrong direct tap should count as one action.")
 	_require(str(_main.get("_last_direct_tap_target_id")) == "correct_button", "Direct tap handler should record the touched decoy target.")
@@ -73,6 +75,8 @@ func _verify_tactile_tap_logic() -> void:
 		return
 
 	_main.call("_handle_direct_tap_scene_input", _mouse_button_event(Vector2(16, 16), true), "wrong_button", correct_pad)
+	_require(not _profile.is_level_completed(level_id), "Correct direct tap press should not complete until release.")
+	_main.call("_handle_direct_tap_scene_input", _mouse_button_event(Vector2(16, 16), false), "wrong_button", correct_pad)
 	_require(_profile.is_level_completed(level_id), "Correct direct tap should complete Level 1.")
 	_require(str(_main.get("_last_direct_tap_target_id")) == "wrong_button", "Direct tap handler should record the touched winning target.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct tap should route to Score Roastcard.")
