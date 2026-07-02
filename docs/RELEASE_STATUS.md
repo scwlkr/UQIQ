@@ -4,12 +4,12 @@ Last updated: 2026-07-02
 
 ## Current Phase
 
-Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; TestFlight portrait proof is the active slice.
+Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; internal playtest notes template is the active slice.
 
 ## Active Next Step
 
-- GitHub issue: [#36 TestFlight portrait orientation](https://github.com/scwlkr/UQIQ/issues/36)
-- Branch: `codex/issue-36-testflight-portrait-proof`
+- GitHub issue: [#37 Internal playtest notes template](https://github.com/scwlkr/UQIQ/issues/37)
+- Branch: `codex/issue-37-internal-playtest-template`
 
 ## Latest Proof
 
@@ -32,6 +32,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; TestFli
 - UQIQ `0.1.0 (1)` remains internal-TestFlight-only and valid for internal testing.
 - Internal-only maturity backlog added: `docs/INTERNAL_TESTFLIGHT_MATURITY_BACKLOG.md`.
 - Physical iPhone orientation was set/read as `portrait`; TestFlight portrait screenshot proof: `/tmp/uqiq-issue-36-portrait-proof.png` at 1320x2868.
+- Internal playtest notes template added: `docs/INTERNAL_PLAYTEST_NOTES_TEMPLATE.md`.
 - Physical iPhone proof passed on `17 Hoe Max`: Xcode destination visible, signed Debug build succeeded, install succeeded, launch succeeded.
 - `com.wlkrlabs.uqiq` device smoke hook passed in portrait with screenshot artifact: `/tmp/uqiq-issue-25-wlkrlabs-device-smoke-portrait-current.png`.
 - Device smoke covered 60-spec load, isolated Local Profile, Level List, Play -> Score Roastcard, save/load, Dur spend/recovery, and no launch crash.
@@ -42,7 +43,7 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; TestFli
 - Issue #19 scoring/Roastcard slice closed with proof: `90c2cec`.
 - Polish Pass PRD added for next slices: `69f0cdf`.
 - Latest full floor passed through `verify_issue_23_ui_readability.gd`.
-- GitHub `next-step` label points to issue #36.
+- GitHub `next-step` label points to issue #37.
 
 ## Known Blockers
 
@@ -51,4 +52,4 @@ Internal TestFlight install/launch proof passed for `com.wlkrlabs.uqiq`; TestFli
 
 ## Next Gate Needing scwlkr
 
-Finish portrait proof, then add an internal playtest notes template for scwlkr-only testing.
+Finish the internal playtest template, then audit Score Roastcard and long-screen fit.

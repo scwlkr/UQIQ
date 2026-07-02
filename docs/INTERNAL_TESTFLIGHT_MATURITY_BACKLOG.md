@@ -16,6 +16,7 @@ Status: Internal-only. scwlkr is the only tester until UQIQ is more advanced.
    - Done: portrait screenshot captured at `/tmp/uqiq-issue-36-portrait-proof.png` with size `1320 x 2868`.
 
 2. Real playtest notes from scwlkr
+   - Template added: `docs/INTERNAL_PLAYTEST_NOTES_TEMPLATE.md`.
    - Collect short notes from internal play only: confusing Levels, unfun Levels, unreadable UI, roasts that go too far, save/progress issues, and crashes.
    - Keep feedback private/local unless scwlkr asks to publish details.
 
