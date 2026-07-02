@@ -1560,7 +1560,7 @@ func _make_drop_zone(target: Dictionary) -> PanelContainer:
 	zone.custom_minimum_size = Vector2(132, 74)
 	zone.size = zone.custom_minimum_size
 	zone.mouse_filter = Control.MOUSE_FILTER_PASS
-	zone.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	zone.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
 	zone.set_meta("target_id", str(target.get("id", "")))
 
 	var box := VBoxContainer.new()
@@ -1707,8 +1707,10 @@ func _refresh_drag_drop_zone_styles() -> void:
 		if zone == null or not is_instance_valid(zone):
 			continue
 
-		var color := COLOR_YELLOW.darkened(0.16) if str(target_id) == _drag_hover_target_id else COLOR_PANEL_ALT
-		zone.add_theme_stylebox_override("panel", _flat_box(color, 8))
+		var is_hovered := str(target_id) == _drag_hover_target_id
+		var color := COLOR_YELLOW.darkened(0.16) if is_hovered else COLOR_PANEL_ALT
+		var border_color := COLOR_YELLOW if is_hovered else COLOR_BLUE
+		zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
 
 
 func _snap_drag_tile_to_zone(tile: Control, target_id: String) -> void:
