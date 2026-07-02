@@ -1085,10 +1085,10 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 	answer_slot.position = Vector2(18, 50)
 	answer_slot.size = Vector2(300, 70)
 	answer_slot.custom_minimum_size = answer_slot.size
-	answer_slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PANEL_ALT, COLOR_BLUE, 8))
+	answer_slot.add_theme_stylebox_override("panel", _framed_box(COLOR_PLAYFIELD.darkened(0.05), COLOR_BLUE, 8))
 	surface.add_child(answer_slot)
 
-	_direct_text_answer_label = _new_label("_", 24, COLOR_TEXT)
+	_direct_text_answer_label = _new_label("_", 24, COLOR_INK)
 	_direct_text_answer_label.name = "text_answer_slot_label"
 	_direct_text_answer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	answer_slot.add_child(_direct_text_answer_label)
