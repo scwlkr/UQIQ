@@ -94,6 +94,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Forty-sixth local polish loop rewrote Score Roastcard summary copy to remove shorthand like `Best 1A/0R`, `Total Delta`, and `Attempt raw`; Score Roastcard screenshot refreshed and full verification floor passed again.
 - Forty-seventh local polish loop shortened direct play-screen helper lines for Drag Logic, Text Trap, Pattern Grid, Memory Flash, and Physics Draw so the screens feel less like QA instructions; screenshots refreshed and full verification floor passed again.
 - Forty-eighth local polish loop widened the play header score chip so `UQIQ 100` no longer clips to `UQIQ 1`, and added readability verifier coverage for the full score label; screenshots refreshed and full verification floor passed again.
+- Forty-ninth local polish loop changed the play header Dur chip to show full token capacity (`Dur 3/3`) and added readability verifier coverage for both header metric chips; screenshots refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

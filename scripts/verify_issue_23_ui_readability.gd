@@ -48,11 +48,11 @@ func _verify_main_flow_text_controls() -> void:
 	_assert_text_controls("Level List")
 
 	_main.call("_show_play_screen", _level_by_number(41))
-	_assert_play_header_score_visible("Memory Flash Play Screen")
+	_assert_play_header_metrics_visible("Memory Flash Play Screen")
 	_assert_text_controls("Memory Flash Play Screen")
 
 	_main.call("_show_play_screen", _level_by_number(51))
-	_assert_play_header_score_visible("Physics Draw Play Screen")
+	_assert_play_header_metrics_visible("Physics Draw Play Screen")
 	_assert_text_controls("Physics Draw Play Screen")
 
 	var level := _level_by_number(1)
@@ -66,14 +66,19 @@ func _assert_text_controls(context: String) -> void:
 	_collect_text_controls(_main, context)
 
 
-func _assert_play_header_score_visible(context: String) -> void:
-	var label := _label_with_text(_main, "UQIQ 100")
-	_require(label != null, "%s play header should show the full starting UQIQ score." % context)
+func _assert_play_header_metrics_visible(context: String) -> void:
+	_assert_play_header_chip_visible(context, "UQIQ 100", 100.0, "full starting UQIQ score")
+	_assert_play_header_chip_visible(context, "Dur 3/3", 92.0, "full Dur Token count")
+
+
+func _assert_play_header_chip_visible(context: String, text: String, minimum_width: float, description: String) -> void:
+	var label := _label_with_text(_main, text)
+	_require(label != null, "%s play header should show the %s." % [context, description])
 	if label == null:
 		return
 
 	var chip := label.get_parent() as Control
-	_require(chip != null and chip.custom_minimum_size.x >= 100.0, "%s UQIQ chip should be wide enough for the full score." % context)
+	_require(chip != null and chip.custom_minimum_size.x >= minimum_width, "%s %s chip should be wide enough." % [context, text])
 
 
 func _collect_text_controls(node: Node, context: String) -> void:

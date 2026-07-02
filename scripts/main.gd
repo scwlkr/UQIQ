@@ -471,7 +471,12 @@ func _show_play_screen(level: Dictionary) -> void:
 	top_bar.add_child(level_label)
 
 	_add_play_header_chip(top_bar, "UQIQ %d" % _profile.current_uqiq_score(), COLOR_YELLOW, 100)
-	_add_play_header_chip(top_bar, "Dur %d" % _profile.dur_tokens(), COLOR_ORANGE, 76)
+	_add_play_header_chip(
+		top_bar,
+		"Dur %d/%d" % [_profile.dur_tokens(), LocalProfileScript.MAX_DUR_TOKENS],
+		COLOR_ORANGE,
+		92
+	)
 
 	_add_label(root, str(level.get("title", "Untitled")), 30, COLOR_TEXT)
 	_add_label(root, str(level.get("prompt", "")), 19, COLOR_MUTED)
