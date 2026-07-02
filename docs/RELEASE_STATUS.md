@@ -10,7 +10,7 @@ Release prep is paused. The active priority is implementing the Polished Six-Lev
 
 ## Active Next Step
 
-- GitHub issue: [Implement reveal layer and Level 5 Cup Blinks First runner](https://github.com/scwlkr/UQIQ/issues/68)
+- GitHub issue: [Implement Level 6 Remember the Pull runner](https://github.com/scwlkr/UQIQ/issues/69)
 - PRD: [`docs/prd/0005-polished-six-level-core.md`](prd/0005-polished-six-level-core.md)
 - Branch: none assigned yet.
 
@@ -44,21 +44,22 @@ Design source: [Wayfinder map: UQIQ tactile six-level core](https://github.com/s
 - Level 1 and Level 2 prove realish freehand physics drawing with collision-backed ramp/stopper solves.
 - Level 3 proves physics-linked rearrange: touch drag moves the cup, `Release` moves the ball, and completion comes from ball/cup overlap.
 - Level 4 proves physics-linked rule rearrange: touch drag moves `GRAVITY`, `Release` changes ball motion, and completion comes from right-wall gravity into the cup.
-- Current physical iPhone proof exists for Level 4: UQIQ `0.1.1 (20260702121834)` installed/launched on `17 Hoe Max`.
+- Level 5 proves memory/reveal freehand physics: hidden cup auto-reveals, hides before drawing, and completion comes from ball/hidden-cup overlap.
+- Current physical iPhone proof exists for Level 5: UQIQ `0.1.1 (20260702123755)` installed/launched on `17 Hoe Max`.
 
 ## Latest Verification
 
-- Level 4 focused verifier passed: `godot --headless --path . --script res://scripts/verify_issue_67_gravity_handles_rearrange.gd`.
-- README/local verification floor passed through `verify_issue_67_gravity_handles_rearrange.gd`.
-- `git diff --check` passed for the Level 4 implementation.
-- Level 4 iPhone smoke passed on `17 Hoe Max` with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702121834.png`.
+- Level 5 focused verifier passed: `godot --headless --path . --script res://scripts/verify_issue_68_cup_blinks_reveal_freehand.gd`.
+- README/local verification floor passed through `verify_issue_68_cup_blinks_reveal_freehand.gd`.
+- `git diff --check` passed for the Level 5 implementation.
+- Level 5 iPhone smoke passed on `17 Hoe Max` with screenshot `/tmp/uqiq-ios-quick/uqiq-phone-20260702123755.png`.
 
 ## Known Blockers
 
 - No current owner decision blocker for the prototype path.
-- No current physical iPhone blocker; Level 5 will need a fresh phone proof after implementation.
+- No current physical iPhone blocker; Level 6 will need a fresh phone proof after implementation.
 - App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until the six-Level core is stronger and scwlkr approves.
 
 ## Next Gate
 
-Implement Level 5 `Cup Blinks First`: reveal the hidden cup, hide it before drawing, let touch drawing affect physics, and complete by ball/hidden-cup overlap after `Release`.
+Implement Level 6 `Remember the Pull`: reveal the direction arrow, hide it before action, let touch dragging move `GRAVITY`, and complete by remembered right-wall gravity after `Release`.

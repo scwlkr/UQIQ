@@ -101,9 +101,8 @@ func _run_clean_six_level_flow() -> void:
 
 	_start_level(_levels[4])
 	_use_roast()
-	_main.call("_handle_memory_flash", true)
-	_main.call("_handle_memory_flash", false)
-	_complete_with_scorecard(_levels[4], Callable(self, "_memory_flash_win").bind(_levels[4]))
+	_memory_reveal_wrong(_levels[4])
+	_complete_with_scorecard(_levels[4], Callable(self, "_memory_reveal_win").bind(_levels[4]))
 	_require(_profile.is_level_unlocked(6), "Level 6 should unlock after Level 5 completion.")
 
 	_start_level(_levels[5])
@@ -183,6 +182,8 @@ func _complete_level_by_template(level: Dictionary, replay: bool = false) -> voi
 			_complete_with_scorecard(level, Callable(self, "_pattern_grid_win").bind(level), replay)
 		"Memory Flash":
 			_complete_with_scorecard(level, Callable(self, "_memory_flash_win").bind(level), replay)
+		"Memory/Reveal Level":
+			_complete_with_scorecard(level, Callable(self, "_memory_reveal_win").bind(level), replay)
 		"Physics Draw":
 			_complete_with_scorecard(level, Callable(self, "_physics_draw_win").bind(level), replay)
 		_:
@@ -272,6 +273,18 @@ func _memory_flash_win(level: Dictionary) -> void:
 	for item in sequence:
 		_main.call("_handle_memory_choice", str(item))
 	_main.call("_handle_memory_submit")
+
+
+func _memory_reveal_win(_level: Dictionary) -> void:
+	_main.call("_handle_physics_draw", "ramp_to_cup")
+	_main.call("_handle_physics_release")
+
+
+func _memory_reveal_wrong(_level: Dictionary) -> void:
+	_main.call("_handle_physics_draw", "flat_line")
+	_main.call("_handle_physics_release")
+	_require(str(_main.get("_last_physics_result")) == "fail", "Wrong Memory/Reveal draw should fail before retry.")
+	_main.call("_handle_freehand_physics_reset")
 
 
 func _physics_draw_win(level: Dictionary) -> void:

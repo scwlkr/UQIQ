@@ -442,36 +442,69 @@
       "uqiq_moment": "The player drags the GRAVITY label to the right wall and the ball falls sideways into the cup."
     },
     {
-      "id": "p01_l05_blink_tax",
+      "id": "p01_l05_cup_blinks_first",
       "pack_id": "pack_01_orientation_is_a_trap",
       "level_number": 5,
-      "title": "Blink Tax",
-      "template": "Memory Flash",
-      "challenge_type": "memory challenge",
-      "completion_mode": "submit",
-      "prompt": "Flash the tiles, hide them, then rebuild the sequence.",
+      "title": "Cup Blinks First",
+      "template": "Memory/Reveal Level",
+      "challenge_type": "physics puzzle",
+      "completion_mode": "auto_complete_on_goal_overlap",
+      "prompt": "Remember the cup. Draw to where it was.",
       "rules": {
-        "flash_items": [
-          "SUN",
-          "MOON",
-          "DUR"
-        ],
-        "choices": [
-          "DUR",
-          "SUN",
-          "MOON"
-        ],
-        "flash_seconds": 1,
-        "interaction_model": "direct_memory_tiles",
-        "scene_prompt": "Tap tiles into the recall slots in the flashed order."
+        "interaction_model": "reveal_then_freehand_physics",
+        "scene_prompt": "Remember the cup. Draw to where it was.",
+        "reveal": {
+          "auto_reveal_seconds": 1.1,
+          "optional_reveal_count": 1,
+          "revealed_items": [
+            {
+              "id": "hidden_cup",
+              "type": "goal_zone",
+              "rect": [
+                248,
+                130,
+                58,
+                56
+              ]
+            }
+          ],
+          "hide_before_action": true
+        },
+        "moving_object": {
+          "id": "ball",
+          "shape": "circle",
+          "start": [
+            58,
+            224
+          ],
+          "radius": 16
+        },
+        "goal_zone": {
+          "id": "hidden_cup",
+          "rect": [
+            248,
+            130,
+            58,
+            56
+          ],
+          "forgiveness_px": 18,
+          "visible_during_action": false
+        },
+        "draw_limit": {
+          "strokes": 1,
+          "min_length_px": 70,
+          "max_sampled_points": 30,
+          "collision_thickness_px": 12
+        },
+        "simulation_limit_seconds": 4,
+        "reset_on_failure": true
       },
       "solution": {
-        "sequence": [
-          "SUN",
-          "MOON",
-          "DUR"
-        ],
-        "explanation": "Recall the revealed order, not the shuffled choice order."
+        "success_condition": "ball overlaps the hidden cup goal zone after release",
+        "intended_strategy": "remember the flashed cup position and draw a rising ramp or guide toward it",
+        "common_wrong_strategy": "draw toward the visible empty space or treat the reveal as a sequence recall",
+        "not_allowed": "memory tile order submit",
+        "explanation": "Draw toward the cup position that only blinked on screen."
       },
       "scoring": {
         "speed_seconds": {
@@ -486,26 +519,26 @@
       },
       "roasts": {
         "failure": [
-          "Short-term memory left the building and took your shoes.",
-          "You remembered vibes. The Level requested facts."
+          "The cup blinked and your plan blinked harder.",
+          "Memory is not a load-bearing structure."
         ],
         "delay": [
-          "Flash, hide, choose. Three verbs. Monumental workload."
+          "It showed you the cup. Briefly. Like mercy, but smaller."
         ],
         "scorecard": [
-          "You retained three tiny words. Neuroscience has been notified."
+          "You drew at a memory and physics accepted the paperwork."
         ]
       },
       "assets": {
         "style": "flat_vector",
         "shapes": [
-          "flash_tiles",
-          "recall_slots",
-          "direct_memory_tiles",
-          "judge_face_stub"
+          "ball",
+          "hidden_cup",
+          "ghost_cup_flash",
+          "freehand_stroke"
         ]
       },
-      "uqiq_moment": "The choice buttons appear in a different order than the flashed sequence."
+      "uqiq_moment": "The player draws toward a goal that only existed on screen for a blink."
     },
     {
       "id": "p01_l06_ramp_for_one_braincell",

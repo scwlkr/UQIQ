@@ -11,6 +11,7 @@ const SUPPORTED_TEMPLATES := [
 	"Text Trap",
 	"Pattern Grid",
 	"Memory Flash",
+	"Memory/Reveal Level",
 	"Physics Draw",
 	"Rearrange Level",
 ]
@@ -343,6 +344,9 @@ func _complete_level_by_template(level: Dictionary) -> void:
 			for item in sequence:
 				_main.call("_handle_memory_choice", str(item))
 			_main.call("_handle_memory_submit")
+		"Memory/Reveal Level":
+			_main.call("_handle_physics_draw", "ramp_to_cup")
+			_main.call("_handle_physics_release")
 		"Physics Draw":
 			_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
 			_main.call("_handle_physics_release")
@@ -475,6 +479,19 @@ func _level_has_template_solution(level: Dictionary) -> bool:
 			return _has_array(rules, "flash_items") \
 				and _has_array(rules, "choices") \
 				and _has_array(solution, "sequence")
+		"Memory/Reveal Level":
+			var moving_object := _dictionary_from(rules.get("moving_object", {}))
+			var goal_zone := _dictionary_from(rules.get("goal_zone", {}))
+			var draw_limit := _dictionary_from(rules.get("draw_limit", {}))
+			var reveal := _dictionary_from(rules.get("reveal", {}))
+			return str(rules.get("interaction_model", "")) == "reveal_then_freehand_physics" \
+				and _has_array(moving_object, "start") \
+				and _has_array(goal_zone, "rect") \
+				and draw_limit.has("min_length_px") \
+				and draw_limit.has("collision_thickness_px") \
+				and reveal.has("auto_reveal_seconds") \
+				and reveal.has("optional_reveal_count") \
+				and _has_nonempty_string(solution, "success_condition")
 		"Physics Draw":
 			if str(rules.get("interaction_model", "")) == "freehand_physics_then_release":
 				var moving_object := _dictionary_from(rules.get("moving_object", {}))

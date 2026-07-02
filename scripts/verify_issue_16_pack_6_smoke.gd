@@ -37,6 +37,7 @@ const SUPPORTED_TEMPLATES := [
 	"Text Trap",
 	"Pattern Grid",
 	"Memory Flash",
+	"Memory/Reveal Level",
 	"Physics Draw",
 	"Rearrange Level",
 ]
@@ -714,6 +715,9 @@ func _complete_level_by_template(level: Dictionary) -> void:
 			for item in sequence:
 				_main.call("_handle_memory_choice", str(item))
 			_main.call("_handle_memory_submit")
+		"Memory/Reveal Level":
+			_main.call("_handle_physics_draw", "ramp_to_cup")
+			_main.call("_handle_physics_release")
 		"Physics Draw":
 			_main.call("_handle_physics_draw", str(_solution(level).get("draw_id", "")))
 			_main.call("_handle_physics_release")

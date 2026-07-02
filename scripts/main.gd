@@ -28,6 +28,7 @@ const SUPPORTED_LEVEL_TEMPLATES := [
 	"Text Trap",
 	"Pattern Grid",
 	"Memory Flash",
+	"Memory/Reveal Level",
 	"Physics Draw",
 	"Rearrange Level",
 ]
@@ -99,6 +100,11 @@ var _freehand_stroke_points: Array[Vector2] = []
 var _freehand_ball_start := Vector2.ZERO
 var _freehand_last_ball_position := Vector2.ZERO
 var _freehand_ball_moved := false
+var _reveal_visible := false
+var _reveal_optional_reveals_remaining := 0
+var _reveal_button: Button = null
+var _reveal_hide_at_msec := 0
+var _reveal_failure_flash_count := 0
 var _rearrange_physics_runtime: Node2D = null
 var _rearrange_built_in_body: StaticBody2D = null
 var _rearrange_ball_body: RigidBody2D = null
@@ -138,6 +144,11 @@ func _ready() -> void:
 		call_deferred("_run_device_smoke")
 	elif _debug_playtest_level_number() > 0:
 		call_deferred("_show_playtest_level_from_env")
+
+
+func _process(_delta: float) -> void:
+	if _reveal_hide_at_msec > 0 and Time.get_ticks_msec() >= _reveal_hide_at_msec:
+		_hide_memory_reveal_from_timer()
 
 
 func _should_run_device_smoke() -> bool:
@@ -419,6 +430,7 @@ func _add_level_row(parent: Node, level: Dictionary) -> void:
 
 
 func _show_play_screen(level: Dictionary) -> void:
+	_cancel_memory_reveal_timer()
 	_current_level = level
 	_tap_count = 0
 	_roast_count = 0
@@ -472,6 +484,11 @@ func _show_play_screen(level: Dictionary) -> void:
 	_freehand_ball_start = Vector2.ZERO
 	_freehand_last_ball_position = Vector2.ZERO
 	_freehand_ball_moved = false
+	_reveal_visible = false
+	_reveal_optional_reveals_remaining = 0
+	_reveal_button = null
+	_reveal_hide_at_msec = 0
+	_reveal_failure_flash_count = 0
 	_rearrange_physics_runtime = null
 	_rearrange_built_in_body = null
 	_rearrange_ball_body = null
@@ -888,6 +905,7 @@ func _next_level_after_current() -> Dictionary:
 
 
 func _make_screen(background_color: Color, transition_name: String = "", use_scroll: bool = false) -> VBoxContainer:
+	_cancel_memory_reveal_timer()
 	for child in get_children():
 		if child == _feedback_player:
 			continue
@@ -1057,6 +1075,8 @@ func _render_level_stage(stage_box: VBoxContainer, level: Dictionary) -> void:
 			_render_pattern_grid(stage_box)
 		"Memory Flash":
 			_render_memory_flash(stage_box)
+		"Memory/Reveal Level":
+			_render_memory_reveal_level(stage_box)
 		"Physics Draw":
 			_render_physics_draw(stage_box)
 		"Rearrange Level":
@@ -2203,6 +2223,15 @@ func _make_memory_tile(item_id: String, index: int, is_clear: bool = false) -> P
 	return tile
 
 
+func _render_memory_reveal_level(stage_box: VBoxContainer) -> void:
+	_add_label(stage_box, str(_rules().get("scene_prompt", _current_level.get("prompt", "Remember, then act."))), 17, COLOR_INK)
+	if _uses_reveal_freehand_physics():
+		_render_freehand_physics_draw(stage_box)
+		return
+
+	_add_feedback(stage_box, "Future reveal physics. Your memory is in another prototype.")
+
+
 func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_add_label(stage_box, str(_current_level.get("prompt", "Draw one line so the ball reaches the cup.")), 17, COLOR_INK)
 	if _uses_freehand_physics_draw():
@@ -2309,6 +2338,11 @@ func _render_freehand_physics_draw(stage_box: VBoxContainer) -> void:
 	actions.add_theme_constant_override("separation", 10)
 	stage_box.add_child(actions)
 
+	if _uses_reveal_freehand_physics():
+		_reveal_button = _make_button("Reveal", COLOR_YELLOW)
+		_reveal_button.pressed.connect(Callable(self, "_handle_memory_reveal"))
+		actions.add_child(_reveal_button)
+
 	var release_button := _make_button("Release", COLOR_GREEN)
 	release_button.pressed.connect(Callable(self, "_handle_physics_release"))
 	actions.add_child(release_button)
@@ -2318,7 +2352,10 @@ func _render_freehand_physics_draw(stage_box: VBoxContainer) -> void:
 	actions.add_child(reset_button)
 
 	_reset_freehand_physics_attempt(false)
-	_add_feedback(stage_box, "Draw one ramp, then release the ball.")
+	if _uses_reveal_freehand_physics():
+		_add_feedback(stage_box, "Remember the cup. Draw one ramp, then release the ball.")
+	else:
+		_add_feedback(stage_box, "Draw one ramp, then release the ball.")
 
 
 func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
@@ -2414,7 +2451,11 @@ func _create_freehand_goal(surface: Control) -> void:
 	_freehand_cup_visual.custom_minimum_size = visible_rect.size
 	_freehand_cup_visual.z_index = 2
 	_freehand_cup_visual.set_meta("goal_rect", goal_rect)
-	_freehand_cup_visual.add_theme_stylebox_override("panel", _flat_box(Color(0.30, 0.82, 0.50, 0.42), 8))
+	if _uses_reveal_freehand_physics():
+		_freehand_cup_visual.visible = false
+		_freehand_cup_visual.add_theme_stylebox_override("panel", _flat_box(Color(0.30, 0.82, 0.50, 0.72), 8))
+	else:
+		_freehand_cup_visual.add_theme_stylebox_override("panel", _flat_box(Color(0.30, 0.82, 0.50, 0.42), 8))
 	surface.add_child(_freehand_cup_visual)
 
 	var label := _new_label("CUP", 16, COLOR_INK)
@@ -2489,7 +2530,12 @@ func _uses_direct_physics_draw() -> bool:
 
 
 func _uses_freehand_physics_draw() -> bool:
-	return str(_rules().get("interaction_model", "")) == "freehand_physics_then_release"
+	var model := str(_rules().get("interaction_model", ""))
+	return model == "freehand_physics_then_release" or model == "reveal_then_freehand_physics"
+
+
+func _uses_reveal_freehand_physics() -> bool:
+	return str(_rules().get("interaction_model", "")) == "reveal_then_freehand_physics"
 
 
 func _uses_physics_linked_rearrange() -> bool:
@@ -2797,6 +2843,8 @@ func _handle_direct_drag_miss(object_id: String) -> void:
 
 func _handle_physics_surface_input(event: InputEvent, surface: Control) -> void:
 	if _is_primary_press(event):
+		if _uses_reveal_freehand_physics():
+			_set_memory_reveal_visible(false)
 		_physics_is_drawing = true
 		_physics_has_drawn_line = false
 		_physics_choice = ""
@@ -2922,6 +2970,8 @@ func _handle_freehand_physics_release() -> void:
 	_move_freehand_ball_to_goal()
 	if _freehand_ball_overlaps_goal():
 		_last_physics_result = "success"
+		if _uses_reveal_freehand_physics():
+			_set_memory_reveal_visible(true, false)
 		_set_freehand_status_text("Stroke: %s accepted" % _freehand_stroke_noun(), "Release result: ball reached the cup")
 		_feedback_label.text = "Ball reached the cup."
 		_complete_current_level()
@@ -2955,14 +3005,77 @@ func _reset_freehand_physics_attempt(count_action: bool = true) -> void:
 		_physics_line.points = PackedVector2Array()
 	_set_freehand_ball_center(_freehand_ball_start)
 	_set_freehand_status_text("Stroke: none", "Release result: waiting")
+	if _uses_reveal_freehand_physics():
+		_start_memory_reveal_attempt()
 	if _feedback_label != null and is_instance_valid(_feedback_label):
-		_feedback_label.text = "Reset. Draw one %s, then release the ball." % _freehand_stroke_noun()
+		if _uses_reveal_freehand_physics():
+			_feedback_label.text = "Reset. Remember the cup, draw one %s, then release the ball." % _freehand_stroke_noun()
+		else:
+			_feedback_label.text = "Reset. Draw one %s, then release the ball." % _freehand_stroke_noun()
+
+
+func _start_memory_reveal_attempt() -> void:
+	_cancel_memory_reveal_timer()
+	_reveal_optional_reveals_remaining = _memory_reveal_optional_count()
+	_update_memory_reveal_button_state()
+	_show_memory_reveal_for_duration()
+
+
+func _handle_memory_reveal() -> void:
+	if not _uses_reveal_freehand_physics():
+		return
+	if _reveal_optional_reveals_remaining <= 0:
+		_update_memory_reveal_button_state()
+		return
+
+	_tap_count += 1
+	_trigger_feedback("tap")
+	_reveal_optional_reveals_remaining -= 1
+	_update_memory_reveal_button_state()
+	_show_memory_reveal_for_duration()
+	_feedback_label.text = "Cup revealed. Remember it before it gets shy."
+
+
+func _show_memory_reveal_for_duration() -> void:
+	_set_memory_reveal_visible(true)
+	_schedule_memory_reveal_hide(_memory_reveal_seconds())
+
+
+func _set_memory_reveal_visible(visible: bool, cancel_timer: bool = true) -> void:
+	if cancel_timer and not visible:
+		_cancel_memory_reveal_timer()
+	_reveal_visible = visible
+	if _freehand_cup_visual != null and is_instance_valid(_freehand_cup_visual):
+		_freehand_cup_visual.visible = visible
+		_freehand_cup_visual.set_meta("reveal_visible", visible)
+
+
+func _schedule_memory_reveal_hide(delay_seconds: float) -> void:
+	_cancel_memory_reveal_timer()
+	_reveal_hide_at_msec = Time.get_ticks_msec() + int(maxf(delay_seconds, 0.1) * 1000.0)
+
+
+func _hide_memory_reveal_from_timer() -> void:
+	_reveal_hide_at_msec = 0
+	_set_memory_reveal_visible(false, false)
+
+
+func _cancel_memory_reveal_timer() -> void:
+	_reveal_hide_at_msec = 0
+
+
+func _update_memory_reveal_button_state() -> void:
+	if _reveal_button != null and is_instance_valid(_reveal_button):
+		_reveal_button.disabled = _reveal_optional_reveals_remaining <= 0
 
 
 func _fail_freehand_physics(message: String, result: String) -> void:
 	_last_physics_result = result
 	_set_freehand_status_text("Stroke: needs work", "Release result: %s" % message)
 	_feedback_label.text = message
+	if _uses_reveal_freehand_physics():
+		_reveal_failure_flash_count += 1
+		_show_memory_reveal_for_duration()
 	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
@@ -3187,6 +3300,18 @@ func _set_freehand_status_text(stroke_text: String, result_text: String) -> void
 
 func _freehand_draw_limit() -> Dictionary:
 	return _dictionary_from(_rules().get("draw_limit", {}))
+
+
+func _memory_reveal_rules() -> Dictionary:
+	return _dictionary_from(_rules().get("reveal", {}))
+
+
+func _memory_reveal_seconds() -> float:
+	return float(_memory_reveal_rules().get("auto_reveal_seconds", 1.1))
+
+
+func _memory_reveal_optional_count() -> int:
+	return max(0, int(_memory_reveal_rules().get("optional_reveal_count", 1)))
 
 
 func _freehand_min_length() -> float:

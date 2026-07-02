@@ -43,7 +43,7 @@ func _verify_normal_launch() -> void:
 	if _failed:
 		return
 	_require(not _profile.is_level_unlocked(5), "Clean normal profile should not unlock Level 5.")
-	_require(_node_named(_main, "memory_tile_surface") == null, "Normal launch should not jump into Level 5 Memory Flash.")
+	_require(_node_named(_main, "physics_draw_surface") == null, "Normal launch should not jump into Level 5 Memory/Reveal.")
 	_cleanup()
 
 
@@ -56,7 +56,8 @@ func _verify_debug_playtest_jump() -> void:
 	_require(int(current_level.get("level_number", 0)) == 5, "Debug playtest env should open Level 5 directly.")
 	if _failed:
 		return
-	_require(_node_named(_main, "memory_tile_surface") != null, "Debug playtest Level 5 should render the target Memory Flash surface.")
+	_require(_node_named(_main, "physics_draw_surface") != null, "Debug playtest Level 5 should render the target Memory/Reveal draw surface.")
+	_require(_node_named(_main, "freehand_cup") != null, "Debug playtest Level 5 should render the hidden cup.")
 	_require(not _profile.is_level_unlocked(5), "Debug playtest jump should not mutate normal unlock progression.")
 	_cleanup()
 	OS.set_environment(PLAYTEST_LEVEL_ENV, "")

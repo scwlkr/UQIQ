@@ -28,7 +28,7 @@ func _initialize() -> void:
 	if _failed:
 		return
 
-	print("Issue #45/#52 Memory Flash verification passed: Level 5 hides the flash order for recall, dedupes touch-emulated mouse presses, clears cleanly, rejects a wrong row, and completes through Score Roastcard from direct tile taps.")
+	print("Issue #45/#52 Memory Flash verification passed: Level 19 hides the flash order for recall, dedupes touch-emulated mouse presses, clears cleanly, rejects a wrong row, and completes through Score Roastcard from direct tile taps.")
 	_cleanup()
 	quit(0)
 
@@ -43,31 +43,31 @@ func _boot_main_scene() -> void:
 
 
 func _verify_tactile_memory_flash() -> void:
-	var level := _level_by_number(5)
+	var level := _level_by_number(19)
 	var level_id := str(level.get("id", ""))
 
 	_main.call("_show_play_screen", level)
 	_require(_node_named(_main, "memory_tile_surface") != null, "Memory Flash should render a direct tile surface.")
 	_require(_node_named(_main, "memory_recall_slot_0") != null, "Memory Flash should render recall slots.")
-	_require(_node_named(_main, "memory_tile_sun") != null, "Memory Flash should render SUN as a direct tile.")
-	_require(_node_named(_main, "memory_tile_moon") != null, "Memory Flash should render MOON as a direct tile.")
-	_require(_node_named(_main, "memory_tile_dur") != null, "Memory Flash should render DUR as a direct tile.")
-	_require_tile_label_fits("MOON")
+	_require(_node_named(_main, "memory_tile_lie") != null, "Memory Flash should render LIE as a direct tile.")
+	_require(_node_named(_main, "memory_tile_true") != null, "Memory Flash should render TRUE as a direct tile.")
+	_require(_node_named(_main, "memory_tile_no") != null, "Memory Flash should render NO as a direct tile.")
+	_require_tile_label_fits("TRUE")
 	_require(not _has_button_text(_main, "Flash"), "Direct Memory Flash should not expose Flash button.")
 	_require(not _has_button_text(_main, "Hide"), "Direct Memory Flash should not expose Hide button.")
 	_require(not _has_button_text(_main, "Submit"), "Direct Memory Flash should not expose Submit button.")
-	_require(not _has_button_text(_main, "SUN"), "Direct Memory Flash should not expose SUN as a choice button.")
-	_require(not _has_button_text(_main, "MOON"), "Direct Memory Flash should not expose MOON as a choice button.")
-	_require(not _has_button_text(_main, "DUR"), "Direct Memory Flash should not expose DUR as a choice button.")
+	_require(not _has_button_text(_main, "LIE"), "Direct Memory Flash should not expose LIE as a choice button.")
+	_require(not _has_button_text(_main, "TRUE"), "Direct Memory Flash should not expose TRUE as a choice button.")
+	_require(not _has_button_text(_main, "NO"), "Direct Memory Flash should not expose NO as a choice button.")
 	_require(_node_named(_main, "memory_flash_order") != null, "Memory Flash should briefly render the flash order.")
 	await create_timer(float(_dictionary_from(level.get("rules", {})).get("flash_seconds", 1.0)) + 0.2).timeout
-	_require(not _screen_has_label_text("flash: SUN"), "Memory Flash should hide the flash sequence during recall.")
+	_require(not _screen_has_label_text("flash: LIE"), "Memory Flash should hide the flash sequence during recall.")
 
-	_press_tile("SUN", _screen_touch_event(true))
-	_press_tile("SUN", _mouse_button_event(Vector2(16, 16), true))
+	_press_tile("LIE", _screen_touch_event(true))
+	_press_tile("LIE", _mouse_button_event(Vector2(16, 16), true))
 	_require(_memory_input_size() == 1, "One iOS-shaped tap should record exactly one memory entry.")
 	_require(int(_main.get("_tap_count")) == 1, "One iOS-shaped tap should count exactly one action.")
-	_require(_recall_slot_text(0) == "SUN", "First recall slot should become SUN after one tap.")
+	_require(_recall_slot_text(0) == "LIE", "First recall slot should become LIE after one tap.")
 	_require(_recall_slot_text(1) == "_", "Second recall slot should stay empty after one tap.")
 
 	_press_clear_tile(_screen_touch_event(true))
@@ -77,17 +77,17 @@ func _verify_tactile_memory_flash() -> void:
 	_require(_recall_slot_text(0) == "_", "Clear should reset the first recall slot.")
 	_require(_recall_slot_text(1) == "_", "Clear should reset the second recall slot.")
 
-	_press_tiles_with_touch(["DUR", "SUN", "MOON"])
-	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 5.")
+	_press_tiles_with_touch(["NO", "LIE", "TRUE"])
+	_require(not _profile.is_level_completed(level_id), "Wrong direct memory row should not complete Level 19.")
 	_require(int(_main.get("_tap_count")) == 5, "Wrong direct memory row should count one action per tile after earlier tap and clear.")
-	_require(str(_main.get("_last_direct_memory_tile_id")) == "MOON", "Direct memory handler should record the last touched tile.")
-	_require(_screen_has_label_text("DUR"), "Recall slots should show tapped memory input.")
+	_require(str(_main.get("_last_direct_memory_tile_id")) == "TRUE", "Direct memory handler should record the last touched tile.")
+	_require(_screen_has_label_text("NO"), "Recall slots should show tapped memory input.")
 
 	_main.call("_show_play_screen", level)
 	await create_timer(float(_dictionary_from(level.get("rules", {})).get("flash_seconds", 1.0)) + 0.2).timeout
-	_press_tiles_with_touch(["SUN", "MOON", "DUR"])
-	_require(_profile.is_level_completed(level_id), "Correct direct memory row should complete Level 5.")
-	_require(str(_main.get("_last_direct_memory_tile_id")) == "DUR", "Direct memory handler should record the winning final tile.")
+	_press_tiles_with_touch(["LIE", "TRUE", "NO"])
+	_require(_profile.is_level_completed(level_id), "Correct direct memory row should complete Level 19.")
+	_require(str(_main.get("_last_direct_memory_tile_id")) == "NO", "Direct memory handler should record the winning final tile.")
 	_require(_screen_has_label_text("Score Roastcard"), "Correct direct memory row should route to Score Roastcard.")
 	var best_attempt: Dictionary = _profile.get_best_attempt(level_id)
 	_require(int(best_attempt.get("action_count", 0)) == 3, "Three direct tile taps should persist as three actions.")

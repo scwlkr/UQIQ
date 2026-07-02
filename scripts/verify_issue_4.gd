@@ -8,7 +8,7 @@ const REQUIRED_TEMPLATES := [
 	"Physics Draw",
 	"Rearrange Level",
 	"Rearrange Level",
-	"Memory Flash",
+	"Memory/Reveal Level",
 	"Physics Draw",
 ]
 
@@ -62,7 +62,7 @@ func _initialize() -> void:
 	_require(profile.is_level_unlocked(5), "Completing Level 4 should unlock Level 5.")
 
 	score_before = profile.current_uqiq_score()
-	_complete_and_assert(profile, levels[4], 5, 1, score_before)
+	_complete_and_assert(profile, levels[4], 2, 1, score_before)
 	_require(profile.is_level_unlocked(6), "Completing Level 5 should unlock Level 6.")
 
 	score_before = profile.current_uqiq_score()
@@ -152,6 +152,20 @@ func _level_has_template_solution(level: Dictionary) -> bool:
 			return _has_array(rules, "cells") and not str(solution.get("cell_id", "")).is_empty()
 		"Memory Flash":
 			return _has_array(rules, "flash_items") and _has_array(rules, "choices") and _has_array(solution, "sequence")
+		"Memory/Reveal Level":
+			if str(rules.get("interaction_model", "")) != "reveal_then_freehand_physics":
+				return false
+			var moving_object := _dictionary_from(rules.get("moving_object", {}))
+			var goal_zone := _dictionary_from(rules.get("goal_zone", {}))
+			var draw_limit := _dictionary_from(rules.get("draw_limit", {}))
+			var reveal := _dictionary_from(rules.get("reveal", {}))
+			return _has_array(moving_object, "start") \
+				and _has_array(goal_zone, "rect") \
+				and draw_limit.has("min_length_px") \
+				and draw_limit.has("collision_thickness_px") \
+				and reveal.has("auto_reveal_seconds") \
+				and reveal.has("optional_reveal_count") \
+				and not str(solution.get("success_condition", "")).is_empty()
 		"Physics Draw":
 			if str(rules.get("interaction_model", "")) == "freehand_physics_then_release":
 				var moving_object := _dictionary_from(rules.get("moving_object", {}))
