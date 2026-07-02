@@ -1133,6 +1133,7 @@ func _render_direct_tap_scene(stage_box: VBoxContainer) -> void:
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var hint := _new_label("Evidence board", 16, COLOR_INK)
 	hint.position = Vector2(18, 18)
@@ -1164,6 +1165,7 @@ func _render_drag_logic(stage_box: VBoxContainer) -> void:
 	playfield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	playfield.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(playfield)
+	_apply_board_entry_motion(playfield)
 
 	var hint := _new_label("Loose claims", 15, COLOR_INK)
 	hint.position = Vector2(18, 16)
@@ -1244,6 +1246,7 @@ func _render_direct_text_tiles(stage_box: VBoxContainer) -> void:
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var prompt_label := _new_label("answer slot", 15, COLOR_INK)
 	prompt_label.position = Vector2(18, 16)
@@ -1309,6 +1312,7 @@ func _render_direct_pattern_grid(stage_box: VBoxContainer) -> void:
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 14)
@@ -1391,6 +1395,7 @@ func _render_direct_memory_tiles(stage_box: VBoxContainer) -> void:
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var flash_label := _new_label("flash order: %s" % "  ".join(_string_array(_rules().get("flash_items", []))), 16, COLOR_INK)
 	flash_label.name = "memory_flash_order"
@@ -1492,6 +1497,7 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	surface.mouse_filter = Control.MOUSE_FILTER_STOP
 	surface.gui_input.connect(Callable(self, "_handle_physics_surface_input").bind(surface))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 	_physics_draw_surface = surface
 
 	var ball := _new_label("BALL", 17, COLOR_INK)
@@ -1550,6 +1556,7 @@ func _render_physics_draw_choice_fallback(stage_box: VBoxContainer) -> void:
 	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	surface.add_theme_stylebox_override("panel", _flat_box(COLOR_PLAYFIELD, 8))
 	stage_box.add_child(surface)
+	_apply_board_entry_motion(surface)
 
 	var surface_box := VBoxContainer.new()
 	surface_box.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -2422,6 +2429,30 @@ func _pulse_control(control: Control, shrink: float = 0.96, duration: float = 0.
 		tween.tween_property(control, "scale", Vector2.ONE, duration)
 	else:
 		control.scale = Vector2.ONE
+
+
+func _apply_board_entry_motion(control: Control) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.set_meta("entry_motion_count", int(control.get_meta("entry_motion_count", 0)) + 1)
+	if not is_inside_tree():
+		return
+	call_deferred("_play_board_entry_motion", control)
+
+
+func _play_board_entry_motion(control: Control) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	if OS.get_environment(SCREENSHOT_CAPTURE_ENV) == "1" or DisplayServer.get_name() == "headless":
+		return
+
+	control.pivot_offset = control.size * 0.5
+	control.modulate.a = 0.0
+	control.scale = Vector2(0.985, 0.985)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(control, "modulate:a", 1.0, 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _failure_pulse_control(control: Control, shrink: float = 0.94, duration: float = 0.05) -> void:

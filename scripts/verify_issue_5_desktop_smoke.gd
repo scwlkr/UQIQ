@@ -160,6 +160,7 @@ func _start_level(level: Dictionary) -> void:
 	_main.call("_show_play_screen", level)
 	var current_level := _dictionary_from(_main.get("_current_level"))
 	_require(str(current_level.get("id", "")) == str(level.get("id", "")), "Play Screen should hold the requested Level.")
+	_assert_board_entry_motion(level)
 
 
 func _use_roast() -> void:
@@ -270,6 +271,33 @@ func _assert_save_load_state(context: String) -> void:
 		_require(not reload.get_score_result(level_id).is_empty(), "Reload should preserve Score Roastcard result for %s after %s." % [level_id, context])
 
 
+func _assert_board_entry_motion(level: Dictionary) -> void:
+	var node_name := _board_node_name(level)
+	if node_name.is_empty():
+		return
+	var board := _node_named(_main, node_name) as Control
+	_require(board != null, "%s should render for Level %d." % [node_name, int(level.get("level_number", 0))])
+	_require(int(board.get_meta("entry_motion_count", 0)) > 0, "%s should record entry motion for Level %d." % [node_name, int(level.get("level_number", 0))])
+
+
+func _board_node_name(level: Dictionary) -> String:
+	match str(level.get("template", "")):
+		"Tap Logic":
+			return "tap_scene_surface"
+		"Drag Logic":
+			return "drag_playfield"
+		"Text Trap":
+			return "text_tile_surface"
+		"Pattern Grid":
+			return "pattern_grid_surface"
+		"Memory Flash":
+			return "memory_tile_surface"
+		"Physics Draw":
+			return "physics_draw_surface"
+		_:
+			return ""
+
+
 func _solution(level: Dictionary) -> Dictionary:
 	return _dictionary_from(level.get("solution", {}))
 
@@ -278,6 +306,18 @@ func _dictionary_from(value: Variant) -> Dictionary:
 	if typeof(value) == TYPE_DICTIONARY:
 		return value
 	return {}
+
+
+func _node_named(root: Node, target_name: String) -> Node:
+	if root == null:
+		return null
+	if str(root.name) == target_name:
+		return root
+	for child in root.get_children():
+		var found := _node_named(child, target_name)
+		if found != null:
+			return found
+	return null
 
 
 func _require(condition: bool, message: String) -> void:
