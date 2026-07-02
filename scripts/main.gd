@@ -2294,12 +2294,20 @@ func _animate_control_position(
 		control.position = target_position
 
 
-func _animate_control_scale(control: Control, target_scale: Vector2, duration: float) -> void:
+func _animate_control_scale(
+	control: Control,
+	target_scale: Vector2,
+	duration: float,
+	transition: Tween.TransitionType = Tween.TRANS_QUAD,
+	ease_type: Tween.EaseType = Tween.EASE_OUT
+) -> void:
 	if control == null or not is_instance_valid(control):
 		return
 	control.pivot_offset = control.size * 0.5
 	if is_inside_tree():
 		var tween := create_tween()
+		tween.set_trans(transition)
+		tween.set_ease(ease_type)
 		tween.tween_property(control, "scale", target_scale, duration)
 	else:
 		control.scale = target_scale
@@ -2311,6 +2319,8 @@ func _pulse_control(control: Control, shrink: float = 0.96, duration: float = 0.
 	control.pivot_offset = control.size * 0.5
 	if is_inside_tree():
 		var tween := create_tween()
+		tween.set_trans(Tween.TRANS_QUAD)
+		tween.set_ease(Tween.EASE_OUT)
 		tween.tween_property(control, "scale", Vector2(shrink, shrink), duration)
 		tween.tween_property(control, "scale", Vector2.ONE, duration)
 	else:
