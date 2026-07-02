@@ -1913,6 +1913,8 @@ func _apply_drag_drop_zone_result_style(target_id: String, success: bool) -> voi
 	var color := COLOR_GREEN.darkened(0.16) if success else COLOR_RED.darkened(0.18)
 	var border_color := COLOR_GREEN if success else COLOR_RED
 	zone.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+	if not success:
+		_shake_control(zone)
 
 
 func _snap_drag_tile_to_zone(tile: Control, target_id: String) -> void:
@@ -2263,6 +2265,7 @@ func _apply_direct_fail_panel_style(panel: Control) -> void:
 	if panel == null or not is_instance_valid(panel):
 		return
 	panel.add_theme_stylebox_override("panel", _framed_box(COLOR_RED.darkened(0.18), COLOR_RED, 8))
+	_shake_control(panel)
 
 
 func _reset_direct_sibling_panel_styles(panel: Control, name_prefix: String) -> void:
@@ -2340,6 +2343,26 @@ func _pulse_control(control: Control, shrink: float = 0.96, duration: float = 0.
 		tween.tween_property(control, "scale", Vector2.ONE, duration)
 	else:
 		control.scale = Vector2.ONE
+
+
+func _shake_control(control: Control, magnitude: float = 5.0, duration: float = 0.028) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.set_meta("failure_shake_count", int(control.get_meta("failure_shake_count", 0)) + 1)
+	var origin := control.position
+	control.set_meta("failure_shake_origin", origin)
+	if DisplayServer.get_name() == "headless" or not is_inside_tree():
+		control.position = origin
+		return
+
+	control.position = origin
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(control, "position", origin + Vector2(-magnitude, 0.0), duration)
+	tween.tween_property(control, "position", origin + Vector2(magnitude, 0.0), duration)
+	tween.tween_property(control, "position", origin + Vector2(-magnitude * 0.45, 0.0), duration)
+	tween.tween_property(control, "position", origin, duration)
 
 
 func _handle_dur_level(level: Dictionary) -> void:
@@ -2576,6 +2599,8 @@ func _apply_direct_memory_tile_result_styles(item_ids: Array[String], success: b
 		var control := _direct_memory_tile_control(item_id)
 		if control != null and is_instance_valid(control):
 			control.add_theme_stylebox_override("panel", _framed_box(color, border_color, 8))
+			if not success:
+				_shake_control(control)
 
 
 func _direct_memory_tile_control(item_id: String) -> Control:

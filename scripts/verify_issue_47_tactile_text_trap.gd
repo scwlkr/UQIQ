@@ -81,6 +81,7 @@ func _verify_tactile_text_trap() -> void:
 	_require(str(_main.get("_last_direct_text_tile_id")) == "blank", "Direct Text Trap handler should record the wrong tile.")
 	_require(_panel_border_color(blank_tile) != selected_border, "Wrong direct Text Trap tile should leave selected contact feedback.")
 	_require(_panel_border_color(blank_tile).is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct Text Trap tile should frame the tile as a fail state.")
+	_require(_failure_shake_count(blank_tile) > 0, "Wrong direct Text Trap tile should shake the failed tile.")
 	var empty_touch_position := _touch_position(empty_tile)
 	_main.call("_handle_direct_text_tile_input", _screen_touch_event(true, empty_touch_position), "empty", "empty", empty_tile)
 	_require(_panel_border_color(blank_tile).is_equal_approx(Color(0.12, 0.58, 0.92)), "Starting a new direct Text Trap press should reset the previous fail frame.")
@@ -131,6 +132,10 @@ func _panel_border_color(control: Control) -> Color:
 	if style == null:
 		return Color.TRANSPARENT
 	return style.border_color
+
+
+func _failure_shake_count(control: Control) -> int:
+	return int(control.get_meta("failure_shake_count", 0))
 
 
 func _level_by_number(level_number: int) -> Dictionary:

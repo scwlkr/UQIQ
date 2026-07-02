@@ -78,6 +78,7 @@ func _verify_direct_drag_drop() -> void:
 	_require(str(_main.get("_selected_drag_id")).is_empty(), "Wrong direct drag/drop should clear the held-tile state after release.")
 	_require(str(_main.get("_last_failed_drag_return_id")) == "word_right", "Wrong direct drag/drop should schedule the dragged tile to return to origin.")
 	_require(_drop_zone_border_color("confidence_box").is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct drag/drop should frame the rejected target as a fail state.")
+	_require(_drop_zone_shake_count("confidence_box") > 0, "Wrong direct drag/drop should shake the rejected target.")
 	_require(_screen_has_label_text("RIGHT does not belong in Confidence Box."), "Wrong direct drag/drop feedback should use visible tile and box labels.")
 	_require(not _screen_has_label_text("word_right"), "Wrong direct drag/drop feedback should not leak internal object ids.")
 
@@ -216,6 +217,14 @@ func _drop_zone_scale(target_id: String) -> Vector2:
 	if zone == null:
 		return Vector2.ZERO
 	return zone.scale
+
+
+func _drop_zone_shake_count(target_id: String) -> int:
+	var zone := _node_named(_main, "drop_zone_%s" % target_id) as Control
+	_require(zone != null, "Expected drop zone %s." % target_id)
+	if zone == null:
+		return 0
+	return int(zone.get_meta("failure_shake_count", 0))
 
 
 func _draw_line_on_surface(start: Vector2, end: Vector2) -> void:

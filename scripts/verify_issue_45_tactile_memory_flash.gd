@@ -92,6 +92,7 @@ func _verify_tactile_memory_flash() -> void:
 	_require(str(_main.get("_last_direct_memory_tile_id")) == "MOON", "Direct memory handler should record the last touched tile.")
 	_require(not _memory_tiles_have_selected_border(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should leave selected contact feedback.")
 	_require(_memory_tiles_have_border(["DUR", "SUN", "MOON"], Color(0.95, 0.22, 0.24)), "Wrong full Memory Flash row should frame touched tiles as a fail state.")
+	_require(_memory_tiles_shook(["DUR", "SUN", "MOON"]), "Wrong full Memory Flash row should shake touched tiles.")
 	var memory_after_wrong: Array = _main.get("_memory_input")
 	_require(memory_after_wrong.is_empty(), "Wrong full Memory Flash row should clear recall input for a clean retry.")
 	var first_slot_label := _node_named(_main, "memory_recall_slot_label_0") as Label
@@ -179,6 +180,17 @@ func _memory_tile_has_border(item_id: String, expected_color: Color) -> bool:
 func _memory_tiles_have_border(item_ids: Array[String], expected_color: Color) -> bool:
 	for item_id in item_ids:
 		if not _memory_tile_has_border(item_id, expected_color):
+			return false
+	return true
+
+
+func _memory_tiles_shook(item_ids: Array[String]) -> bool:
+	for item_id in item_ids:
+		var tile := _node_named(_main, "memory_tile_%s" % item_id.to_lower()) as Control
+		_require(tile != null, "Expected direct memory tile %s." % item_id)
+		if tile == null:
+			return false
+		if int(tile.get_meta("failure_shake_count", 0)) <= 0:
 			return false
 	return true
 

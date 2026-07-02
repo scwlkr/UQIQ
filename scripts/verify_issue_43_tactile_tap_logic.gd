@@ -78,6 +78,7 @@ func _verify_tactile_tap_logic() -> void:
 	_require(str(_main.get("_last_direct_tap_target_id")) == "correct_button", "Direct tap handler should record the touched decoy target.")
 	_require(_panel_border_color(decoy_pad) != selected_border, "Wrong direct tap should leave selected contact feedback.")
 	_require(_panel_border_color(decoy_pad).is_equal_approx(Color(0.95, 0.22, 0.24)), "Wrong direct tap should frame the target as a fail state.")
+	_require(_failure_shake_count(decoy_pad) > 0, "Wrong direct tap should shake the failed target.")
 	var correct_touch_position := _touch_position(correct_pad)
 	_main.call("_handle_direct_tap_scene_input", _screen_touch_event(true, correct_touch_position), "wrong_button", correct_pad)
 	_require(_panel_border_color(decoy_pad).is_equal_approx(Color(0.12, 0.58, 0.92)), "Starting a new direct tap should reset the previous fail frame.")
@@ -128,6 +129,10 @@ func _panel_border_color(control: Control) -> Color:
 	if style == null:
 		return Color.TRANSPARENT
 	return style.border_color
+
+
+func _failure_shake_count(control: Control) -> int:
+	return int(control.get_meta("failure_shake_count", 0))
 
 
 func _level_by_number(level_number: int) -> Dictionary:
