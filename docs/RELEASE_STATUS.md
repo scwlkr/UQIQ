@@ -8,8 +8,8 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Active Next Step
 
-- GitHub issue: [#40 Build real interaction core prototype](https://github.com/scwlkr/UQIQ/issues/40)
-- Branch: `codex/issue-40-interaction-core-prototype`
+- GitHub issue: [#41 Expand Physics Draw into real Pack 6 drawing interactions](https://github.com/scwlkr/UQIQ/issues/41)
+- Branch: `codex/issue-41-pack-6-direct-drawing`
 
 ## Product Direction From scwlkr
 
@@ -25,6 +25,7 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 - Issue #40 adds a direct drag/drop playfield for Level 2 and a direct drawing surface for Level 6.
 - `verify_issue_40_interaction_core.gd` proves the rendered UI no longer exposes `Move:` / `Drop on:` / `Draw:` choice buttons for those prototypes.
 - Full documented verification floor passed after the interaction-core slice.
+- Issue #40 closed with proof in commit `9047e91`.
 - Issue #39 was superseded by product-direction feedback and the new interaction-core issue.
 
 ## Known Blockers
@@ -34,4 +35,4 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Next Gate
 
-Close issue #40 with proof, then choose the next gameplay-depth issue before release work resumes.
+Convert Pack 6 Physics Draw levels from `Draw:` option-button fallback to real direct drawing interactions.
