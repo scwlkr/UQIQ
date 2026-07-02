@@ -65,6 +65,7 @@ Release prep is paused. The current priority is making the gameplay core feel li
 - Seventeenth local polish loop restyled Drag Logic draggable tiles as framed evidence tiles while preserving direct drag/drop behavior; Drag Logic screenshot refreshed and full verification floor passed again.
 - Eighteenth local polish loop replaced the Level List debug loader status with player-facing progress copy; Level List screenshot refreshed and full verification floor passed again.
 - Nineteenth local polish loop demoted the play-screen Roast action into a compact framed secondary control so gesture surfaces stay visually primary; play screenshots refreshed and full verification floor passed again.
+- Twentieth local polish loop replaced debug-like Physics Draw state labels with shorter player-facing line/test copy; Physics Draw screenshot refreshed and full verification floor passed again.
 - Physical phone deploy attempted after this pass, but `scripts/deploy_phone.sh` stopped before build/install with `No connected physical iPhone found`.
 
 ## Known Blockers

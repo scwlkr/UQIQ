@@ -76,7 +76,7 @@ func _verify_direct_physics_draw() -> void:
 	_require(_node_named(_main, "physics_draw_surface") != null, "Physics Draw should render a named direct drawing surface.")
 	_require(_node_named(_main, "player_drawn_line") != null, "Physics Draw should render the player's drawn line.")
 	_require(not _has_button_prefix(_main, "Draw:"), "Physics Draw should not expose Draw: option buttons as the primary interaction.")
-	_require(_screen_has_label_text("Selected line: none"), "Physics Draw should start with no selected line.")
+	_require(_screen_has_label_text("Line: waiting"), "Physics Draw should start with no selected line.")
 
 	_draw_line_on_surface(Vector2(48, 220), Vector2(260, 110))
 	_require(str(_main.get("_physics_choice")) == "ramp_to_cup", "A rising line from ball to cup should classify as the ramp.")
