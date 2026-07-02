@@ -8,8 +8,8 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Active Next Step
 
-- GitHub issue: [#48 Add debug all-level phone playtest mode](https://github.com/scwlkr/UQIQ/issues/48)
-- Branch: `codex/issue-48-debug-playtest-all`
+- GitHub issue: [#49 Direction needed from phone playtest build](https://github.com/scwlkr/UQIQ/issues/49)
+- Branch: none; scwlkr direction is required before the next implementation slice.
 
 ## Current Gameplay Proof
 
@@ -43,9 +43,9 @@ Release prep is paused. The current priority is making the gameplay core feel li
 
 ## Known Blockers
 
-- No blocker for the current gameplay slice.
+- Necessary blocker: scwlkr must feel the phone build and decide the next gameplay direction.
 - App Store submission, external TestFlight, live privacy/support hosting, and public release remain paused until gameplay core is stronger and scwlkr approves.
 
 ## Next Gate
 
-Close #48 with proof, then collect scwlkr direction from the phone playtest build.
+Use #49 feedback to create the next implementation issue.
