@@ -168,8 +168,7 @@ func _show_level_list() -> void:
 		_add_status(root, _loader.last_error, COLOR_RED)
 		return
 
-	_add_status(root, "Loaded %d Level Specs from %d Packs" % [_loaded_level_count(packs), packs.size()], COLOR_GREEN)
-	_add_profile_status(root)
+	_add_level_list_summary(root, packs)
 	if not _level_list_notice.is_empty():
 		_add_status(root, _level_list_notice, COLOR_YELLOW)
 
@@ -1880,17 +1879,38 @@ func _handle_dur_level(level: Dictionary) -> void:
 	_show_level_list()
 
 
-func _add_profile_status(parent: Node) -> void:
+func _add_level_list_summary(parent: Node, packs: Array) -> void:
 	if not _profile.last_error.is_empty():
 		_add_status(parent, _profile.last_error, COLOR_RED)
 		return
 
-	_add_status(parent, "Local Profile: UQIQ %d | Dur %d/%d | Level %02d unlocked" % [
-		_profile.current_uqiq_score(),
-		_profile.dur_tokens(),
-		LocalProfileScript.MAX_DUR_TOKENS,
-		int(_profile.data.get("unlocked_level", 1)),
-	], COLOR_MUTED)
+	_add_status(parent, "Loaded %d Level Specs from %d Packs" % [_loaded_level_count(packs), packs.size()], COLOR_GREEN)
+
+	var metrics := HBoxContainer.new()
+	metrics.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	metrics.add_theme_constant_override("separation", 10)
+	parent.add_child(metrics)
+
+	_add_metric_chip(metrics, "UQIQ", str(_profile.current_uqiq_score()), COLOR_YELLOW)
+	_add_metric_chip(metrics, "Dur", "%d/%d" % [_profile.dur_tokens(), LocalProfileScript.MAX_DUR_TOKENS], COLOR_ORANGE)
+	_add_metric_chip(metrics, "Unlocked", "Level %02d" % int(_profile.data.get("unlocked_level", 1)), COLOR_GREEN)
+
+
+func _add_metric_chip(parent: Node, title: String, value: String, accent: Color) -> void:
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size = Vector2(0, 62)
+	chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chip.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	parent.add_child(chip)
+
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 0)
+	chip.add_child(box)
+
+	_add_label(box, title, 13, COLOR_MUTED)
+	_add_label(box, value, 18, accent)
 
 
 func _is_level_playable(level: Dictionary) -> bool:
