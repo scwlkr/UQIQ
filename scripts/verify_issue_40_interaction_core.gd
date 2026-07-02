@@ -93,6 +93,7 @@ func _verify_direct_physics_draw() -> void:
 
 	_require(_node_named(_main, "physics_draw_surface") != null, "Physics Draw should render a named direct drawing surface.")
 	_require(_node_named(_main, "player_drawn_line") != null, "Physics Draw should render the player's drawn line.")
+	_require(_physics_hint_is_secondary(), "Physics Draw hint line should read as a faint guide, not a completed player stroke.")
 	_require(not _has_button_prefix(_main, "Draw:"), "Physics Draw should not expose Draw: option buttons as the primary interaction.")
 	_require(_screen_has_label_text("Ramp sketch"), "Physics Draw should render the playfield with in-world state copy.")
 	_require(not _screen_has_label_text("Draw toward the cup"), "Physics Draw should not render old instruction-like playfield copy.")
@@ -222,6 +223,16 @@ func _drawn_line_point_count() -> int:
 	if line == null:
 		return 0
 	return line.points.size()
+
+
+func _physics_hint_is_secondary() -> bool:
+	var hint := _node_named(_main, "physics_draw_hint_line") as Line2D
+	var player := _node_named(_main, "player_drawn_line") as Line2D
+	_require(hint != null, "Expected Physics Draw hint line.")
+	_require(player != null, "Expected Physics Draw player line.")
+	if hint == null or player == null:
+		return false
+	return hint.default_color.a <= 0.24 and hint.width < player.width
 
 
 func _mouse_button_event(position: Vector2, pressed: bool) -> InputEventMouseButton:

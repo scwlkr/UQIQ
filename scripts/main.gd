@@ -1451,8 +1451,11 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 
 	var guide_line := Line2D.new()
 	guide_line.name = "physics_draw_hint_line"
-	guide_line.width = 4.0
-	guide_line.default_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.52)
+	guide_line.width = 3.0
+	guide_line.default_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.20)
+	guide_line.joint_mode = Line2D.LINE_JOINT_ROUND
+	guide_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	guide_line.end_cap_mode = Line2D.LINE_CAP_ROUND
 	guide_line.add_point(Vector2(78, 218))
 	guide_line.add_point(Vector2(154, 156))
 	guide_line.add_point(Vector2(240, 108))
@@ -1462,6 +1465,9 @@ func _render_physics_draw(stage_box: VBoxContainer) -> void:
 	_physics_line.name = "player_drawn_line"
 	_physics_line.width = 6.0
 	_physics_line.default_color = COLOR_BLUE
+	_physics_line.joint_mode = Line2D.LINE_JOINT_ROUND
+	_physics_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_physics_line.end_cap_mode = Line2D.LINE_CAP_ROUND
 	surface.add_child(_physics_line)
 
 	_physics_choice_label = _new_label("Ramp ready", 16, COLOR_INK)
