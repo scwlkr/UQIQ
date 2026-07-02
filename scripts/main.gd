@@ -40,6 +40,12 @@ var _feedback_counts := {}
 var _last_feedback_kind := ""
 var _feedback_player: AudioStreamPlayer
 var _feedback_generator: AudioStreamGenerator
+var _judge_state := ""
+var _judge_state_counts := {}
+var _judge_face_label: Label
+var _judge_caption_label: Label
+var _transition_counts := {}
+var _last_transition_name := ""
 var _feedback_label: Label
 var _text_input: LineEdit
 var _selected_drag_id := ""
@@ -57,9 +63,11 @@ func _ready() -> void:
 
 
 func _show_level_list() -> void:
-	var root := _make_screen(COLOR_INK)
+	_set_judge_state("list")
+	var root := _make_screen(COLOR_INK, "level_list")
 
 	_add_label(root, "UQIQ", 44, COLOR_YELLOW)
+	_add_judge_face(root, _judge_state)
 
 	var packs := _visible_packs()
 	if packs.is_empty():
@@ -278,6 +286,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_tap_count = 0
 	_roast_count = 0
 	_level_started_at_msec = Time.get_ticks_msec()
+	_set_judge_state("start")
 	_last_best_attempt = {}
 	_last_completed_attempt = {}
 	_last_score_result = {}
@@ -288,7 +297,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_memory_input = []
 	_physics_choice = ""
 
-	var root := _make_screen(COLOR_PANEL)
+	var root := _make_screen(COLOR_PANEL, "play_screen")
 
 	var top_bar := HBoxContainer.new()
 	top_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -326,6 +335,7 @@ func _show_play_screen(level: Dictionary) -> void:
 	_add_label(root, str(level.get("prompt", "")), 19, COLOR_MUTED)
 	if _profile.is_level_durd(str(level.get("id", ""))):
 		_add_status(root, "DUR'D: finish this Level to recover 1 Dur Token.", COLOR_YELLOW)
+	_add_judge_face(root, _judge_state)
 
 	var stage := PanelContainer.new()
 	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -365,6 +375,7 @@ func _handle_tap_target(target_id: String) -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Nope. Your finger has executive dysfunction.")
+	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
 
@@ -391,6 +402,7 @@ func _handle_drag_drop(drop_target_id: String) -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Wrong thing, wrong place. Somehow both.")
+	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
 
@@ -416,6 +428,7 @@ func _handle_text_submit() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "The text was a trap and you brought snacks.")
+	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
 
@@ -440,6 +453,7 @@ func _handle_pattern_submit() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Pattern detected: you being incorrect.")
+	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
 
@@ -480,6 +494,7 @@ func _handle_memory_submit() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "Memory failed. The pixels had one job and so did you.")
+	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
 
@@ -500,11 +515,13 @@ func _handle_physics_release() -> void:
 		return
 
 	_feedback_label.text = _first_roast("failure", "The ball saw your line and requested a different universe.")
+	_set_judge_state("fail")
 	_trigger_feedback("fail")
 
 
 func _handle_roast_action() -> void:
 	_roast_count += 1
+	_set_judge_state("roast")
 	_trigger_feedback("roast")
 	_feedback_label.text = _roast_line("delay", "Roast used. Your dignity is now a renewable resource.", _roast_count - 1)
 
@@ -513,6 +530,7 @@ func _complete_current_level() -> void:
 	_last_best_attempt = _profile.record_completed_attempt(_current_level, _tap_count, _roast_count, _elapsed_level_seconds())
 	_last_completed_attempt = _profile.last_completed_attempt
 	_last_score_result = _profile.last_score_result
+	_set_judge_state("success")
 	_trigger_feedback("success")
 	if bool(_last_completed_attempt.get("dur_token_recovered", false)):
 		_trigger_feedback("dur_recover")
@@ -520,9 +538,11 @@ func _complete_current_level() -> void:
 
 
 func _show_score_roastcard() -> void:
-	var root := _make_screen(COLOR_INK)
+	_set_judge_state("score")
+	var root := _make_screen(COLOR_INK, "score_roastcard")
 
 	_add_label(root, "Score Roastcard", 38, COLOR_YELLOW)
+	_add_judge_face(root, _judge_state)
 	_add_label(root, str(_current_level.get("title", "Level complete")), 24, COLOR_TEXT)
 	_add_status(root, "Completed in %d action(s)" % int(_last_completed_attempt.get("action_count", _tap_count)), COLOR_GREEN)
 	if not _last_best_attempt.is_empty():
@@ -584,12 +604,14 @@ func _show_score_roastcard() -> void:
 	actions.add_child(list_button)
 
 
-func _make_screen(background_color: Color) -> VBoxContainer:
+func _make_screen(background_color: Color, transition_name: String = "") -> VBoxContainer:
 	for child in get_children():
 		if child == _feedback_player:
 			continue
 		remove_child(child)
 		child.queue_free()
+	_judge_face_label = null
+	_judge_caption_label = null
 
 	var background := ColorRect.new()
 	background.color = background_color
@@ -605,6 +627,7 @@ func _make_screen(background_color: Color) -> VBoxContainer:
 	root.offset_bottom = -22
 	root.add_theme_constant_override("separation", 14)
 	add_child(root)
+	_apply_screen_transition(root, transition_name)
 	return root
 
 
@@ -625,6 +648,24 @@ func _add_status(parent: Node, text: String, color: Color) -> Label:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	parent.add_child(label)
 	return label
+
+
+func _add_judge_face(parent: Node, state: String) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
+	parent.add_child(panel)
+
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 2)
+	panel.add_child(box)
+
+	_judge_face_label = _new_label(_judge_face_text(state), 28, COLOR_YELLOW)
+	box.add_child(_judge_face_label)
+	_judge_caption_label = _new_label(_judge_caption_text(state), 14, COLOR_MUTED)
+	box.add_child(_judge_caption_label)
+	return panel
 
 
 func _new_label(text: String, font_size: int, color: Color) -> Label:
@@ -964,6 +1005,58 @@ func _score_component_text(components: Dictionary, key: String, title: String, f
 	if detail.is_empty():
 		return "%s: %s (%+d)" % [title, label, delta]
 	return "%s: %s (%+d) | %s" % [title, label, delta, detail]
+
+
+func _set_judge_state(state: String) -> void:
+	_judge_state = state
+	_judge_state_counts[state] = int(_judge_state_counts.get(state, 0)) + 1
+	if _judge_face_label != null and is_instance_valid(_judge_face_label):
+		_judge_face_label.text = _judge_face_text(state)
+	if _judge_caption_label != null and is_instance_valid(_judge_caption_label):
+		_judge_caption_label.text = _judge_caption_text(state)
+
+
+func _judge_face_text(state: String) -> String:
+	match state:
+		"start":
+			return "(o_o)"
+		"fail":
+			return "(>_<)"
+		"roast":
+			return "(=_=)"
+		"success":
+			return "(^_^)"
+		"score":
+			return "(O_O)"
+		_:
+			return "(-_-)"
+
+
+func _judge_caption_text(state: String) -> String:
+	match state:
+		"start":
+			return "calibrating ego"
+		"fail":
+			return "incorrect aura detected"
+		"roast":
+			return "roast protocol armed"
+		"success":
+			return "begrudging approval"
+		"score":
+			return "score tribunal convened"
+		_:
+			return "watching quietly"
+
+
+func _apply_screen_transition(root: Control, transition_name: String) -> void:
+	if transition_name.is_empty():
+		return
+	_last_transition_name = transition_name
+	_transition_counts[transition_name] = int(_transition_counts.get(transition_name, 0)) + 1
+	root.modulate = Color(1.0, 1.0, 1.0, 0.92)
+	if is_inside_tree():
+		var tween := create_tween()
+		tween.tween_property(root, "modulate:a", 1.0, 0.08)
 
 
 func _setup_feedback() -> void:
