@@ -710,8 +710,9 @@ func _complete_current_level() -> void:
 func _show_score_roastcard() -> void:
 	_set_judge_state("score")
 	var root := _make_screen(COLOR_INK, "score_roastcard", true)
+	root.add_theme_constant_override("separation", 10)
 
-	_add_label(root, "Score Roastcard", 34, COLOR_YELLOW)
+	_add_label(root, "Score Roastcard", 30, COLOR_YELLOW)
 	_add_judge_face(root, _judge_state)
 	_add_label(root, str(_current_level.get("title", "Level complete")), 24, COLOR_TEXT)
 	var action_count := int(_last_completed_attempt.get("action_count", _tap_count))
@@ -747,13 +748,13 @@ func _show_score_roastcard() -> void:
 	var score_box := VBoxContainer.new()
 	score_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	score_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	score_box.add_theme_constant_override("separation", 8)
+	score_box.add_theme_constant_override("separation", 4)
 	score_panel.add_child(score_box)
 
-	_add_label(score_box, "UQIQ %d" % score_after, 36, COLOR_YELLOW)
-	_add_label(score_box, "Total Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 18, COLOR_MUTED)
+	_add_label(score_box, "UQIQ %d" % score_after, 32, COLOR_YELLOW)
+	_add_label(score_box, "Total Delta: %+d  (%d -> %d)" % [score_delta, score_before, score_after], 17, COLOR_MUTED)
 	if attempt_score_delta != score_delta:
-		_add_label(score_box, "Attempt Delta: %+d before score cap" % attempt_score_delta, 16, COLOR_MUTED)
+		_add_label(score_box, "Attempt Delta: %+d before score cap" % attempt_score_delta, 15, COLOR_MUTED)
 
 	var stat_grid := GridContainer.new()
 	stat_grid.columns = 2
@@ -784,11 +785,11 @@ func _show_score_roastcard() -> void:
 	var note_box := VBoxContainer.new()
 	note_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	note_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	note_box.add_theme_constant_override("separation", 10)
+	note_box.add_theme_constant_override("separation", 6)
 	note_panel.add_child(note_box)
 
-	_add_label(note_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 19, COLOR_TEXT)
-	_add_label(note_box, str(_current_level.get("uqiq_moment", "")), 17, COLOR_MUTED)
+	_add_label(note_box, _first_roast("scorecard", "The score exists. Your dignity remains theoretical."), 17, COLOR_TEXT)
+	_add_label(note_box, str(_current_level.get("uqiq_moment", "")), 15, COLOR_MUTED)
 
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2311,7 +2312,7 @@ func _add_score_stat_chip(parent: Node, components: Dictionary, key: String, tit
 	var detail := str(component.get("detail", ""))
 
 	var chip := PanelContainer.new()
-	chip.custom_minimum_size = Vector2(0, 116)
+	chip.custom_minimum_size = Vector2(0, 100)
 	chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	chip.add_theme_stylebox_override("panel", _flat_box(COLOR_PANEL_ALT, 8))
 	parent.add_child(chip)
