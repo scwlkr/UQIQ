@@ -31,7 +31,8 @@
         ],
         "ball_start": "bottom_left",
         "target_id": "cup_upper_right",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "rising_ramp"
       },
       "solution": {
         "draw_id": "fake_up_ramp",
@@ -102,7 +103,8 @@
         ],
         "ball_start": "center_floor",
         "target_id": "cup_ceiling",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "high_bridge"
       },
       "solution": {
         "draw_id": "ceiling_bridge",
@@ -173,7 +175,8 @@
         ],
         "ball_start": "lower_center",
         "target_id": "top_pocket",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "rising_vertical"
       },
       "solution": {
         "draw_id": "bubble_lift",
@@ -244,7 +247,8 @@
         ],
         "ball_start": "upper_left_cloud",
         "target_id": "gutter_right",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "right_flat"
       },
       "solution": {
         "draw_id": "sideways_gutter",
@@ -382,7 +386,8 @@
         ],
         "ball_start": "anchor_lower_left",
         "target_id": "sky_ring",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "balloon_hook"
       },
       "solution": {
         "draw_id": "balloon_hook",
@@ -453,7 +458,8 @@
         ],
         "ball_start": "cloud_upper_center",
         "target_id": "floor_drain",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "falling_slope"
       },
       "solution": {
         "draw_id": "drain_slope",
@@ -592,7 +598,8 @@
         ],
         "ball_start": "apple_left",
         "target_id": "signature_cup",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "shallow_rise"
       },
       "solution": {
         "draw_id": "apology_curve",
@@ -663,7 +670,8 @@
         ],
         "ball_start": "final_lower_left",
         "target_id": "done_cup_upper_center",
-        "interaction_model": "deterministic_draw_choice_then_release"
+        "interaction_model": "direct_draw_line_then_release",
+        "direct_draw_gesture": "rising_ramp"
       },
       "solution": {
         "draw_id": "fakefall_ramp",

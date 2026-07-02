@@ -1184,6 +1184,12 @@ func _set_physics_line_points(start: Vector2, end: Vector2) -> void:
 
 
 func _classify_physics_line(start: Vector2, end: Vector2) -> String:
+	var gesture := str(_rules().get("direct_draw_gesture", ""))
+	if not gesture.is_empty():
+		if _line_matches_gesture(gesture, start, end):
+			return str(_solution().get("draw_id", ""))
+		return _first_wrong_physics_draw_id()
+
 	var delta := end - start
 	if delta.length() < 36.0:
 		return "wall"
@@ -1194,6 +1200,44 @@ func _classify_physics_line(start: Vector2, end: Vector2) -> String:
 	if delta.x > 48.0 and delta.y < -18.0:
 		return "ramp_to_cup"
 	return "flat_line"
+
+
+func _line_matches_gesture(gesture: String, start: Vector2, end: Vector2) -> bool:
+	var delta := end - start
+	var length := delta.length()
+	if length < 36.0:
+		return false
+
+	match gesture:
+		"rising_ramp":
+			return delta.x > 48.0 and delta.y < -18.0
+		"high_bridge":
+			return abs(delta.y) < 24.0 and abs(delta.x) > 90.0 and min(start.y, end.y) < 130.0
+		"rising_vertical":
+			return abs(delta.x) < 36.0 and delta.y < -80.0
+		"right_flat":
+			return delta.x > 90.0 and abs(delta.y) < 26.0
+		"balloon_hook":
+			return delta.x > 18.0 and delta.x < 90.0 and delta.y < -90.0
+		"falling_slope":
+			return delta.x > 48.0 and delta.y > 18.0
+		"shallow_rise":
+			return delta.x > 90.0 and delta.y < -12.0 and delta.y > -60.0
+		_:
+			return false
+
+
+func _first_wrong_physics_draw_id() -> String:
+	var solution_id := str(_solution().get("draw_id", ""))
+	var options = _rules().get("draw_options", [])
+	if typeof(options) == TYPE_ARRAY:
+		for option in options:
+			if typeof(option) != TYPE_DICTIONARY:
+				continue
+			var draw_id := str(option.get("id", ""))
+			if not draw_id.is_empty() and draw_id != solution_id:
+				return draw_id
+	return ""
 
 
 func _is_primary_press(event: InputEvent) -> bool:

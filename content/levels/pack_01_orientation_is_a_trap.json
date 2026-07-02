@@ -378,7 +378,8 @@
         ],
         "ball_start": "left",
         "target_id": "cup_right",
-    "interaction_model": "direct_draw_line_then_release"
+    "interaction_model": "direct_draw_line_then_release",
+    "direct_draw_gesture": "rising_ramp"
       },
       "solution": {
         "draw_id": "ramp_to_cup",

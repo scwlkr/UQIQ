@@ -26,6 +26,9 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 - `verify_issue_40_interaction_core.gd` proves the rendered UI no longer exposes `Move:` / `Drop on:` / `Draw:` choice buttons for those prototypes.
 - Full documented verification floor passed after the interaction-core slice.
 - Issue #40 closed with proof in commit `9047e91`.
+- Issue #41 adds direct drawing gestures for all eight Pack 6 Physics Draw levels.
+- `verify_issue_41_pack_6_direct_drawing.gd` proves Pack 6 Physics Draw levels reject a bad line and complete through direct drawing.
+- Full documented verification floor passed after the Pack 6 drawing slice.
 - Issue #39 was superseded by product-direction feedback and the new interaction-core issue.
 
 ## Known Blockers
@@ -35,4 +38,4 @@ Release prep is paused. UQIQ has a tested app shell and internal TestFlight proo
 
 ## Next Gate
 
-Convert Pack 6 Physics Draw levels from `Draw:` option-button fallback to real direct drawing interactions.
+Close issue #41 with proof, then choose the next gameplay-depth issue before release work resumes.
