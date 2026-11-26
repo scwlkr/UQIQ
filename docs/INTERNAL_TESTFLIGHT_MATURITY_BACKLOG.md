@@ -5,7 +5,7 @@ Status: Internal-only. scwlkr is the only tester until UQIQ is more advanced.
 ## Current State
 
 - Internal TestFlight build `0.1.0 (1)` is installed and launched on scwlkr's physical iPhone.
-- Support/feedback email: `dev@wlkrlabs.com`.
+- Support/feedback email: `dev@wlkr.si`.
 - External testers are paused.
 - No non-internal TestFlight build, TestFlight App Review, public link, App Review, or public release should start without explicit scwlkr approval.
 
@@ -22,14 +22,14 @@ Status: Internal-only. scwlkr is the only tester until UQIQ is more advanced.
 
 3. Scorecard and long-screen fit
    - Done: content-heavy play screens and Score Roastcard now use portrait scroll containers.
-   - Done: `verify_issue_38_long_screen_fit.gd` covers lower actions/content access.
+   - The lower actions and content remain part of manual phone verification.
 
 4. Final screenshot polish
    - Current screenshots are draft local captures resized to 6.9-inch portrait dimensions.
    - Final assets should be captured/reviewed from intentional screens after the app feels ready.
 
 5. Privacy/support URL publication
-   - Draft page content exists, but `https://uqiq.wlkrlabs.com/privacy` and `/support` are not live.
+   - Draft page content exists, but `https://uqiq.wlkr.si/privacy` and `/support` are not live.
    - Live hosting/DNS remains an approval gate.
 
 6. Future external beta path

@@ -68,19 +68,19 @@ Initial release.
 Copyright:
 
 ```text
-2026 WLKRLABS
+2026 WLKR.SI
 ```
 
 Support URL:
 
 ```text
-https://uqiq.wlkrlabs.com/support
+https://uqiq.wlkr.si/support
 ```
 
 Privacy Policy URL:
 
 ```text
-https://uqiq.wlkrlabs.com/privacy
+https://uqiq.wlkr.si/privacy
 ```
 
 Owner-review notes:
@@ -88,7 +88,7 @@ Owner-review notes:
 - See `docs/PRIVACY_SUPPORT_PAGE_DRAFT.md` for the page copy and hosting plan.
 - The support URL must be live and include actual contact information before submission.
 - The privacy URL must be live before submission.
-- If scwlkr wants one combined page, `https://uqiq.wlkrlabs.com/support` can redirect to `https://uqiq.wlkrlabs.com/privacy#support` after that path is verified.
+- If scwlkr wants one combined page, `https://uqiq.wlkr.si/support` can redirect to `https://uqiq.wlkr.si/privacy#support` after that path is verified.
 
 ## Privacy Draft
 
@@ -171,7 +171,7 @@ Still needed before submission:
 
 - Live support URL.
 - Live privacy policy URL.
-- Public support contact: `dev@wlkrlabs.com`.
+- Public support contact: `dev@wlkr.si`.
 - Final App Store screenshot set.
 - scwlkr approval of subtitle, description, keywords, category, privacy answer, age-rating answer, and support contact.
 - App Store Connect entry/submission after approval.

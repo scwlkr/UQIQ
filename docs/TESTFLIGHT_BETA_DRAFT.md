@@ -55,7 +55,7 @@ UQIQ is a short offline puzzle game with 60 tiny trick Levels, local progress, D
 Feedback Email:
 
 ```text
-dev@wlkrlabs.com
+dev@wlkr.si
 ```
 
 What to Test:
@@ -132,7 +132,7 @@ Screenshot or TestFlight feedback attached? yes/no:
 
 scwlkr must approve or provide:
 
-- Public support/feedback email: `dev@wlkrlabs.com`.
+- Public support/feedback email: `dev@wlkr.si`.
 - External tester list.
 - Approval to upload a non-internal TestFlight build for external testing.
 - Approval to submit that build to TestFlight App Review.

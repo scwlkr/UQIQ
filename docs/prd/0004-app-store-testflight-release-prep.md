@@ -11,7 +11,7 @@ Move UQIQ from internal TestFlight proof to a submission-ready v1.0 package with
 - Prepare a tiny TestFlight beta path for 3-10 testers, including tester list needs, invite copy, and feedback focus.
 - Prepare App Store listing materials: app name, subtitle, description, keywords, categories, screenshots, icon, support URL, and privacy policy URL.
 - Prepare App Store privacy and age-rating answers based on the shipped app behavior.
-- Prepare the minimal privacy/support page content for `https://uqiq.wlkrlabs.com/privacy`.
+- Prepare the minimal privacy/support page content for `https://uqiq.wlkr.si/privacy`.
 - Define release-candidate proof required before any public review submission.
 - Track owner-gated actions as blockers instead of treating them as done.
 

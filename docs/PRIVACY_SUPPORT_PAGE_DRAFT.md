@@ -6,8 +6,8 @@ Status: Draft for scwlkr/legal review. Not live.
 
 Target URLs:
 
-- Privacy Policy URL: `https://uqiq.wlkrlabs.com/privacy`
-- Support URL: `https://uqiq.wlkrlabs.com/support`
+- Privacy Policy URL: `https://uqiq.wlkr.si/privacy`
+- Support URL: `https://uqiq.wlkr.si/support`
 
 Plan:
 
@@ -18,7 +18,7 @@ Plan:
 
 Blocked before submission:
 
-- Confirmed public support email: `dev@wlkrlabs.com`.
+- Confirmed public support email: `dev@wlkr.si`.
 - Publish the URLs.
 - Verify both URLs load over HTTPS from a non-logged-in browser.
 
@@ -29,7 +29,7 @@ UQIQ Privacy Policy and Support
 
 Last updated: [publish date]
 
-UQIQ is a mobile puzzle game from WLKRLABS. This page explains the privacy practices and support contact for UQIQ v1.0.
+UQIQ is a mobile puzzle game from WLKR.SI. This page explains the privacy practices and support contact for UQIQ v1.0.
 
 Privacy Summary
 
@@ -41,7 +41,7 @@ Local Game Data
 
 UQIQ stores game progress locally on your device so the game can remember unlocked Levels, completed Levels, best attempts, Dur Tokens, DUR'D state, and your UQIQ score.
 
-This local game data stays on your device. WLKRLABS does not receive it from the app.
+This local game data stays on your device. WLKR.SI does not receive it from the app.
 
 Device Permissions
 
@@ -59,13 +59,13 @@ Support
 
 For support, bugs, privacy questions, or App Store review contact, email:
 
-dev@wlkrlabs.com
+dev@wlkr.si
 
 Please include your device model, iOS version, UQIQ app version, and a short description of the issue. Do not send passwords, payment details, or sensitive personal information.
 
 Changes
 
-If UQIQ changes its data practices, WLKRLABS will update this page and the App Store privacy answers before submitting an app update.
+If UQIQ changes its data practices, WLKR.SI will update this page and the App Store privacy answers before submitting an app update.
 ```
 
 ## App Store Connect Inputs
@@ -73,19 +73,19 @@ If UQIQ changes its data practices, WLKRLABS will update this page and the App S
 Privacy Policy URL:
 
 ```text
-https://uqiq.wlkrlabs.com/privacy
+https://uqiq.wlkr.si/privacy
 ```
 
 Support URL:
 
 ```text
-https://uqiq.wlkrlabs.com/support
+https://uqiq.wlkr.si/support
 ```
 
 Support/contact placeholder:
 
 ```text
-dev@wlkrlabs.com
+dev@wlkr.si
 ```
 
 Owner decision needed:
