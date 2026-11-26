@@ -233,7 +233,9 @@ The intended App Store age-rating posture for v1.0. The final rating comes from 
 _Avoid_: 4+ target, 17+ target
 
 **Privacy Page**:
-The basic static policy/support page for App Store submission, hosted at `https://uqiq.wlkrlabs.com/privacy`.
+The basic static policy/support page for App Store submission, planned for `https://uqiq.wlkr.si/privacy`.
+
+The iOS bundle identifier stays `com.wlkrlabs.uqiq` because it identifies the app and does not depend on DNS.
 _Avoid_: Privacy portal, support site, legal site
 
 **Context-Aware Roast**:

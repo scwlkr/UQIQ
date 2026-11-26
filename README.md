@@ -118,124 +118,6 @@ Reset local progress before a clean vertical-slice run:
 rm -f "$HOME/Library/Application Support/Godot/app_userdata/UQIQ/uqiq_local_profile_v1.json"
 ```
 
-## Vertical Slice Verification
-
-Run from a clean save:
-
-```sh
-rm -f "$HOME/Library/Application Support/Godot/app_userdata/UQIQ/uqiq_local_profile_v1.json"
-godot --headless --path . --script res://scripts/verify_local_profile.gd
-godot --headless --path . --script res://scripts/verify_issue_3.gd
-godot --headless --path . --script res://scripts/verify_issue_4.gd
-godot --headless --path . --script res://scripts/verify_issue_5_desktop_smoke.gd
-godot --headless --path . --script res://scripts/verify_issue_7_pack_1_smoke.gd
-godot --headless --path . --script res://scripts/verify_issue_8_pack_2_specs.gd
-godot --headless --path . --script res://scripts/verify_issue_10_pack_2_smoke.gd
-godot --headless --path . --script res://scripts/verify_issue_11_pack_3_specs.gd
-godot --headless --path . --script res://scripts/verify_issue_11_pack_3_smoke.gd
-godot --headless --path . --script res://scripts/verify_issue_12_pack_4_specs.gd
-godot --headless --path . --script res://scripts/verify_issue_12_pack_4_smoke.gd
-godot --headless --path . --script res://scripts/verify_issue_13_pack_5_specs.gd
-godot --headless --path . --script res://scripts/verify_issue_13_pack_5_smoke.gd
-godot --headless --path . --script res://scripts/verify_issue_16_pack_6_specs.gd
-godot --headless --path . --script res://scripts/verify_issue_16_pack_6_smoke.gd
-godot --headless --path . --script res://scripts/verify_issue_19_scoring.gd
-godot --headless --path . --script res://scripts/verify_issue_20_feedback.gd
-godot --headless --path . --script res://scripts/verify_issue_21_judge_transitions.gd
-godot --headless --path . --script res://scripts/verify_issue_22_physics_draw.gd
-godot --headless --path . --script res://scripts/verify_issue_23_ui_readability.gd
-godot --headless --path . --script res://scripts/verify_issue_38_long_screen_fit.gd
-godot --headless --path . --script res://scripts/verify_issue_40_interaction_core.gd
-godot --headless --path . --script res://scripts/verify_issue_41_pack_6_direct_drawing.gd
-godot --headless --path . --script res://scripts/verify_issue_42_pattern_grid_interaction.gd
-godot --headless --path . --script res://scripts/verify_issue_43_tactile_tap_logic.gd
-godot --headless --path . --script res://scripts/verify_issue_45_tactile_memory_flash.gd
-godot --headless --path . --script res://scripts/verify_issue_46_playtest_level_jump.gd
-godot --headless --path . --script res://scripts/verify_issue_47_tactile_text_trap.gd
-godot --headless --path . --script res://scripts/verify_issue_48_debug_playtest_all.gd
-godot --headless --path . --script res://scripts/verify_issue_51_scorecard_safe_area.gd
-godot --headless --path . --script res://scripts/verify_issue_53_physics_draw_ios_path.gd
-godot --headless --path . --script res://scripts/verify_issue_54_neutral_targets.gd
-godot --headless --path . --script res://scripts/verify_issue_55_phone_ui_hitboxes.gd
-godot --headless --path . --script res://scripts/verify_issue_64_first_ramp_freehand_physics.gd
-godot --headless --path . --script res://scripts/verify_issue_65_brake_check_freehand_stopper.gd
-godot --headless --path . --script res://scripts/verify_issue_66_goalposts_rearrange.gd
-godot --headless --path . --script res://scripts/verify_issue_67_gravity_handles_rearrange.gd
-godot --headless --path . --script res://scripts/verify_issue_68_cup_blinks_reveal_freehand.gd
-```
-
-`verify_issue_4.gd` is the six-Level vertical-slice check. It verifies Levels 1-6 match the current playable Pack 1 prototype templates, completion through Level 6, Dur Token spend/recovery, Roast metrics, UQIQ Score changes, and save/load persistence.
-
-`verify_issue_5_desktop_smoke.gd` is the scripted desktop smoke/stability check. It boots the main scene with a clean test save, completes Levels 1-6, checks Score Roastcards, replay, Dur Token recovery, save/load, and repeated replay cycles.
-
-`verify_issue_7_pack_1_smoke.gd` is the Pack 1 smoke check. It boots the main scene with a clean test save, completes Levels 1-10 from the Level List through Score Roastcards, checks Level 10 replay/Best Attempt behavior, spends and recovers a Dur Token after Level 6, and verifies save/load plus app-restart persistence.
-
-`verify_issue_8_pack_2_specs.gd` is the Pack 2 specs-only check for `content/levels/pack_02_words_are_lying.json`. It validates Pack 2 Level Specs against `docs/LEVEL_SPEC.md`; Pack 2 playability is covered by `verify_issue_10_pack_2_smoke.gd`.
-
-`verify_issue_10_pack_2_smoke.gd` is the Pack 2 playable smoke check. It boots the expanded Level List, completes Levels 11-20 through Score Roastcards, and checks persistence plus Dur Token behavior.
-
-`verify_issue_11_pack_3_specs.gd` is the Pack 3 specs-only check for `content/levels/pack_03_move_the_wrong_thing.json`. It validates the 10 `Move the Wrong Thing` Level Specs for Levels 21-30 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
-
-`verify_issue_11_pack_3_smoke.gd` is the Pack 3 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3 grouping, completes Levels 21-30 through Score Roastcards, and checks linear unlock, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 30-Level progression.
-
-`verify_issue_12_pack_4_specs.gd` is the Pack 4 specs-only check for `content/levels/pack_04_pattern_crimes.json`. It validates the 10 `Pattern Crimes` Level Specs for Levels 31-40 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
-
-`verify_issue_12_pack_4_smoke.gd` is the Pack 4 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3/4 grouping, completes Levels 31-40 through Score Roastcards, and checks linear unlock, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 40-Level progression.
-
-`verify_issue_13_pack_5_specs.gd` is the Pack 5 specs-only check for `content/levels/pack_05_brain_buffer_full.json`. It validates the 10 `Brain Buffer Full` Level Specs for Levels 41-50 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
-
-`verify_issue_13_pack_5_smoke.gd` is the Pack 5 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3/4/5 grouping, completes Levels 41-50 through Score Roastcards, and checks linear unlock, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 50-Level progression.
-
-`verify_issue_16_pack_6_specs.gd` is the Pack 6 specs-only check for `content/levels/pack_06_gravity_is_fake.json`. It validates the 10 `Gravity Is Fake` Level Specs for Levels 51-60 against `docs/LEVEL_SPEC.md`, including supported templates, scoring thresholds, Roast buckets, solutions, and UQIQ Moments.
-
-`verify_issue_16_pack_6_smoke.gd` is the Pack 6 playable smoke check. It boots the expanded Level List, confirms Pack 1/2/3/4/5/6 grouping, completes Levels 51-60 through Score Roastcards, and checks Level 50 to Level 51 unlock, linear unlock through Level 60, persistence, replay/Best Attempt behavior, UQIQ Score, Roasts, and Dur Token spend/recovery in the 60-Level progression.
-
-`verify_issue_19_scoring.gd` is the scoring polish check. It verifies one representative Level from each Pack against the UQIQ Score component formula, score clamps, DUR recovery scoring, capped replay Best Attempt behavior, and visible Speed/Actions/Roasts/DUR Score Roastcard rows.
-
-`verify_issue_20_feedback.gd` is the minimal feedback polish check. It verifies tap, fail, success, Roast, Dur Token spend, and Dur Token recovery hooks in headless mode without changing action counts, scoring, unlock order, or persistence.
-
-`verify_issue_21_judge_transitions.gd` is the Judge Face and transition polish check. It verifies list/play/score transition hooks, start/fail/Roast/success/score Judge Face reactions, replay, and Level List navigation.
-
-`verify_issue_22_physics_draw.gd` is the Physics Draw polish check. It verifies selected-line state, release-result state, wrong release, correct release, action count, scoring, and persistence stay deterministic.
-
-`verify_issue_23_ui_readability.gd` is the phone UI readability check. It verifies long labels and buttons use portrait-safe wrapping and ellipsis settings across the Level List, Play Screen, Physics Draw, and Score Roastcard surfaces.
-
-`verify_issue_38_long_screen_fit.gd` is the long-screen fit check. It verifies content-heavy Play Screens and Score Roastcard expose lower actions/content inside portrait scroll containers.
-
-`verify_issue_40_interaction_core.gd` is the interaction-core check. It verifies Drag Logic exposes a direct drag/drop playfield instead of `Move:` / `Drop on:` buttons, Physics Draw exposes a direct drawing surface instead of `Draw:` option buttons, and both interactions complete through Score Roastcard with persistence.
-
-`verify_issue_41_pack_6_direct_drawing.gd` is the Pack 6 direct drawing check. It verifies every Pack 6 Physics Draw Level renders a direct drawing surface instead of `Draw:` fallback buttons, rejects a bad short line, and completes through its encoded drawing gesture.
-
-`verify_issue_42_pattern_grid_interaction.gd` is the direct Pattern Grid check. It verifies Level 17 renders a markable grid instead of the old single-cell `Submit Pattern` flow, rejects a wrong row, and completes from marked grid state.
-
-`verify_issue_43_tactile_tap_logic.gd` is the tactile Tap Logic check. It verifies Level 7 renders a direct tap scene instead of answer-choice buttons, rejects a wrong direct tap, accepts mouse/touch-shaped input, and completes through Score Roastcard.
-
-`verify_issue_45_tactile_memory_flash.gd` is the tactile Memory Flash check. It verifies Level 19 renders direct memory tiles and recall slots instead of `Flash` / `Hide` / choice buttons, hides the flash order during recall, dedupes touch-emulated mouse presses, clears cleanly, rejects a wrong row, and completes through Score Roastcard.
-
-`verify_issue_46_playtest_level_jump.gd` is the debug playtest access check. It verifies normal launch stays on the Level List while debug env `UQIQ_PLAYTEST_LEVEL=5` opens Level 5 directly without changing Local Profile unlock progression.
-
-`verify_issue_47_tactile_text_trap.gd` is the tactile Text Trap check. It verifies Level 9 keeps touch-focused text input, rejects a wrong answer, and completes through Score Roastcard.
-
-`verify_issue_48_debug_playtest_all.gd` is the debug all-level phone playtest check. It verifies normal launch keeps later Levels locked, debug env `UQIQ_PLAYTEST_UNLOCK_ALL=1` makes supported Levels playable from the Level List without mutating Local Profile progression, and `UQIQ_PLAYTEST_LEVEL` still opens a target Level directly.
-
-`verify_issue_51_scorecard_safe_area.gd` is the Score Roastcard safe-area and continuation check. It verifies notched-phone margin math, Level 01 completion to Next Level, later Pack 1 completion back to Level List, and score/profile persistence.
-
-`verify_issue_53_physics_draw_ios_path.gd` is the Physics Draw iOS-path check. It verifies screen-touch drawing stays inside the draw surface, invalid flat lines fail, and a rising ramp classifies as `ramp_to_cup` before Release Ball completes Level 06.
-
-`verify_issue_54_neutral_targets.gd` is the neutral target styling check. It verifies Level 17 grid cells and Levels 07/08/10 tap targets start with role-neutral colors while wrong/correct input feedback still works.
-
-`verify_issue_55_phone_ui_hitboxes.gd` is the Pack 1 phone UI hitbox/readability check. It verifies Level 07 direct tap labels fit without word-splitting, Level 09 touch focus requests the virtual keyboard and completes with `portrait`, and notched-phone margins remain applied.
-
-`verify_issue_64_first_ramp_freehand_physics.gd` is the Level 1 First Ramp freehand physics check. It verifies no answer-choice draw UI, touch-created thick stroke geometry, StaticBody2D collision, Release motion, success by ball/cup overlap, too-short and flat failures, and Reset cleanup.
-
-`verify_issue_65_brake_check_freehand_stopper.gd` is the Level 2 Brake Check freehand stopper check. It verifies the built-in starter chute, touch-created stopper collision, ramp/short/misplaced failures, Reset cleanup, and valid stopper completion by ball/cup overlap.
-
-`verify_issue_66_goalposts_rearrange.gd` is the Level 3 Goalposts Are Portable rearrange check. It verifies the fixed starter chute/ball, draggable cup, catch hint, touch drag bounds, Release-gated ball motion, wrong/no-move failures, Reset cleanup, and valid cup placement completion by ball/cup overlap.
-
-`verify_issue_67_gravity_handles_rearrange.gd` is the Level 4 Gravity Has Handles rearrange check. It verifies the fixed ball, right-wall cup, draggable `GRAVITY` rule tile, large gravity slots, touch drag snapping, Release-gated motion, wrong/no-slot failures, Reset cleanup, and valid right-wall gravity completion by ball/cup overlap.
-
-`verify_issue_68_cup_blinks_reveal_freehand.gd` is the Level 5 Cup Blinks First reveal/freehand check. It verifies the hidden cup auto-reveals and hides, optional Reveal works once, touch drawing creates stroke collision, wrong/no-line releases flash the cup without completion, Reset clears state, and a valid remembered stroke completes by hidden-cup overlap.
-
 ## Desktop Smoke
 
 Manual smoke:
@@ -246,14 +128,6 @@ Manual smoke:
 4. Replay one completed Level.
 5. Spend a Dur Token on an unlocked incomplete Level, then complete that DUR'D Level and confirm the token returns.
 6. Keep the app open for 10 minutes and confirm no crash.
-
-Scripted stability equivalent:
-
-```sh
-godot --headless --path . --script res://scripts/verify_issue_5_desktop_smoke.gd | tee /tmp/uqiq-smoke.log
-```
-
-Save `/tmp/uqiq-smoke.log` as the smoke log. Passing means the scripted stability flow completed with no crash or error.
 
 ## iOS Export / Physical iPhone Proof
 
